@@ -1,0 +1,9 @@
+{
+	"name": "adfpetrolakedatamodrendev",
+	"location": "eastus",
+	"identity": {
+		"type": "SystemAssigned",
+		"principalId": "8424e4da-f9c4-41d2-ba54-f2ebf786d299",
+		"tenantId": "96f6ad31-074a-42df-b50b-ff687076cf31"
+	}
+}
