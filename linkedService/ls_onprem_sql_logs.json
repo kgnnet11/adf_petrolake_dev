@@ -7,7 +7,7 @@
 		"typeProperties": {
 			"connectionString": "integrated security=True;data source=TIPPU\\SQLEXPRESS01;initial catalog=petrolake_db_dev",
 			"userName": "tippu\\adfdb",
-			"encryptedCredential": "eyJDcmVkZW50aWFsSWQiOiIxNzNkNGE5MS1jNWM2LTRkYmYtYTE4Yi04MjVmOGNlOWJhNjgiLCJWZXJzaW9uIjoiMi4wIiwiQ2xhc3NUeXBlIjoiTWljcm9zb2Z0LkRhdGFQcm94eS5Db3JlLkludGVyU2VydmljZURhdGFDb250cmFjdC5DcmVkZW50aWFsU1UwNkNZMTQifQ=="
+			"encryptedCredential": "eyJDcmVkZW50aWFsSWQiOiIwMmIwMDQwYS00MjBkLTRlY2EtYTcxMy1hYTcyMDE1M2IwNzEiLCJWZXJzaW9uIjoiMi4wIiwiQ2xhc3NUeXBlIjoiTWljcm9zb2Z0LkRhdGFQcm94eS5Db3JlLkludGVyU2VydmljZURhdGFDb250cmFjdC5DcmVkZW50aWFsU1UwNkNZMTQifQ=="
 		},
 		"connectVia": {
 			"referenceName": "selfhostedIR",
