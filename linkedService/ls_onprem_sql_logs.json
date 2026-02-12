@@ -1,0 +1,21 @@
+{
+	"name": "ls_onprem_sql_logs",
+	"type": "Microsoft.DataFactory/factories/linkedservices",
+	"properties": {
+		"annotations": [],
+		"type": "SqlServer",
+		"typeProperties": {
+			"server": "TIPPU\\SQLEXPRESS01",
+			"database": "petrolake_db_dev",
+			"encrypt": "mandatory",
+			"trustServerCertificate": true,
+			"authenticationType": "Windows",
+			"userName": "TIPPU\\adfdb",
+			"encryptedCredential": "eyJDcmVkZW50aWFsSWQiOiI0NGEwM2E4My0zODUxLTQ0YzctODJmNS1iZjdiYjUzMjg4ZmYiLCJWZXJzaW9uIjoiMi4wIiwiQ2xhc3NUeXBlIjoiTWljcm9zb2Z0LkRhdGFQcm94eS5Db3JlLkludGVyU2VydmljZURhdGFDb250cmFjdC5DcmVkZW50aWFsU1UwNkNZMTQifQ=="
+		},
+		"connectVia": {
+			"referenceName": "selfhostedIR",
+			"type": "IntegrationRuntimeReference"
+		}
+	}
+}
