@@ -1,0 +1,17 @@
+{
+	"name": "ls_sql_onprem_petrolake",
+	"type": "Microsoft.DataFactory/factories/linkedservices",
+	"properties": {
+		"annotations": [],
+		"type": "SqlServer",
+		"typeProperties": {
+			"connectionString": "integrated security=True;data source=TIPPU\\SQLEXPRESS01;initial catalog=petrolake_db_dev",
+			"userName": "tippu\\adfdb",
+			"encryptedCredential": "eyJDcmVkZW50aWFsSWQiOiIzYzAxOWViZS0xZmQ0LTQxYmUtOWE1Mi1kMTFjOWRkYWQzMzkiLCJWZXJzaW9uIjoiMi4wIiwiQ2xhc3NUeXBlIjoiTWljcm9zb2Z0LkRhdGFQcm94eS5Db3JlLkludGVyU2VydmljZURhdGFDb250cmFjdC5DcmVkZW50aWFsU1UwNkNZMTQifQ=="
+		},
+		"connectVia": {
+			"referenceName": "selfhosterIRLoacal",
+			"type": "IntegrationRuntimeReference"
+		}
+	}
+}
