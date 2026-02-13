@@ -1,0 +1,85 @@
+{
+	"$schema": "http://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+	"contentVersion": "1.0.0.0",
+	"parameters": {
+		"factoryName": {
+			"type": "string",
+			"metadata": "Data Factory name",
+			"defaultValue": "adfpetrolakedatamodrendev"
+		},
+		"ls_alds_landingzone_accountKey": {
+			"type": "secureString",
+			"metadata": "Secure string for 'accountKey' of 'ls_alds_landingzone'"
+		},
+		"ls_blob_filesystem_connectionString": {
+			"type": "secureString",
+			"metadata": "Secure string for 'connectionString' of 'ls_blob_filesystem'"
+		},
+		"ls_sql_onprem_petrolake_connectionString": {
+			"type": "secureString",
+			"metadata": "Secure string for 'connectionString' of 'ls_sql_onprem_petrolake'",
+			"defaultValue": "integrated security=True;Data Source=TIPPU\\SQLEXPRESS01;Initial Catalog=petrolake_db_dev"
+		},
+		"ls_sql_onprem_petrolake_password": {
+			"type": "secureString",
+			"metadata": "Secure string for 'password' of 'ls_sql_onprem_petrolake'"
+		},
+		"ls_alds_landingzone_properties_typeProperties_url": {
+			"type": "string",
+			"defaultValue": "https://sgdigitalizationdev.dfs.core.windows.net/"
+		},
+		"ls_sql_onprem_petrolake_properties_typeProperties_userName": {
+			"type": "string",
+			"defaultValue": "tippu\\adfdb"
+		},
+		"containerUri": {
+			"type": "string",
+			"metadata": "URI to storage account containing linked ARM templates"
+		},
+		"containerSasToken": {
+			"type": "string",
+			"metadata": "Sas token to storage account containing linked ARM templates"
+		}
+	},
+	"variables": {
+		"factoryId": "[concat('Microsoft.DataFactory/factories/', parameters('factoryName'))]"
+	},
+	"resources": [
+		{
+			"name": "adfpetrolakedatamodrendev_ArmTemplate_0",
+			"type": "Microsoft.Resources/deployments",
+			"apiVersion": "2024-03-01",
+			"properties": {
+				"mode": "incremental",
+				"templateLink": {
+					"uri": "[concat(parameters('containerUri'), '/ArmTemplate_0.json', parameters('containerSasToken'))]",
+					"contentVersion": "1.0.0.0"
+				},
+				"parameters": {
+					"factoryName": {
+						"value": "[parameters('factoryName')]"
+					},
+					"ls_alds_landingzone_accountKey": {
+						"value": "[parameters('ls_alds_landingzone_accountKey')]"
+					},
+					"ls_blob_filesystem_connectionString": {
+						"value": "[parameters('ls_blob_filesystem_connectionString')]"
+					},
+					"ls_sql_onprem_petrolake_connectionString": {
+						"value": "[parameters('ls_sql_onprem_petrolake_connectionString')]"
+					},
+					"ls_sql_onprem_petrolake_password": {
+						"value": "[parameters('ls_sql_onprem_petrolake_password')]"
+					},
+					"ls_alds_landingzone_properties_typeProperties_url": {
+						"value": "[parameters('ls_alds_landingzone_properties_typeProperties_url')]"
+					},
+					"ls_sql_onprem_petrolake_properties_typeProperties_userName": {
+						"value": "[parameters('ls_sql_onprem_petrolake_properties_typeProperties_userName')]"
+					}
+				}
+			},
+			"dependsOn": []
+		}
+	]
+}

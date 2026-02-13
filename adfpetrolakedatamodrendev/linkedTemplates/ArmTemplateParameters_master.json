@@ -1,0 +1,33 @@
+{
+	"$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentParameters.json#",
+	"contentVersion": "1.0.0.0",
+	"parameters": {
+		"factoryName": {
+			"value": "adfpetrolakedatamodrendev"
+		},
+		"ls_alds_landingzone_accountKey": {
+			"value": ""
+		},
+		"ls_blob_filesystem_connectionString": {
+			"value": ""
+		},
+		"ls_sql_onprem_petrolake_connectionString": {
+			"value": "integrated security=True;Data Source=TIPPU\\SQLEXPRESS01;Initial Catalog=petrolake_db_dev"
+		},
+		"ls_sql_onprem_petrolake_password": {
+			"value": ""
+		},
+		"ls_alds_landingzone_properties_typeProperties_url": {
+			"value": "https://sgdigitalizationdev.dfs.core.windows.net/"
+		},
+		"ls_sql_onprem_petrolake_properties_typeProperties_userName": {
+			"value": "tippu\\adfdb"
+		},
+		"containerUri": {
+			"value": ""
+		},
+		"containerSasToken": {
+			"value": ""
+		}
+	}
+}
