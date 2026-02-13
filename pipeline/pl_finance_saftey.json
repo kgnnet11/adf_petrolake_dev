@@ -1,0 +1,51 @@
+{
+	"name": "pl_finance_saftey",
+	"properties": {
+		"activities": [
+			{
+				"name": "Get_sheets",
+				"type": "GetMetadata",
+				"dependsOn": [],
+				"policy": {
+					"timeout": "0.12:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"dataset": {
+						"referenceName": "ds_filesystem_dailyload_adls_landingzone",
+						"type": "DatasetReference"
+					},
+					"fieldList": [
+						"itemName"
+					],
+					"storeSettings": {
+						"type": "AzureBlobStorageReadSettings",
+						"enablePartitionDiscovery": false
+					}
+				}
+			}
+		],
+		"parameters": {
+			"ExcelFileName": {
+				"type": "string"
+			},
+			"SheetName": {
+				"type": "string"
+			},
+			"SourceContainer": {
+				"type": "string"
+			},
+			"LandingPath": {
+				"type": "string"
+			}
+		},
+		"folder": {
+			"name": "Filesystem"
+		},
+		"annotations": []
+	}
+}
