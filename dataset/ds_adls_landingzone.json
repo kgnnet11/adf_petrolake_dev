@@ -6,7 +6,13 @@
 			"type": "LinkedServiceReference"
 		},
 		"parameters": {
-			"tablname": {
+			"filename": {
+				"type": "string"
+			},
+			"MainFolder": {
+				"type": "string"
+			},
+			"SubFolder": {
 				"type": "string"
 			}
 		},
@@ -15,8 +21,12 @@
 		"typeProperties": {
 			"location": {
 				"type": "AzureBlobFSLocation",
+				"fileName": {
+					"value": "@dataset().filename",
+					"type": "Expression"
+				},
 				"folderPath": {
-					"value": "@dataset().tablname",
+					"value": "@concat(dataset().MainFolder,'/',dataset().SubFolder)",
 					"type": "Expression"
 				},
 				"fileSystem": "landingzone"
