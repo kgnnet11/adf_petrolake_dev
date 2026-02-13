@@ -1,0 +1,20 @@
+{
+	"name": "ds_filesystem_dailyload_adls_landingzone",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "ls_blob_filesystem",
+			"type": "LinkedServiceReference"
+		},
+		"annotations": [],
+		"type": "Excel",
+		"typeProperties": {
+			"location": {
+				"type": "AzureBlobStorageLocation",
+				"fileName": "Global_Downstream_Finance_Safety.xlsx",
+				"container": "filesystemdata"
+			},
+			"firstRowAsHeader": true
+		},
+		"schema": []
+	}
+}

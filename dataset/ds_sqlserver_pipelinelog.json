@@ -1,0 +1,12 @@
+{
+	"name": "ds_sqlserver_pipelinelog",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "ls_sql_onprem_petrolake",
+			"type": "LinkedServiceReference"
+		},
+		"annotations": [],
+		"type": "SqlServerTable",
+		"schema": []
+	}
+}
