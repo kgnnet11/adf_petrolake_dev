@@ -1,0 +1,29 @@
+{
+	"name": "ds_filesystem_Global_Upstream_Operations",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "ls_blob_filesystem",
+			"type": "LinkedServiceReference"
+		},
+		"parameters": {
+			"sheetname": {
+				"type": "string"
+			}
+		},
+		"annotations": [],
+		"type": "Excel",
+		"typeProperties": {
+			"sheetName": {
+				"value": "@dataset().sheetname",
+				"type": "Expression"
+			},
+			"location": {
+				"type": "AzureBlobStorageLocation",
+				"fileName": "Global_Upstream_Operations.xlsx",
+				"container": "filesystemdata"
+			},
+			"firstRowAsHeader": true
+		},
+		"schema": []
+	}
+}
