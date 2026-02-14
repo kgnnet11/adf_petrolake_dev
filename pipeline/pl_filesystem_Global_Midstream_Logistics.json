@@ -66,7 +66,7 @@
 							},
 							"inputs": [
 								{
-									"referenceName": "ds_filesystem_dailyload_adls_landingzone",
+									"referenceName": "ds_filesystem_Global_Midstream_Logistics",
 									"type": "DatasetReference",
 									"parameters": {
 										"sheetname": {
@@ -168,7 +168,11 @@
 		"parameters": {
 			"SheetNames": {
 				"type": "array",
-				"defaultValue": "c"
+				"defaultValue": [
+					"Pipeline_Flow",
+					"Shipping_Details",
+					"Storage_Terminals"
+				]
 			},
 			"ExcelFileName": {
 				"type": "string",
