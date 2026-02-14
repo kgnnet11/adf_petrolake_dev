@@ -1,0 +1,183 @@
+{
+	"name": "pl_filesystem_Global_Midstream_Logistics",
+	"properties": {
+		"description": "This Load every 10 days ",
+		"activities": [
+			{
+				"name": "Get_Excel_sheets",
+				"type": "ForEach",
+				"dependsOn": [
+					{
+						"activity": "Begin_status",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"userProperties": [],
+				"typeProperties": {
+					"items": {
+						"value": "@pipeline().parameters.SheetNames",
+						"type": "Expression"
+					},
+					"batchCount": 1,
+					"activities": [
+						{
+							"name": "cp_Global_Midstream_Logistics",
+							"type": "Copy",
+							"dependsOn": [],
+							"policy": {
+								"timeout": "0.12:00:00",
+								"retry": 0,
+								"retryIntervalInSeconds": 30,
+								"secureOutput": false,
+								"secureInput": false
+							},
+							"userProperties": [],
+							"typeProperties": {
+								"source": {
+									"type": "ExcelSource",
+									"storeSettings": {
+										"type": "AzureBlobStorageReadSettings",
+										"recursive": true,
+										"enablePartitionDiscovery": false
+									}
+								},
+								"sink": {
+									"type": "DelimitedTextSink",
+									"storeSettings": {
+										"type": "AzureBlobFSWriteSettings"
+									},
+									"formatSettings": {
+										"type": "DelimitedTextWriteSettings",
+										"quoteAllText": true,
+										"fileExtension": ".txt"
+									}
+								},
+								"enableStaging": false,
+								"translator": {
+									"type": "TabularTranslator",
+									"typeConversion": true,
+									"typeConversionSettings": {
+										"allowDataTruncation": true,
+										"treatBooleanAsNumber": false
+									}
+								}
+							},
+							"inputs": [
+								{
+									"referenceName": "ds_filesystem_dailyload_adls_landingzone",
+									"type": "DatasetReference",
+									"parameters": {
+										"sheetname": {
+											"value": "@string(item())",
+											"type": "Expression"
+										}
+									}
+								}
+							],
+							"outputs": [
+								{
+									"referenceName": "ds_adls_landingzone",
+									"type": "DatasetReference",
+									"parameters": {
+										"filename": {
+											"value": "@concat(string(item()), '.csv')",
+											"type": "Expression"
+										},
+										"MainFolder": {
+											"value": "@replace(pipeline().parameters.ExcelFileName,'.xlsx','')",
+											"type": "Expression"
+										},
+										"SubFolder": {
+											"value": "@string(item())",
+											"type": "Expression"
+										}
+									}
+								}
+							]
+						}
+					]
+				}
+			},
+			{
+				"name": "Begin_status",
+				"type": "SqlServerStoredProcedure",
+				"dependsOn": [],
+				"policy": {
+					"timeout": "0.12:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"storedProcedureName": "[dbo].[usp_InsertPipelineRunLog_details]",
+					"storedProcedureParameters": {
+						"EndTime": {
+							"value": {
+								"value": "@utcNow()\n",
+								"type": "Expression"
+							},
+							"type": "DateTime"
+						},
+						"ErrorMessage": {
+							"value": {
+								"value": "''\n",
+								"type": "Expression"
+							},
+							"type": "String"
+						},
+						"PipelineName": {
+							"value": {
+								"value": "@pipeline().Pipeline\n",
+								"type": "Expression"
+							},
+							"type": "String"
+						},
+						"RunID": {
+							"value": {
+								"value": "@pipeline().RunId\n",
+								"type": "Expression"
+							},
+							"type": "Guid"
+						},
+						"StartTime": {
+							"value": {
+								"value": "@utcNow()\n",
+								"type": "Expression"
+							},
+							"type": "DateTime"
+						},
+						"Status": {
+							"value": {
+								"value": "sucess",
+								"type": "Expression"
+							},
+							"type": "String"
+						}
+					}
+				},
+				"linkedServiceName": {
+					"referenceName": "ls_sql_onprem_petrolake",
+					"type": "LinkedServiceReference"
+				}
+			}
+		],
+		"parameters": {
+			"SheetNames": {
+				"type": "array",
+				"defaultValue": "c"
+			},
+			"ExcelFileName": {
+				"type": "string",
+				"defaultValue": "Global_Midstream_Logistics.xlsx"
+			}
+		},
+		"folder": {
+			"name": "Filesystem"
+		},
+		"annotations": []
+	}
+}
