@@ -576,7 +576,7 @@
 								"storedProcedureParameters": {
 									"PipelineRunID": {
 										"value": {
-											"value": "@pipline.RunID",
+											"value": "@pipeline().RunId",
 											"type": "Expression"
 										},
 										"type": "Guid"
@@ -619,7 +619,7 @@
 								"storedProcedureParameters": {
 									"PipelineRunID": {
 										"value": {
-											"value": "@pipline.RunID",
+											"value": "@pipeline().RunId",
 											"type": "Expression"
 										},
 										"type": "Guid"
@@ -721,7 +721,7 @@
 			},
 			"TargetSystem": {
 				"type": "string",
-				"defaultValue": " Both"
+				"defaultValue": "Both"
 			}
 		},
 		"folder": {
