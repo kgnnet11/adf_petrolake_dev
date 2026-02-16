@@ -1,0 +1,16 @@
+{
+	"name": "ds_Reporting_SQL_dev",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "ls_sql_onprem_petrolake",
+			"type": "LinkedServiceReference"
+		},
+		"annotations": [],
+		"type": "SqlServerTable",
+		"schema": [],
+		"typeProperties": {
+			"schema": "dbo",
+			"table": "Gold_downstream_KPI"
+		}
+	}
+}

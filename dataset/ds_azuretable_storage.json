@@ -1,0 +1,15 @@
+{
+	"name": "ds_azuretable_storage",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "ls_azuretable_storage",
+			"type": "LinkedServiceReference"
+		},
+		"annotations": [],
+		"type": "AzureTable",
+		"schema": [],
+		"typeProperties": {
+			"tableName": "globaldownstream"
+		}
+	}
+}
