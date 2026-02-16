@@ -8,7 +8,13 @@
 		"ls_alds_landingzone_accountKey": {
 			"value": ""
 		},
+		"ls_azuretable_storage_connectionString": {
+			"value": ""
+		},
 		"ls_blob_filesystem_connectionString": {
+			"value": ""
+		},
+		"ls_databricks_petrolake_dev_accessToken": {
 			"value": ""
 		},
 		"ls_sql_onprem_petrolake_connectionString": {
@@ -19,6 +25,9 @@
 		},
 		"ls_alds_landingzone_properties_typeProperties_url": {
 			"value": "https://sgdigitalizationdev.dfs.core.windows.net/"
+		},
+		"ls_databricks_petrolake_dev_properties_typeProperties_existingClusterId": {
+			"value": "0214-132145-bvcoilg0"
 		},
 		"ls_sql_onprem_petrolake_properties_typeProperties_userName": {
 			"value": "tippu\\adfdb"

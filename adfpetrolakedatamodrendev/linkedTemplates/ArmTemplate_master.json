@@ -11,9 +11,17 @@
 			"type": "secureString",
 			"metadata": "Secure string for 'accountKey' of 'ls_alds_landingzone'"
 		},
+		"ls_azuretable_storage_connectionString": {
+			"type": "secureString",
+			"metadata": "Secure string for 'connectionString' of 'ls_azuretable_storage'"
+		},
 		"ls_blob_filesystem_connectionString": {
 			"type": "secureString",
 			"metadata": "Secure string for 'connectionString' of 'ls_blob_filesystem'"
+		},
+		"ls_databricks_petrolake_dev_accessToken": {
+			"type": "secureString",
+			"metadata": "Secure string for 'accessToken' of 'ls_databricks_petrolake_dev'"
 		},
 		"ls_sql_onprem_petrolake_connectionString": {
 			"type": "secureString",
@@ -27,6 +35,10 @@
 		"ls_alds_landingzone_properties_typeProperties_url": {
 			"type": "string",
 			"defaultValue": "https://sgdigitalizationdev.dfs.core.windows.net/"
+		},
+		"ls_databricks_petrolake_dev_properties_typeProperties_existingClusterId": {
+			"type": "string",
+			"defaultValue": "0214-132145-bvcoilg0"
 		},
 		"ls_sql_onprem_petrolake_properties_typeProperties_userName": {
 			"type": "string",
@@ -62,8 +74,14 @@
 					"ls_alds_landingzone_accountKey": {
 						"value": "[parameters('ls_alds_landingzone_accountKey')]"
 					},
+					"ls_azuretable_storage_connectionString": {
+						"value": "[parameters('ls_azuretable_storage_connectionString')]"
+					},
 					"ls_blob_filesystem_connectionString": {
 						"value": "[parameters('ls_blob_filesystem_connectionString')]"
+					},
+					"ls_databricks_petrolake_dev_accessToken": {
+						"value": "[parameters('ls_databricks_petrolake_dev_accessToken')]"
 					},
 					"ls_sql_onprem_petrolake_connectionString": {
 						"value": "[parameters('ls_sql_onprem_petrolake_connectionString')]"
@@ -73,6 +91,9 @@
 					},
 					"ls_alds_landingzone_properties_typeProperties_url": {
 						"value": "[parameters('ls_alds_landingzone_properties_typeProperties_url')]"
+					},
+					"ls_databricks_petrolake_dev_properties_typeProperties_existingClusterId": {
+						"value": "[parameters('ls_databricks_petrolake_dev_properties_typeProperties_existingClusterId')]"
 					},
 					"ls_sql_onprem_petrolake_properties_typeProperties_userName": {
 						"value": "[parameters('ls_sql_onprem_petrolake_properties_typeProperties_userName')]"
