@@ -1006,6 +1006,8 @@
 								{
 									"name": "sp_sucess",
 									"type": "SqlServerStoredProcedure",
+									"state": "Inactive",
+									"onInactiveMarkAs": "Succeeded",
 									"dependsOn": [
 										{
 											"activity": "LoadAzuretableStorahe",
@@ -1027,7 +1029,7 @@
 										"storedProcedureParameters": {
 											"PipelineRunID": {
 												"value": {
-													"value": "@pipline.RunID",
+													"value": "@pipeline().RunId",
 													"type": "Expression"
 												},
 												"type": "Guid"
@@ -1049,6 +1051,8 @@
 								{
 									"name": "sp_sucess_sql",
 									"type": "SqlServerStoredProcedure",
+									"state": "Inactive",
+									"onInactiveMarkAs": "Succeeded",
 									"dependsOn": [
 										{
 											"activity": "LoadSQLServer",
@@ -1070,7 +1074,7 @@
 										"storedProcedureParameters": {
 											"PipelineRunID": {
 												"value": {
-													"value": "@pipline.RunID",
+													"value": "@pipeline().RunId",
 													"type": "Expression"
 												},
 												"type": "Guid"
@@ -1175,7 +1179,7 @@
 					},
 					"TargetSystem": {
 						"type": "string",
-						"defaultValue": " Both"
+						"defaultValue": "Both"
 					}
 				},
 				"folder": {
@@ -1191,6 +1195,27 @@
 				"[concat(variables('factoryId'), '/datasets/ds_reportingzone_goldlayer')]",
 				"[concat(variables('factoryId'), '/datasets/ds_azuretable_storage')]",
 				"[concat(variables('factoryId'), '/datasets/ds_Reporting_SQL_dev')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/ds_Reporting_SQL_dev')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "ls_sql_onprem_petrolake",
+					"type": "LinkedServiceReference"
+				},
+				"annotations": [],
+				"type": "SqlServerTable",
+				"schema": [],
+				"typeProperties": {
+					"schema": "dbo",
+					"table": "Gold_downstream_KPI"
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/linkedServices/ls_sql_onprem_petrolake')]"
 			]
 		},
 		{
@@ -1237,6 +1262,26 @@
 			},
 			"dependsOn": [
 				"[concat(variables('factoryId'), '/linkedServices/ls_alds_landingzone')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/ds_azuretable_storage')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "ls_azuretable_storage",
+					"type": "LinkedServiceReference"
+				},
+				"annotations": [],
+				"type": "AzureTable",
+				"schema": [],
+				"typeProperties": {
+					"tableName": "globaldownstream"
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/linkedServices/ls_azuretable_storage')]"
 			]
 		},
 		{
@@ -1338,6 +1383,31 @@
 			},
 			"dependsOn": [
 				"[concat(variables('factoryId'), '/linkedServices/ls_blob_filesystem')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/ds_reportingzone_goldlayer')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "ls_alds_landingzone",
+					"type": "LinkedServiceReference"
+				},
+				"annotations": [],
+				"type": "Parquet",
+				"typeProperties": {
+					"location": {
+						"type": "AzureBlobFSLocation",
+						"folderPath": "Global_Downstream/final_operational_kpi",
+						"fileSystem": "reportingzone"
+					},
+					"compressionCodec": "snappy"
+				},
+				"schema": []
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/linkedServices/ls_alds_landingzone')]"
 			]
 		},
 		{
@@ -1455,72 +1525,6 @@
 				"typeProperties": {}
 			},
 			"dependsOn": []
-		},
-		{
-			"name": "[concat(parameters('factoryName'), '/ds_reportingzone_goldlayer')]",
-			"type": "Microsoft.DataFactory/factories/datasets",
-			"apiVersion": "2018-06-01",
-			"properties": {
-				"linkedServiceName": {
-					"referenceName": "ls_alds_landingzone",
-					"type": "LinkedServiceReference"
-				},
-				"annotations": [],
-				"type": "Parquet",
-				"typeProperties": {
-					"location": {
-						"type": "AzureBlobFSLocation",
-						"folderPath": "Global_Downstream/final_operational_kpi",
-						"fileSystem": "reportingzone"
-					},
-					"compressionCodec": "snappy"
-				},
-				"schema": []
-			},
-			"dependsOn": [
-				"[concat(variables('factoryId'), '/linkedServices/ls_alds_landingzone')]"
-			]
-		},
-		{
-			"name": "[concat(parameters('factoryName'), '/ds_azuretable_storage')]",
-			"type": "Microsoft.DataFactory/factories/datasets",
-			"apiVersion": "2018-06-01",
-			"properties": {
-				"linkedServiceName": {
-					"referenceName": "ls_azuretable_storage",
-					"type": "LinkedServiceReference"
-				},
-				"annotations": [],
-				"type": "AzureTable",
-				"schema": [],
-				"typeProperties": {
-					"tableName": "globaldownstream"
-				}
-			},
-			"dependsOn": [
-				"[concat(variables('factoryId'), '/linkedServices/ls_azuretable_storage')]"
-			]
-		},
-		{
-			"name": "[concat(parameters('factoryName'), '/ds_Reporting_SQL_dev')]",
-			"type": "Microsoft.DataFactory/factories/datasets",
-			"apiVersion": "2018-06-01",
-			"properties": {
-				"linkedServiceName": {
-					"referenceName": "ls_sql_onprem_petrolake",
-					"type": "LinkedServiceReference"
-				},
-				"annotations": [],
-				"type": "SqlServerTable",
-				"schema": [],
-				"typeProperties": {
-					"schema": "dbo",
-					"table": "Gold_downstream_KPI"
-				}
-			},
-			"dependsOn": [
-				"[concat(variables('factoryId'), '/linkedServices/ls_sql_onprem_petrolake')]"
-			]
 		}
 	]
 }

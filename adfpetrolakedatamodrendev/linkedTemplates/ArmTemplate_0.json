@@ -167,6 +167,26 @@
 			]
 		},
 		{
+			"name": "[concat(parameters('factoryName'), '/ds_azuretable_storage')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "ls_azuretable_storage",
+					"type": "LinkedServiceReference"
+				},
+				"annotations": [],
+				"type": "AzureTable",
+				"schema": [],
+				"typeProperties": {
+					"tableName": "globaldownstream"
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/linkedServices/ls_azuretable_storage')]"
+			]
+		},
+		{
 			"name": "[concat(parameters('factoryName'), '/ds_filesystem_Global_Midstream_Logistics')]",
 			"type": "Microsoft.DataFactory/factories/datasets",
 			"apiVersion": "2018-06-01",
@@ -268,30 +288,6 @@
 			]
 		},
 		{
-			"name": "[concat(parameters('factoryName'), '/ls_sql_onprem_petrolake')]",
-			"type": "Microsoft.DataFactory/factories/linkedServices",
-			"apiVersion": "2018-06-01",
-			"properties": {
-				"annotations": [],
-				"type": "SqlServer",
-				"typeProperties": {
-					"connectionString": "[parameters('ls_sql_onprem_petrolake_connectionString')]",
-					"userName": "[parameters('ls_sql_onprem_petrolake_properties_typeProperties_userName')]",
-					"password": {
-						"type": "SecureString",
-						"value": "[parameters('ls_sql_onprem_petrolake_password')]"
-					}
-				},
-				"connectVia": {
-					"referenceName": "selfhosterIRLoacal",
-					"type": "IntegrationRuntimeReference"
-				}
-			},
-			"dependsOn": [
-				"[concat(variables('factoryId'), '/integrationRuntimes/selfhosterIRLoacal')]"
-			]
-		},
-		{
 			"name": "[concat(parameters('factoryName'), '/ds_reportingzone_goldlayer')]",
 			"type": "Microsoft.DataFactory/factories/datasets",
 			"apiVersion": "2018-06-01",
@@ -317,23 +313,27 @@
 			]
 		},
 		{
-			"name": "[concat(parameters('factoryName'), '/ds_azuretable_storage')]",
-			"type": "Microsoft.DataFactory/factories/datasets",
+			"name": "[concat(parameters('factoryName'), '/ls_sql_onprem_petrolake')]",
+			"type": "Microsoft.DataFactory/factories/linkedServices",
 			"apiVersion": "2018-06-01",
 			"properties": {
-				"linkedServiceName": {
-					"referenceName": "ls_azuretable_storage",
-					"type": "LinkedServiceReference"
-				},
 				"annotations": [],
-				"type": "AzureTable",
-				"schema": [],
+				"type": "SqlServer",
 				"typeProperties": {
-					"tableName": "globaldownstream"
+					"connectionString": "[parameters('ls_sql_onprem_petrolake_connectionString')]",
+					"userName": "[parameters('ls_sql_onprem_petrolake_properties_typeProperties_userName')]",
+					"password": {
+						"type": "SecureString",
+						"value": "[parameters('ls_sql_onprem_petrolake_password')]"
+					}
+				},
+				"connectVia": {
+					"referenceName": "selfhosterIRLoacal",
+					"type": "IntegrationRuntimeReference"
 				}
 			},
 			"dependsOn": [
-				"[concat(variables('factoryId'), '/linkedServices/ls_azuretable_storage')]"
+				"[concat(variables('factoryId'), '/integrationRuntimes/selfhosterIRLoacal')]"
 			]
 		},
 		{
@@ -731,27 +731,6 @@
 			]
 		},
 		{
-			"name": "[concat(parameters('factoryName'), '/ds_sqlserver_pipelinelog')]",
-			"type": "Microsoft.DataFactory/factories/datasets",
-			"apiVersion": "2018-06-01",
-			"properties": {
-				"linkedServiceName": {
-					"referenceName": "ls_sql_onprem_petrolake",
-					"type": "LinkedServiceReference"
-				},
-				"annotations": [],
-				"type": "SqlServerTable",
-				"schema": [],
-				"typeProperties": {
-					"schema": "dbo",
-					"table": "ADF_Pipeline_Run_Log"
-				}
-			},
-			"dependsOn": [
-				"[concat(variables('factoryId'), '/linkedServices/ls_sql_onprem_petrolake')]"
-			]
-		},
-		{
 			"name": "[concat(parameters('factoryName'), '/ds_Reporting_SQL_dev')]",
 			"type": "Microsoft.DataFactory/factories/datasets",
 			"apiVersion": "2018-06-01",
@@ -766,6 +745,27 @@
 				"typeProperties": {
 					"schema": "dbo",
 					"table": "Gold_downstream_KPI"
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/linkedServices/ls_sql_onprem_petrolake')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/ds_sqlserver_pipelinelog')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "ls_sql_onprem_petrolake",
+					"type": "LinkedServiceReference"
+				},
+				"annotations": [],
+				"type": "SqlServerTable",
+				"schema": [],
+				"typeProperties": {
+					"schema": "dbo",
+					"table": "ADF_Pipeline_Run_Log"
 				}
 			},
 			"dependsOn": [
@@ -1335,6 +1335,8 @@
 								{
 									"name": "sp_sucess",
 									"type": "SqlServerStoredProcedure",
+									"state": "Inactive",
+									"onInactiveMarkAs": "Succeeded",
 									"dependsOn": [
 										{
 											"activity": "LoadAzuretableStorahe",
@@ -1356,7 +1358,7 @@
 										"storedProcedureParameters": {
 											"PipelineRunID": {
 												"value": {
-													"value": "@pipline.RunID",
+													"value": "@pipeline().RunId",
 													"type": "Expression"
 												},
 												"type": "Guid"
@@ -1378,6 +1380,8 @@
 								{
 									"name": "sp_sucess_sql",
 									"type": "SqlServerStoredProcedure",
+									"state": "Inactive",
+									"onInactiveMarkAs": "Succeeded",
 									"dependsOn": [
 										{
 											"activity": "LoadSQLServer",
@@ -1399,7 +1403,7 @@
 										"storedProcedureParameters": {
 											"PipelineRunID": {
 												"value": {
-													"value": "@pipline.RunID",
+													"value": "@pipeline().RunId",
 													"type": "Expression"
 												},
 												"type": "Guid"
@@ -1504,7 +1508,7 @@
 					},
 					"TargetSystem": {
 						"type": "string",
-						"defaultValue": " Both"
+						"defaultValue": "Both"
 					}
 				},
 				"folder": {
