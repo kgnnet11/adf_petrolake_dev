@@ -555,6 +555,8 @@
 						{
 							"name": "sp_sucess",
 							"type": "SqlServerStoredProcedure",
+							"state": "Inactive",
+							"onInactiveMarkAs": "Succeeded",
 							"dependsOn": [
 								{
 									"activity": "LoadAzuretableStorahe",
@@ -598,6 +600,8 @@
 						{
 							"name": "sp_sucess_sql",
 							"type": "SqlServerStoredProcedure",
+							"state": "Inactive",
+							"onInactiveMarkAs": "Succeeded",
 							"dependsOn": [
 								{
 									"activity": "LoadSQLServer",
