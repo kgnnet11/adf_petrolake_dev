@@ -226,6 +226,119 @@
 												"type": "DatasetReference"
 											}
 										]
+									},
+									{
+										"name": "sucess_data",
+										"type": "SqlServerStoredProcedure",
+										"dependsOn": [
+											{
+												"activity": "CP_reportingzone_AzureTable",
+												"dependencyConditions": [
+													"Succeeded"
+												]
+											}
+										],
+										"policy": {
+											"timeout": "0.12:00:00",
+											"retry": 0,
+											"retryIntervalInSeconds": 30,
+											"secureOutput": false,
+											"secureInput": false
+										},
+										"userProperties": [],
+										"typeProperties": {
+											"storedProcedureName": "[dbo].[usp_sucess_failure_logs]",
+											"storedProcedureParameters": {
+												"ActivityName": {
+													"value": {
+														"value": "CP_reportingzone_AzureTable",
+														"type": "Expression"
+													},
+													"type": "String"
+												},
+												"DataReadBytes": {
+													"value": {
+														"value": "@activity('CP_reportingzone_AzureTable').output.dataRead",
+														"type": "Expression"
+													},
+													"type": "Int64"
+												},
+												"DataWrittenBytes": {
+													"value": {
+														"value": "@activity('CP_reportingzone_AzureTable').output.datawritten",
+														"type": "Expression"
+													},
+													"type": "Int64"
+												},
+												"EndTime": {
+													"value": {
+														"value": "@activity('CP_reportingzone_AzureTable').output.executionDetails[0].end",
+														"type": "Expression"
+													},
+													"type": "DateTime"
+												},
+												"ErrorMessage": {
+													"value": {
+														"value": "@activity('CP_reportingzone_AzureTable').error.message",
+														"type": "Expression"
+													},
+													"type": "String"
+												},
+												"ExecutionStatus": {
+													"value": {
+														"value": "@activity('CP_reportingzone_AzureTable').Status",
+														"type": "Expression"
+													},
+													"type": "String"
+												},
+												"PipelineName": {
+													"value": {
+														"value": "@pipeline().Pipeline",
+														"type": "Expression"
+													},
+													"type": "String"
+												},
+												"RowsRead": {
+													"value": {
+														"value": "@activity('CP_reportingzone_AzureTable').output.rowsRead",
+														"type": "Expression"
+													},
+													"type": "Int64"
+												},
+												"RowsWritten": {
+													"value": {
+														"value": "@activity('CP_reportingzone_AzureTable').output.rowsWritten",
+														"type": "Expression"
+													},
+													"type": "Int64"
+												},
+												"SinkType": {
+													"value": {
+														"value": "AzureTable",
+														"type": "Expression"
+													},
+													"type": "String"
+												},
+												"SourceType": {
+													"value": {
+														"value": "AdlsReportingZone",
+														"type": "Expression"
+													},
+													"type": "String"
+												},
+												"StartTime": {
+													"value": {
+														"value": "@utcNow()",
+														"type": "Expression"
+													},
+													"type": "DateTime"
+												}
+											}
+										},
+										"linkedServiceName": {
+											"referenceName": "ls_sql_onprem_petrolake",
+											"type": "LinkedServiceReference"
+										}
 									}
 								]
 							}
@@ -551,96 +664,6 @@
 										]
 									}
 								]
-							}
-						},
-						{
-							"name": "sp_sucess",
-							"type": "SqlServerStoredProcedure",
-							"state": "Inactive",
-							"onInactiveMarkAs": "Succeeded",
-							"dependsOn": [
-								{
-									"activity": "LoadAzuretableStorahe",
-									"dependencyConditions": [
-										"Succeeded"
-									]
-								}
-							],
-							"policy": {
-								"timeout": "0.12:00:00",
-								"retry": 0,
-								"retryIntervalInSeconds": 30,
-								"secureOutput": false,
-								"secureInput": false
-							},
-							"userProperties": [],
-							"typeProperties": {
-								"storedProcedureName": "[dbo].[usp_ADF_Log_Pipeline_Success]",
-								"storedProcedureParameters": {
-									"PipelineRunID": {
-										"value": {
-											"value": "@pipeline().RunId",
-											"type": "Expression"
-										},
-										"type": "Guid"
-									},
-									"status": {
-										"value": {
-											"value": "sucess",
-											"type": "Expression"
-										},
-										"type": "String"
-									}
-								}
-							},
-							"linkedServiceName": {
-								"referenceName": "ls_sql_onprem_petrolake",
-								"type": "LinkedServiceReference"
-							}
-						},
-						{
-							"name": "sp_sucess_sql",
-							"type": "SqlServerStoredProcedure",
-							"state": "Inactive",
-							"onInactiveMarkAs": "Succeeded",
-							"dependsOn": [
-								{
-									"activity": "LoadSQLServer",
-									"dependencyConditions": [
-										"Succeeded"
-									]
-								}
-							],
-							"policy": {
-								"timeout": "0.12:00:00",
-								"retry": 0,
-								"retryIntervalInSeconds": 30,
-								"secureOutput": false,
-								"secureInput": false
-							},
-							"userProperties": [],
-							"typeProperties": {
-								"storedProcedureName": "[dbo].[usp_ADF_Log_Pipeline_Success]",
-								"storedProcedureParameters": {
-									"PipelineRunID": {
-										"value": {
-											"value": "@pipeline().RunId",
-											"type": "Expression"
-										},
-										"type": "Guid"
-									},
-									"status": {
-										"value": {
-											"value": "sucess",
-											"type": "Expression"
-										},
-										"type": "String"
-									}
-								}
-							},
-							"linkedServiceName": {
-								"referenceName": "ls_sql_onprem_petrolake",
-								"type": "LinkedServiceReference"
 							}
 						}
 					]
