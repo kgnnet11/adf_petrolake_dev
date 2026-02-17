@@ -96,6 +96,389 @@
 									}
 								}
 							]
+						},
+						{
+							"name": "NB_Global_Midstream_Landing_Discovery",
+							"type": "DatabricksNotebook",
+							"dependsOn": [
+								{
+									"activity": "cp_Global_Midstream_Logistics",
+									"dependencyConditions": [
+										"Succeeded"
+									]
+								}
+							],
+							"policy": {
+								"timeout": "0.12:00:00",
+								"retry": 0,
+								"retryIntervalInSeconds": 30,
+								"secureOutput": false,
+								"secureInput": false
+							},
+							"userProperties": [],
+							"typeProperties": {
+								"notebookPath": "/Users/kgnnet11@gmail.com/Landingzone_Discoverzone/Filesystem/Global_Midstream_Logistics_landing_discovery"
+							},
+							"linkedServiceName": {
+								"referenceName": "ls_databricks_petrolake_dev",
+								"type": "LinkedServiceReference"
+							}
+						},
+						{
+							"name": "NB_Global_Midstream_Discovery_Reporting",
+							"type": "DatabricksNotebook",
+							"dependsOn": [
+								{
+									"activity": "NB_Global_Midstream_Landing_Discovery",
+									"dependencyConditions": [
+										"Succeeded"
+									]
+								}
+							],
+							"policy": {
+								"timeout": "0.12:00:00",
+								"retry": 0,
+								"retryIntervalInSeconds": 30,
+								"secureOutput": false,
+								"secureInput": false
+							},
+							"userProperties": [],
+							"typeProperties": {
+								"notebookPath": "/Users/kgnnet11@gmail.com/Discoveryzone_ReportingZone/Filesystem_Reporting_data/Global_Midstream_Logistics_discovery_reporting"
+							},
+							"linkedServiceName": {
+								"referenceName": "ls_databricks_petrolake_dev",
+								"type": "LinkedServiceReference"
+							}
+						},
+						{
+							"name": "LoadAzureTableStorage",
+							"type": "IfCondition",
+							"dependsOn": [
+								{
+									"activity": "NB_Global_Midstream_Discovery_Reporting",
+									"dependencyConditions": [
+										"Succeeded"
+									]
+								}
+							],
+							"userProperties": [],
+							"typeProperties": {
+								"expression": {
+									"value": "@or(\n   equals(pipeline().parameters.TargetSystem, 'AzureTable'),\n   equals(pipeline().parameters.TargetSystem, 'Both')\n)",
+									"type": "Expression"
+								},
+								"ifTrueActivities": [
+									{
+										"name": "cp_reportingzone_AzureTableStorage",
+										"type": "Copy",
+										"dependsOn": [],
+										"policy": {
+											"timeout": "0.12:00:00",
+											"retry": 0,
+											"retryIntervalInSeconds": 30,
+											"secureOutput": false,
+											"secureInput": false
+										},
+										"userProperties": [],
+										"typeProperties": {
+											"source": {
+												"type": "ParquetSource",
+												"storeSettings": {
+													"type": "AzureBlobFSReadSettings",
+													"recursive": true,
+													"wildcardFolderPath": {
+														"value": "Global_Midstreamy/Gold_KPI",
+														"type": "Expression"
+													},
+													"wildcardFileName": "*.parquet",
+													"enablePartitionDiscovery": false
+												},
+												"formatSettings": {
+													"type": "ParquetReadSettings"
+												}
+											},
+											"sink": {
+												"type": "AzureTableSink",
+												"azureTableInsertType": "merge",
+												"azureTableDefaultPartitionKeyValue": "'petrolake'",
+												"writeBatchSize": 10000
+											},
+											"enableStaging": false,
+											"translator": {
+												"type": "TabularTranslator",
+												"typeConversion": true,
+												"typeConversionSettings": {
+													"allowDataTruncation": true,
+													"treatBooleanAsNumber": false
+												}
+											}
+										},
+										"inputs": [
+											{
+												"referenceName": "ds_reporting_midstream",
+												"type": "DatasetReference"
+											}
+										],
+										"outputs": [
+											{
+												"referenceName": "ds_midstream_azuretable",
+												"type": "DatasetReference"
+											}
+										]
+									}
+								]
+							}
+						},
+						{
+							"name": "If Condition1",
+							"type": "IfCondition",
+							"dependsOn": [
+								{
+									"activity": "NB_Global_Midstream_Discovery_Reporting",
+									"dependencyConditions": [
+										"Succeeded"
+									]
+								}
+							],
+							"userProperties": [],
+							"typeProperties": {
+								"expression": {
+									"value": "@or(\n   equals(pipeline().parameters.TargetSystem, 'OnPremSQL'),\n   equals(pipeline().parameters.TargetSystem, 'Both')\n)",
+									"type": "Expression"
+								},
+								"ifTrueActivities": [
+									{
+										"name": "cp_reporting_SQLserver",
+										"type": "Copy",
+										"dependsOn": [],
+										"policy": {
+											"timeout": "0.12:00:00",
+											"retry": 0,
+											"retryIntervalInSeconds": 30,
+											"secureOutput": false,
+											"secureInput": false
+										},
+										"userProperties": [],
+										"typeProperties": {
+											"source": {
+												"type": "ParquetSource",
+												"storeSettings": {
+													"type": "AzureBlobFSReadSettings",
+													"recursive": true,
+													"wildcardFolderPath": {
+														"value": "Global_Midstreamy/Gold_KPI",
+														"type": "Expression"
+													},
+													"wildcardFileName": "*.parquet",
+													"enablePartitionDiscovery": false
+												},
+												"formatSettings": {
+													"type": "ParquetReadSettings"
+												}
+											},
+											"sink": {
+												"type": "SqlServerSink",
+												"writeBehavior": "insert",
+												"sqlWriterUseTableLock": false
+											},
+											"enableStaging": false,
+											"translator": {
+												"type": "TabularTranslator",
+												"mappings": [
+													{
+														"source": {
+															"name": "region",
+															"type": "String",
+															"physicalType": "UTF8"
+														},
+														"sink": {
+															"name": "region",
+															"type": "String",
+															"physicalType": "varchar"
+														}
+													},
+													{
+														"source": {
+															"name": "country",
+															"type": "String",
+															"physicalType": "UTF8"
+														},
+														"sink": {
+															"name": "country",
+															"type": "String",
+															"physicalType": "varchar"
+														}
+													},
+													{
+														"source": {
+															"name": "product_type",
+															"type": "String",
+															"physicalType": "UTF8"
+														},
+														"sink": {
+															"name": "product_type",
+															"type": "String",
+															"physicalType": "varchar"
+														}
+													},
+													{
+														"source": {
+															"name": "year",
+															"type": "Int32",
+															"physicalType": "INT_32"
+														},
+														"sink": {
+															"name": "year",
+															"type": "Int32",
+															"physicalType": "int"
+														}
+													},
+													{
+														"source": {
+															"name": "month",
+															"type": "Int32",
+															"physicalType": "INT_32"
+														},
+														"sink": {
+															"name": "month",
+															"type": "Byte",
+															"physicalType": "tinyint"
+														}
+													},
+													{
+														"source": {
+															"name": "total_cost",
+															"type": "Double",
+															"physicalType": "DOUBLE"
+														},
+														"sink": {
+															"name": "total_cost",
+															"type": "Decimal",
+															"physicalType": "decimal",
+															"scale": 2,
+															"precision": 18
+														}
+													},
+													{
+														"source": {
+															"name": "total_revenue",
+															"type": "Double",
+															"physicalType": "DOUBLE"
+														},
+														"sink": {
+															"name": "total_revenue",
+															"type": "Decimal",
+															"physicalType": "decimal",
+															"scale": 2,
+															"precision": 18
+														}
+													},
+													{
+														"source": {
+															"name": "total_maintenance_cost",
+															"type": "Double",
+															"physicalType": "DOUBLE"
+														},
+														"sink": {
+															"name": "total_maintenance_cost",
+															"type": "Decimal",
+															"physicalType": "decimal",
+															"scale": 2,
+															"precision": 18
+														}
+													},
+													{
+														"source": {
+															"name": "gross_profit",
+															"type": "Double",
+															"physicalType": "DOUBLE"
+														},
+														"sink": {
+															"name": "gross_profit",
+															"type": "Decimal",
+															"physicalType": "decimal",
+															"scale": 2,
+															"precision": 18
+														}
+													},
+													{
+														"source": {
+															"name": "profit_margin_pct",
+															"type": "Double",
+															"physicalType": "DOUBLE"
+														},
+														"sink": {
+															"name": "profit_margin_pct",
+															"type": "Decimal",
+															"physicalType": "decimal",
+															"scale": 2,
+															"precision": 5
+														}
+													},
+													{
+														"source": {
+															"name": "ytd_revenue",
+															"type": "Double",
+															"physicalType": "DOUBLE"
+														},
+														"sink": {
+															"name": "ytd_revenue",
+															"type": "Decimal",
+															"physicalType": "decimal",
+															"scale": 2,
+															"precision": 18
+														}
+													},
+													{
+														"source": {
+															"name": "ytd_profit",
+															"type": "Double",
+															"physicalType": "DOUBLE"
+														},
+														"sink": {
+															"name": "ytd_profit",
+															"type": "Decimal",
+															"physicalType": "decimal",
+															"scale": 2,
+															"precision": 18
+														}
+													},
+													{
+														"source": {
+															"name": "year_partition",
+															"type": "Int32",
+															"physicalType": "INT_32"
+														},
+														"sink": {
+															"name": "year_partition",
+															"type": "Int32",
+															"physicalType": "int"
+														}
+													}
+												],
+												"typeConversion": true,
+												"typeConversionSettings": {
+													"allowDataTruncation": true,
+													"treatBooleanAsNumber": false
+												}
+											}
+										},
+										"inputs": [
+											{
+												"referenceName": "ds_reporting_midstream",
+												"type": "DatasetReference"
+											}
+										],
+										"outputs": [
+											{
+												"referenceName": "ds_sqlserver_midstream",
+												"type": "DatasetReference"
+											}
+										]
+									}
+								]
+							}
 						}
 					]
 				}
@@ -177,6 +560,10 @@
 			"ExcelFileName": {
 				"type": "string",
 				"defaultValue": "Global_Midstream_Logistics.xlsx"
+			},
+			"TargetSystem": {
+				"type": "string",
+				"defaultValue": "Both"
 			}
 		},
 		"folder": {

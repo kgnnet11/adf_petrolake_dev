@@ -1,0 +1,20 @@
+{
+	"name": "ds_reporting_midstream",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "ls_alds_landingzone",
+			"type": "LinkedServiceReference"
+		},
+		"annotations": [],
+		"type": "Parquet",
+		"typeProperties": {
+			"location": {
+				"type": "AzureBlobFSLocation",
+				"folderPath": "Global_Midstreamy/Gold_KPI",
+				"fileSystem": "reportingzone"
+			},
+			"compressionCodec": "snappy"
+		},
+		"schema": []
+	}
+}
