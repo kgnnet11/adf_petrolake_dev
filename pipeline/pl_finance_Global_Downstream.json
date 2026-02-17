@@ -244,7 +244,7 @@
 							"userProperties": [],
 							"typeProperties": {
 								"expression": {
-									"value": "@or(\n   equals(pipeline().parameters.TargetSystem, 'OnPremSQL'),\n   equals(pipeline().parameters.TargetSystem, 'Both')\n)",
+									"value": "@or(\n   equals(pipeline().parameters.TargetSystem, 'AZURESQL'),\n   equals(pipeline().parameters.TargetSystem, 'Both')\n)",
 									"type": "Expression"
 								},
 								"ifTrueActivities": [
@@ -278,10 +278,10 @@
 												}
 											},
 											"sink": {
-												"type": "SqlServerSink",
+												"type": "AzureSqlSink",
 												"writeBehavior": "insert",
 												"sqlWriterUseTableLock": false,
-												"tableOption": "autoCreate"
+												"disableMetricsCollection": false
 											},
 											"enableStaging": false,
 											"translator": {
@@ -545,7 +545,7 @@
 										],
 										"outputs": [
 											{
-												"referenceName": "ds_Reporting_SQL_dev",
+												"referenceName": "ds_azuresql_Global_Downstream",
 												"type": "DatasetReference"
 											}
 										]
