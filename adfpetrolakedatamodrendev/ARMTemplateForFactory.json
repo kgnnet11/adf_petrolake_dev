@@ -315,7 +315,7 @@
 									"userProperties": [],
 									"typeProperties": {
 										"expression": {
-											"value": "@or(\n   equals(pipeline().parameters.TargetSystem, 'OnPremSQL'),\n   equals(pipeline().parameters.TargetSystem, 'Both')\n)",
+											"value": "@or(\n   equals(pipeline().parameters.TargetSystem, 'AZURESQL'),\n   equals(pipeline().parameters.TargetSystem, 'Both')\n)",
 											"type": "Expression"
 										},
 										"ifTrueActivities": [
@@ -349,9 +349,10 @@
 														}
 													},
 													"sink": {
-														"type": "SqlServerSink",
+														"type": "AzureSqlSink",
 														"writeBehavior": "insert",
-														"sqlWriterUseTableLock": false
+														"sqlWriterUseTableLock": true,
+														"disableMetricsCollection": false
 													},
 													"enableStaging": false,
 													"translator": {
@@ -366,7 +367,7 @@
 																"sink": {
 																	"name": "region",
 																	"type": "String",
-																	"physicalType": "varchar"
+																	"physicalType": "nvarchar"
 																}
 															},
 															{
@@ -378,7 +379,7 @@
 																"sink": {
 																	"name": "country",
 																	"type": "String",
-																	"physicalType": "varchar"
+																	"physicalType": "nvarchar"
 																}
 															},
 															{
@@ -390,7 +391,7 @@
 																"sink": {
 																	"name": "product_type",
 																	"type": "String",
-																	"physicalType": "varchar"
+																	"physicalType": "nvarchar"
 																}
 															},
 															{
@@ -419,6 +420,20 @@
 															},
 															{
 																"source": {
+																	"name": "total_volume",
+																	"type": "Double",
+																	"physicalType": "DOUBLE"
+																},
+																"sink": {
+																	"name": "total_volume",
+																	"type": "Decimal",
+																	"physicalType": "decimal",
+																	"scale": 2,
+																	"precision": 18
+																}
+															},
+															{
+																"source": {
 																	"name": "total_cost",
 																	"type": "Double",
 																	"physicalType": "DOUBLE"
@@ -475,16 +490,16 @@
 															},
 															{
 																"source": {
-																	"name": "profit_margin_pct",
+																	"name": "ytd_volume",
 																	"type": "Double",
 																	"physicalType": "DOUBLE"
 																},
 																"sink": {
-																	"name": "profit_margin_pct",
+																	"name": "ytd_volume",
 																	"type": "Decimal",
 																	"physicalType": "decimal",
 																	"scale": 2,
-																	"precision": 5
+																	"precision": 18
 																}
 															},
 															{
@@ -544,7 +559,7 @@
 												],
 												"outputs": [
 													{
-														"referenceName": "ds_sqlserver_midstream",
+														"referenceName": "ds_azuresql_global_midstream",
 														"type": "DatasetReference",
 														"parameters": {}
 													}
@@ -654,7 +669,7 @@
 				"[concat(variables('factoryId'), '/linkedServices/ls_databricks_petrolake_dev')]",
 				"[concat(variables('factoryId'), '/datasets/ds_reporting_midstream')]",
 				"[concat(variables('factoryId'), '/datasets/ds_midstream_azuretable')]",
-				"[concat(variables('factoryId'), '/datasets/ds_sqlserver_midstream')]"
+				"[concat(variables('factoryId'), '/datasets/ds_azuresql_global_midstream')]"
 			]
 		},
 		{
@@ -2148,6 +2163,27 @@
 				"typeProperties": {}
 			},
 			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/ds_azuresql_global_midstream')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "ls_azuresql_petrolake_dev",
+					"type": "LinkedServiceReference"
+				},
+				"annotations": [],
+				"type": "AzureSqlTable",
+				"schema": [],
+				"typeProperties": {
+					"schema": "dbo",
+					"table": "GLOBAL_MIDSTREAM"
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/linkedServices/ls_azuresql_petrolake_dev')]"
+			]
 		}
 	]
 }
