@@ -11,6 +11,10 @@
 			"type": "secureString",
 			"metadata": "Secure string for 'accountKey' of 'ls_alds_landingzone'"
 		},
+		"ls_azuresql_petrolake_dev_password": {
+			"type": "secureString",
+			"metadata": "Secure string for 'password' of 'ls_azuresql_petrolake_dev'"
+		},
 		"ls_azuretable_storage_connectionString": {
 			"type": "secureString",
 			"metadata": "Secure string for 'connectionString' of 'ls_azuretable_storage'"
@@ -35,6 +39,18 @@
 		"ls_alds_landingzone_properties_typeProperties_url": {
 			"type": "string",
 			"defaultValue": "https://sgdigitalizationdev.dfs.core.windows.net/"
+		},
+		"ls_azuresql_petrolake_dev_properties_typeProperties_server": {
+			"type": "string",
+			"defaultValue": "sqlserverpetrolake.database.windows.net"
+		},
+		"ls_azuresql_petrolake_dev_properties_typeProperties_database": {
+			"type": "string",
+			"defaultValue": "db_petrolake_dev"
+		},
+		"ls_azuresql_petrolake_dev_properties_typeProperties_userName": {
+			"type": "string",
+			"defaultValue": "sqladmin"
 		},
 		"ls_databricks_petrolake_dev_properties_typeProperties_existingClusterId": {
 			"type": "string",
@@ -61,6 +77,28 @@
 					"accountKey": {
 						"type": "SecureString",
 						"value": "[parameters('ls_alds_landingzone_accountKey')]"
+					}
+				}
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/ls_azuresql_petrolake_dev')]",
+			"type": "Microsoft.DataFactory/factories/linkedServices",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"annotations": [],
+				"type": "AzureSqlDatabase",
+				"typeProperties": {
+					"server": "[parameters('ls_azuresql_petrolake_dev_properties_typeProperties_server')]",
+					"database": "[parameters('ls_azuresql_petrolake_dev_properties_typeProperties_database')]",
+					"encrypt": "mandatory",
+					"trustServerCertificate": false,
+					"authenticationType": "SQL",
+					"userName": "[parameters('ls_azuresql_petrolake_dev_properties_typeProperties_userName')]",
+					"password": {
+						"type": "SecureString",
+						"value": "[parameters('ls_azuresql_petrolake_dev_password')]"
 					}
 				}
 			},
@@ -164,6 +202,129 @@
 			},
 			"dependsOn": [
 				"[concat(variables('factoryId'), '/linkedServices/ls_alds_landingzone')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/ds_azuresql_Global_Downstream')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "ls_azuresql_petrolake_dev",
+					"type": "LinkedServiceReference"
+				},
+				"annotations": [],
+				"type": "AzureSqlTable",
+				"schema": [
+					{
+						"name": "region",
+						"type": "nvarchar"
+					},
+					{
+						"name": "country",
+						"type": "nvarchar"
+					},
+					{
+						"name": "total_barrels",
+						"type": "decimal",
+						"precision": 18,
+						"scale": 2
+					},
+					{
+						"name": "total_revenue",
+						"type": "decimal",
+						"precision": 18,
+						"scale": 2
+					},
+					{
+						"name": "total_cost",
+						"type": "decimal",
+						"precision": 18,
+						"scale": 2
+					},
+					{
+						"name": "profit_margin",
+						"type": "decimal",
+						"precision": 5,
+						"scale": 2
+					},
+					{
+						"name": "gross_profit",
+						"type": "decimal",
+						"precision": 18,
+						"scale": 2
+					},
+					{
+						"name": "total_spend",
+						"type": "decimal",
+						"precision": 18,
+						"scale": 2
+					},
+					{
+						"name": "incident_count",
+						"type": "int",
+						"precision": 10
+					},
+					{
+						"name": "total_incident_cost",
+						"type": "decimal",
+						"precision": 18,
+						"scale": 2
+					},
+					{
+						"name": "cumulative_barrels",
+						"type": "decimal",
+						"precision": 18,
+						"scale": 2
+					},
+					{
+						"name": "cumulative_spend",
+						"type": "decimal",
+						"precision": 18,
+						"scale": 2
+					},
+					{
+						"name": "cumulative_revenue",
+						"type": "decimal",
+						"precision": 18,
+						"scale": 2
+					},
+					{
+						"name": "cost_per_barrel",
+						"type": "decimal",
+						"precision": 18,
+						"scale": 2
+					},
+					{
+						"name": "total_downtime_hours",
+						"type": "decimal",
+						"precision": 10,
+						"scale": 2
+					},
+					{
+						"name": "cumulative_incident_cost",
+						"type": "decimal",
+						"precision": 18,
+						"scale": 2
+					},
+					{
+						"name": "year",
+						"type": "int",
+						"precision": 10
+					},
+					{
+						"name": "month",
+						"type": "tinyint",
+						"precision": 3
+					}
+				],
+				"typeProperties": {
+					"schema": "dbo",
+					"table": "GLOBAL_DOWNSTREAM"
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/linkedServices/ls_azuresql_petrolake_dev')]"
 			]
 		},
 		{
@@ -288,6 +449,51 @@
 			]
 		},
 		{
+			"name": "[concat(parameters('factoryName'), '/ds_midstream_azuretable')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "ls_azuretable_storage",
+					"type": "LinkedServiceReference"
+				},
+				"annotations": [],
+				"type": "AzureTable",
+				"schema": [],
+				"typeProperties": {
+					"tableName": "globalmidstreamfs"
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/linkedServices/ls_azuretable_storage')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/ds_reporting_midstream')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "ls_alds_landingzone",
+					"type": "LinkedServiceReference"
+				},
+				"annotations": [],
+				"type": "Parquet",
+				"typeProperties": {
+					"location": {
+						"type": "AzureBlobFSLocation",
+						"folderPath": "Global_Midstreamy/Gold_KPI",
+						"fileSystem": "reportingzone"
+					},
+					"compressionCodec": "snappy"
+				},
+				"schema": []
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/linkedServices/ls_alds_landingzone')]"
+			]
+		},
+		{
 			"name": "[concat(parameters('factoryName'), '/ds_reportingzone_goldlayer')]",
 			"type": "Microsoft.DataFactory/factories/datasets",
 			"apiVersion": "2018-06-01",
@@ -334,203 +540,6 @@
 			},
 			"dependsOn": [
 				"[concat(variables('factoryId'), '/integrationRuntimes/selfhosterIRLoacal')]"
-			]
-		},
-		{
-			"name": "[concat(parameters('factoryName'), '/pl_filesystem_Global_Midstream_Logistics')]",
-			"type": "Microsoft.DataFactory/factories/pipelines",
-			"apiVersion": "2018-06-01",
-			"properties": {
-				"description": "This Load every 10 days ",
-				"activities": [
-					{
-						"name": "Get_Excel_sheets",
-						"type": "ForEach",
-						"dependsOn": [
-							{
-								"activity": "Begin_status",
-								"dependencyConditions": [
-									"Succeeded"
-								]
-							}
-						],
-						"userProperties": [],
-						"typeProperties": {
-							"items": {
-								"value": "@pipeline().parameters.SheetNames",
-								"type": "Expression"
-							},
-							"batchCount": 1,
-							"activities": [
-								{
-									"name": "cp_Global_Midstream_Logistics",
-									"type": "Copy",
-									"dependsOn": [],
-									"policy": {
-										"timeout": "0.12:00:00",
-										"retry": 0,
-										"retryIntervalInSeconds": 30,
-										"secureOutput": false,
-										"secureInput": false
-									},
-									"userProperties": [],
-									"typeProperties": {
-										"source": {
-											"type": "ExcelSource",
-											"storeSettings": {
-												"type": "AzureBlobStorageReadSettings",
-												"recursive": true,
-												"enablePartitionDiscovery": false
-											}
-										},
-										"sink": {
-											"type": "DelimitedTextSink",
-											"storeSettings": {
-												"type": "AzureBlobFSWriteSettings"
-											},
-											"formatSettings": {
-												"type": "DelimitedTextWriteSettings",
-												"quoteAllText": true,
-												"fileExtension": ".txt"
-											}
-										},
-										"enableStaging": false,
-										"translator": {
-											"type": "TabularTranslator",
-											"typeConversion": true,
-											"typeConversionSettings": {
-												"allowDataTruncation": true,
-												"treatBooleanAsNumber": false
-											}
-										}
-									},
-									"inputs": [
-										{
-											"referenceName": "ds_filesystem_Global_Midstream_Logistics",
-											"type": "DatasetReference",
-											"parameters": {
-												"sheetname": {
-													"value": "@string(item())",
-													"type": "Expression"
-												}
-											}
-										}
-									],
-									"outputs": [
-										{
-											"referenceName": "ds_adls_landingzone",
-											"type": "DatasetReference",
-											"parameters": {
-												"filename": {
-													"value": "@concat(string(item()), '.csv')",
-													"type": "Expression"
-												},
-												"MainFolder": {
-													"value": "@replace(pipeline().parameters.ExcelFileName,'.xlsx','')",
-													"type": "Expression"
-												},
-												"SubFolder": {
-													"value": "@string(item())",
-													"type": "Expression"
-												}
-											}
-										}
-									]
-								}
-							]
-						}
-					},
-					{
-						"name": "Begin_status",
-						"type": "SqlServerStoredProcedure",
-						"dependsOn": [],
-						"policy": {
-							"timeout": "0.12:00:00",
-							"retry": 0,
-							"retryIntervalInSeconds": 30,
-							"secureOutput": false,
-							"secureInput": false
-						},
-						"userProperties": [],
-						"typeProperties": {
-							"storedProcedureName": "[[dbo].[usp_InsertPipelineRunLog_details]",
-							"storedProcedureParameters": {
-								"EndTime": {
-									"value": {
-										"value": "@utcNow()\n",
-										"type": "Expression"
-									},
-									"type": "DateTime"
-								},
-								"ErrorMessage": {
-									"value": {
-										"value": "''\n",
-										"type": "Expression"
-									},
-									"type": "String"
-								},
-								"PipelineName": {
-									"value": {
-										"value": "@pipeline().Pipeline\n",
-										"type": "Expression"
-									},
-									"type": "String"
-								},
-								"RunID": {
-									"value": {
-										"value": "@pipeline().RunId\n",
-										"type": "Expression"
-									},
-									"type": "Guid"
-								},
-								"StartTime": {
-									"value": {
-										"value": "@utcNow()\n",
-										"type": "Expression"
-									},
-									"type": "DateTime"
-								},
-								"Status": {
-									"value": {
-										"value": "sucess",
-										"type": "Expression"
-									},
-									"type": "String"
-								}
-							}
-						},
-						"linkedServiceName": {
-							"referenceName": "ls_sql_onprem_petrolake",
-							"type": "LinkedServiceReference"
-						}
-					}
-				],
-				"policy": {
-					"elapsedTimeMetric": {}
-				},
-				"parameters": {
-					"SheetNames": {
-						"type": "array",
-						"defaultValue": [
-							"Pipeline_Flow",
-							"Shipping_Details",
-							"Storage_Terminals"
-						]
-					},
-					"ExcelFileName": {
-						"type": "string",
-						"defaultValue": "Global_Midstream_Logistics.xlsx"
-					}
-				},
-				"folder": {
-					"name": "Filesystem"
-				},
-				"annotations": []
-			},
-			"dependsOn": [
-				"[concat(variables('factoryId'), '/linkedServices/ls_sql_onprem_petrolake')]",
-				"[concat(variables('factoryId'), '/datasets/ds_filesystem_Global_Midstream_Logistics')]",
-				"[concat(variables('factoryId'), '/datasets/ds_adls_landingzone')]"
 			]
 		},
 		{
@@ -728,48 +737,6 @@
 				"[concat(variables('factoryId'), '/linkedServices/ls_sql_onprem_petrolake')]",
 				"[concat(variables('factoryId'), '/datasets/ds_filesystem_Global_Upstream_Operations')]",
 				"[concat(variables('factoryId'), '/datasets/ds_adls_landingzone')]"
-			]
-		},
-		{
-			"name": "[concat(parameters('factoryName'), '/ds_Reporting_SQL_dev')]",
-			"type": "Microsoft.DataFactory/factories/datasets",
-			"apiVersion": "2018-06-01",
-			"properties": {
-				"linkedServiceName": {
-					"referenceName": "ls_sql_onprem_petrolake",
-					"type": "LinkedServiceReference"
-				},
-				"annotations": [],
-				"type": "SqlServerTable",
-				"schema": [],
-				"typeProperties": {
-					"schema": "dbo",
-					"table": "Gold_downstream_KPI"
-				}
-			},
-			"dependsOn": [
-				"[concat(variables('factoryId'), '/linkedServices/ls_sql_onprem_petrolake')]"
-			]
-		},
-		{
-			"name": "[concat(parameters('factoryName'), '/ds_sqlserver_pipelinelog')]",
-			"type": "Microsoft.DataFactory/factories/datasets",
-			"apiVersion": "2018-06-01",
-			"properties": {
-				"linkedServiceName": {
-					"referenceName": "ls_sql_onprem_petrolake",
-					"type": "LinkedServiceReference"
-				},
-				"annotations": [],
-				"type": "SqlServerTable",
-				"schema": [],
-				"typeProperties": {
-					"schema": "dbo",
-					"table": "ADF_Pipeline_Run_Log"
-				}
-			},
-			"dependsOn": [
-				"[concat(variables('factoryId'), '/linkedServices/ls_sql_onprem_petrolake')]"
 			]
 		},
 		{
@@ -1022,7 +989,7 @@
 									"userProperties": [],
 									"typeProperties": {
 										"expression": {
-											"value": "@or(\n   equals(pipeline().parameters.TargetSystem, 'OnPremSQL'),\n   equals(pipeline().parameters.TargetSystem, 'Both')\n)",
+											"value": "@or(\n   equals(pipeline().parameters.TargetSystem, 'AZURESQL'),\n   equals(pipeline().parameters.TargetSystem, 'Both')\n)",
 											"type": "Expression"
 										},
 										"ifTrueActivities": [
@@ -1056,9 +1023,10 @@
 														}
 													},
 													"sink": {
-														"type": "SqlServerSink",
+														"type": "AzureSqlSink",
 														"writeBehavior": "insert",
-														"sqlWriterUseTableLock": false
+														"sqlWriterUseTableLock": false,
+														"disableMetricsCollection": false
 													},
 													"enableStaging": false,
 													"translator": {
@@ -1323,7 +1291,7 @@
 												],
 												"outputs": [
 													{
-														"referenceName": "ds_Reporting_SQL_dev",
+														"referenceName": "ds_azuresql_Global_Downstream",
 														"type": "DatasetReference",
 														"parameters": {}
 													}
@@ -1523,7 +1491,49 @@
 				"[concat(variables('factoryId'), '/linkedServices/ls_databricks_petrolake_dev')]",
 				"[concat(variables('factoryId'), '/datasets/ds_reportingzone_goldlayer')]",
 				"[concat(variables('factoryId'), '/datasets/ds_azuretable_storage')]",
-				"[concat(variables('factoryId'), '/datasets/ds_Reporting_SQL_dev')]"
+				"[concat(variables('factoryId'), '/datasets/ds_azuresql_Global_Downstream')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/ds_Reporting_SQL_dev')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "ls_sql_onprem_petrolake",
+					"type": "LinkedServiceReference"
+				},
+				"annotations": [],
+				"type": "SqlServerTable",
+				"schema": [],
+				"typeProperties": {
+					"schema": "dbo",
+					"table": "Gold_downstream_KPI"
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/linkedServices/ls_sql_onprem_petrolake')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/ds_sqlserver_midstream')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "ls_sql_onprem_petrolake",
+					"type": "LinkedServiceReference"
+				},
+				"annotations": [],
+				"type": "SqlServerTable",
+				"schema": [],
+				"typeProperties": {
+					"schema": "dbo",
+					"table": "global_midstream"
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/linkedServices/ls_sql_onprem_petrolake')]"
 			]
 		}
 	]

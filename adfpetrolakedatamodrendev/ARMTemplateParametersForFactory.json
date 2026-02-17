@@ -8,6 +8,9 @@
 		"ls_alds_landingzone_accountKey": {
 			"value": ""
 		},
+		"ls_azuresql_petrolake_dev_password": {
+			"value": ""
+		},
 		"ls_azuretable_storage_connectionString": {
 			"value": ""
 		},
@@ -25,6 +28,15 @@
 		},
 		"ls_alds_landingzone_properties_typeProperties_url": {
 			"value": "https://sgdigitalizationdev.dfs.core.windows.net/"
+		},
+		"ls_azuresql_petrolake_dev_properties_typeProperties_server": {
+			"value": "sqlserverpetrolake.database.windows.net"
+		},
+		"ls_azuresql_petrolake_dev_properties_typeProperties_database": {
+			"value": "db_petrolake_dev"
+		},
+		"ls_azuresql_petrolake_dev_properties_typeProperties_userName": {
+			"value": "sqladmin"
 		},
 		"ls_databricks_petrolake_dev_properties_typeProperties_existingClusterId": {
 			"value": "0214-132145-bvcoilg0"

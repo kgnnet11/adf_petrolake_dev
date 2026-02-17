@@ -11,6 +11,10 @@
 			"type": "secureString",
 			"metadata": "Secure string for 'accountKey' of 'ls_alds_landingzone'"
 		},
+		"ls_azuresql_petrolake_dev_password": {
+			"type": "secureString",
+			"metadata": "Secure string for 'password' of 'ls_azuresql_petrolake_dev'"
+		},
 		"ls_azuretable_storage_connectionString": {
 			"type": "secureString",
 			"metadata": "Secure string for 'connectionString' of 'ls_azuretable_storage'"
@@ -35,6 +39,18 @@
 		"ls_alds_landingzone_properties_typeProperties_url": {
 			"type": "string",
 			"defaultValue": "https://sgdigitalizationdev.dfs.core.windows.net/"
+		},
+		"ls_azuresql_petrolake_dev_properties_typeProperties_server": {
+			"type": "string",
+			"defaultValue": "sqlserverpetrolake.database.windows.net"
+		},
+		"ls_azuresql_petrolake_dev_properties_typeProperties_database": {
+			"type": "string",
+			"defaultValue": "db_petrolake_dev"
+		},
+		"ls_azuresql_petrolake_dev_properties_typeProperties_userName": {
+			"type": "string",
+			"defaultValue": "sqladmin"
 		},
 		"ls_databricks_petrolake_dev_properties_typeProperties_existingClusterId": {
 			"type": "string",
@@ -149,6 +165,393 @@
 											}
 										}
 									]
+								},
+								{
+									"name": "NB_Global_Midstream_Landing_Discovery",
+									"type": "DatabricksNotebook",
+									"dependsOn": [
+										{
+											"activity": "cp_Global_Midstream_Logistics",
+											"dependencyConditions": [
+												"Succeeded"
+											]
+										}
+									],
+									"policy": {
+										"timeout": "0.12:00:00",
+										"retry": 0,
+										"retryIntervalInSeconds": 30,
+										"secureOutput": false,
+										"secureInput": false
+									},
+									"userProperties": [],
+									"typeProperties": {
+										"notebookPath": "/Users/kgnnet11@gmail.com/Landingzone_Discoverzone/Filesystem/Global_Midstream_Logistics_landing_discovery"
+									},
+									"linkedServiceName": {
+										"referenceName": "ls_databricks_petrolake_dev",
+										"type": "LinkedServiceReference"
+									}
+								},
+								{
+									"name": "NB_Global_Midstream_Discovery_Reporting",
+									"type": "DatabricksNotebook",
+									"dependsOn": [
+										{
+											"activity": "NB_Global_Midstream_Landing_Discovery",
+											"dependencyConditions": [
+												"Succeeded"
+											]
+										}
+									],
+									"policy": {
+										"timeout": "0.12:00:00",
+										"retry": 0,
+										"retryIntervalInSeconds": 30,
+										"secureOutput": false,
+										"secureInput": false
+									},
+									"userProperties": [],
+									"typeProperties": {
+										"notebookPath": "/Users/kgnnet11@gmail.com/Discoveryzone_ReportingZone/Filesystem_Reporting_data/Global_Midstream_Logistics_discovery_reporting"
+									},
+									"linkedServiceName": {
+										"referenceName": "ls_databricks_petrolake_dev",
+										"type": "LinkedServiceReference"
+									}
+								},
+								{
+									"name": "LoadAzureTableStorage",
+									"type": "IfCondition",
+									"dependsOn": [
+										{
+											"activity": "NB_Global_Midstream_Discovery_Reporting",
+											"dependencyConditions": [
+												"Succeeded"
+											]
+										}
+									],
+									"userProperties": [],
+									"typeProperties": {
+										"expression": {
+											"value": "@or(\n   equals(pipeline().parameters.TargetSystem, 'AzureTable'),\n   equals(pipeline().parameters.TargetSystem, 'Both')\n)",
+											"type": "Expression"
+										},
+										"ifTrueActivities": [
+											{
+												"name": "cp_reportingzone_AzureTableStorage",
+												"type": "Copy",
+												"dependsOn": [],
+												"policy": {
+													"timeout": "0.12:00:00",
+													"retry": 0,
+													"retryIntervalInSeconds": 30,
+													"secureOutput": false,
+													"secureInput": false
+												},
+												"userProperties": [],
+												"typeProperties": {
+													"source": {
+														"type": "ParquetSource",
+														"storeSettings": {
+															"type": "AzureBlobFSReadSettings",
+															"recursive": true,
+															"wildcardFolderPath": {
+																"value": "Global_Midstreamy/Gold_KPI",
+																"type": "Expression"
+															},
+															"wildcardFileName": "*.parquet",
+															"enablePartitionDiscovery": false
+														},
+														"formatSettings": {
+															"type": "ParquetReadSettings"
+														}
+													},
+													"sink": {
+														"type": "AzureTableSink",
+														"azureTableInsertType": "merge",
+														"azureTableDefaultPartitionKeyValue": "'petrolake'",
+														"writeBatchSize": 10000
+													},
+													"enableStaging": false,
+													"translator": {
+														"type": "TabularTranslator",
+														"typeConversion": true,
+														"typeConversionSettings": {
+															"allowDataTruncation": true,
+															"treatBooleanAsNumber": false
+														}
+													}
+												},
+												"inputs": [
+													{
+														"referenceName": "ds_reporting_midstream",
+														"type": "DatasetReference",
+														"parameters": {}
+													}
+												],
+												"outputs": [
+													{
+														"referenceName": "ds_midstream_azuretable",
+														"type": "DatasetReference",
+														"parameters": {}
+													}
+												]
+											}
+										]
+									}
+								},
+								{
+									"name": "If Condition1",
+									"type": "IfCondition",
+									"dependsOn": [
+										{
+											"activity": "NB_Global_Midstream_Discovery_Reporting",
+											"dependencyConditions": [
+												"Succeeded"
+											]
+										}
+									],
+									"userProperties": [],
+									"typeProperties": {
+										"expression": {
+											"value": "@or(\n   equals(pipeline().parameters.TargetSystem, 'OnPremSQL'),\n   equals(pipeline().parameters.TargetSystem, 'Both')\n)",
+											"type": "Expression"
+										},
+										"ifTrueActivities": [
+											{
+												"name": "cp_reporting_SQLserver",
+												"type": "Copy",
+												"dependsOn": [],
+												"policy": {
+													"timeout": "0.12:00:00",
+													"retry": 0,
+													"retryIntervalInSeconds": 30,
+													"secureOutput": false,
+													"secureInput": false
+												},
+												"userProperties": [],
+												"typeProperties": {
+													"source": {
+														"type": "ParquetSource",
+														"storeSettings": {
+															"type": "AzureBlobFSReadSettings",
+															"recursive": true,
+															"wildcardFolderPath": {
+																"value": "Global_Midstreamy/Gold_KPI",
+																"type": "Expression"
+															},
+															"wildcardFileName": "*.parquet",
+															"enablePartitionDiscovery": false
+														},
+														"formatSettings": {
+															"type": "ParquetReadSettings"
+														}
+													},
+													"sink": {
+														"type": "SqlServerSink",
+														"writeBehavior": "insert",
+														"sqlWriterUseTableLock": false
+													},
+													"enableStaging": false,
+													"translator": {
+														"type": "TabularTranslator",
+														"mappings": [
+															{
+																"source": {
+																	"name": "region",
+																	"type": "String",
+																	"physicalType": "UTF8"
+																},
+																"sink": {
+																	"name": "region",
+																	"type": "String",
+																	"physicalType": "varchar"
+																}
+															},
+															{
+																"source": {
+																	"name": "country",
+																	"type": "String",
+																	"physicalType": "UTF8"
+																},
+																"sink": {
+																	"name": "country",
+																	"type": "String",
+																	"physicalType": "varchar"
+																}
+															},
+															{
+																"source": {
+																	"name": "product_type",
+																	"type": "String",
+																	"physicalType": "UTF8"
+																},
+																"sink": {
+																	"name": "product_type",
+																	"type": "String",
+																	"physicalType": "varchar"
+																}
+															},
+															{
+																"source": {
+																	"name": "year",
+																	"type": "Int32",
+																	"physicalType": "INT_32"
+																},
+																"sink": {
+																	"name": "year",
+																	"type": "Int32",
+																	"physicalType": "int"
+																}
+															},
+															{
+																"source": {
+																	"name": "month",
+																	"type": "Int32",
+																	"physicalType": "INT_32"
+																},
+																"sink": {
+																	"name": "month",
+																	"type": "Byte",
+																	"physicalType": "tinyint"
+																}
+															},
+															{
+																"source": {
+																	"name": "total_cost",
+																	"type": "Double",
+																	"physicalType": "DOUBLE"
+																},
+																"sink": {
+																	"name": "total_cost",
+																	"type": "Decimal",
+																	"physicalType": "decimal",
+																	"scale": 2,
+																	"precision": 18
+																}
+															},
+															{
+																"source": {
+																	"name": "total_revenue",
+																	"type": "Double",
+																	"physicalType": "DOUBLE"
+																},
+																"sink": {
+																	"name": "total_revenue",
+																	"type": "Decimal",
+																	"physicalType": "decimal",
+																	"scale": 2,
+																	"precision": 18
+																}
+															},
+															{
+																"source": {
+																	"name": "total_maintenance_cost",
+																	"type": "Double",
+																	"physicalType": "DOUBLE"
+																},
+																"sink": {
+																	"name": "total_maintenance_cost",
+																	"type": "Decimal",
+																	"physicalType": "decimal",
+																	"scale": 2,
+																	"precision": 18
+																}
+															},
+															{
+																"source": {
+																	"name": "gross_profit",
+																	"type": "Double",
+																	"physicalType": "DOUBLE"
+																},
+																"sink": {
+																	"name": "gross_profit",
+																	"type": "Decimal",
+																	"physicalType": "decimal",
+																	"scale": 2,
+																	"precision": 18
+																}
+															},
+															{
+																"source": {
+																	"name": "profit_margin_pct",
+																	"type": "Double",
+																	"physicalType": "DOUBLE"
+																},
+																"sink": {
+																	"name": "profit_margin_pct",
+																	"type": "Decimal",
+																	"physicalType": "decimal",
+																	"scale": 2,
+																	"precision": 5
+																}
+															},
+															{
+																"source": {
+																	"name": "ytd_revenue",
+																	"type": "Double",
+																	"physicalType": "DOUBLE"
+																},
+																"sink": {
+																	"name": "ytd_revenue",
+																	"type": "Decimal",
+																	"physicalType": "decimal",
+																	"scale": 2,
+																	"precision": 18
+																}
+															},
+															{
+																"source": {
+																	"name": "ytd_profit",
+																	"type": "Double",
+																	"physicalType": "DOUBLE"
+																},
+																"sink": {
+																	"name": "ytd_profit",
+																	"type": "Decimal",
+																	"physicalType": "decimal",
+																	"scale": 2,
+																	"precision": 18
+																}
+															},
+															{
+																"source": {
+																	"name": "year_partition",
+																	"type": "Int32",
+																	"physicalType": "INT_32"
+																},
+																"sink": {
+																	"name": "year_partition",
+																	"type": "Int32",
+																	"physicalType": "int"
+																}
+															}
+														],
+														"typeConversion": true,
+														"typeConversionSettings": {
+															"allowDataTruncation": true,
+															"treatBooleanAsNumber": false
+														}
+													}
+												},
+												"inputs": [
+													{
+														"referenceName": "ds_reporting_midstream",
+														"type": "DatasetReference",
+														"parameters": {}
+													}
+												],
+												"outputs": [
+													{
+														"referenceName": "ds_sqlserver_midstream",
+														"type": "DatasetReference",
+														"parameters": {}
+													}
+												]
+											}
+										]
+									}
 								}
 							]
 						}
@@ -233,6 +636,10 @@
 					"ExcelFileName": {
 						"type": "string",
 						"defaultValue": "Global_Midstream_Logistics.xlsx"
+					},
+					"TargetSystem": {
+						"type": "string",
+						"defaultValue": "Both"
 					}
 				},
 				"folder": {
@@ -243,7 +650,11 @@
 			"dependsOn": [
 				"[concat(variables('factoryId'), '/linkedServices/ls_sql_onprem_petrolake')]",
 				"[concat(variables('factoryId'), '/datasets/ds_filesystem_Global_Midstream_Logistics')]",
-				"[concat(variables('factoryId'), '/datasets/ds_adls_landingzone')]"
+				"[concat(variables('factoryId'), '/datasets/ds_adls_landingzone')]",
+				"[concat(variables('factoryId'), '/linkedServices/ls_databricks_petrolake_dev')]",
+				"[concat(variables('factoryId'), '/datasets/ds_reporting_midstream')]",
+				"[concat(variables('factoryId'), '/datasets/ds_midstream_azuretable')]",
+				"[concat(variables('factoryId'), '/datasets/ds_sqlserver_midstream')]"
 			]
 		},
 		{
@@ -693,7 +1104,7 @@
 									"userProperties": [],
 									"typeProperties": {
 										"expression": {
-											"value": "@or(\n   equals(pipeline().parameters.TargetSystem, 'OnPremSQL'),\n   equals(pipeline().parameters.TargetSystem, 'Both')\n)",
+											"value": "@or(\n   equals(pipeline().parameters.TargetSystem, 'AZURESQL'),\n   equals(pipeline().parameters.TargetSystem, 'Both')\n)",
 											"type": "Expression"
 										},
 										"ifTrueActivities": [
@@ -727,9 +1138,10 @@
 														}
 													},
 													"sink": {
-														"type": "SqlServerSink",
+														"type": "AzureSqlSink",
 														"writeBehavior": "insert",
-														"sqlWriterUseTableLock": false
+														"sqlWriterUseTableLock": false,
+														"disableMetricsCollection": false
 													},
 													"enableStaging": false,
 													"translator": {
@@ -994,7 +1406,7 @@
 												],
 												"outputs": [
 													{
-														"referenceName": "ds_Reporting_SQL_dev",
+														"referenceName": "ds_azuresql_Global_Downstream",
 														"type": "DatasetReference",
 														"parameters": {}
 													}
@@ -1194,7 +1606,7 @@
 				"[concat(variables('factoryId'), '/linkedServices/ls_databricks_petrolake_dev')]",
 				"[concat(variables('factoryId'), '/datasets/ds_reportingzone_goldlayer')]",
 				"[concat(variables('factoryId'), '/datasets/ds_azuretable_storage')]",
-				"[concat(variables('factoryId'), '/datasets/ds_Reporting_SQL_dev')]"
+				"[concat(variables('factoryId'), '/datasets/ds_azuresql_Global_Downstream')]"
 			]
 		},
 		{
@@ -1262,6 +1674,129 @@
 			},
 			"dependsOn": [
 				"[concat(variables('factoryId'), '/linkedServices/ls_alds_landingzone')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/ds_azuresql_Global_Downstream')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "ls_azuresql_petrolake_dev",
+					"type": "LinkedServiceReference"
+				},
+				"annotations": [],
+				"type": "AzureSqlTable",
+				"schema": [
+					{
+						"name": "region",
+						"type": "nvarchar"
+					},
+					{
+						"name": "country",
+						"type": "nvarchar"
+					},
+					{
+						"name": "total_barrels",
+						"type": "decimal",
+						"precision": 18,
+						"scale": 2
+					},
+					{
+						"name": "total_revenue",
+						"type": "decimal",
+						"precision": 18,
+						"scale": 2
+					},
+					{
+						"name": "total_cost",
+						"type": "decimal",
+						"precision": 18,
+						"scale": 2
+					},
+					{
+						"name": "profit_margin",
+						"type": "decimal",
+						"precision": 5,
+						"scale": 2
+					},
+					{
+						"name": "gross_profit",
+						"type": "decimal",
+						"precision": 18,
+						"scale": 2
+					},
+					{
+						"name": "total_spend",
+						"type": "decimal",
+						"precision": 18,
+						"scale": 2
+					},
+					{
+						"name": "incident_count",
+						"type": "int",
+						"precision": 10
+					},
+					{
+						"name": "total_incident_cost",
+						"type": "decimal",
+						"precision": 18,
+						"scale": 2
+					},
+					{
+						"name": "cumulative_barrels",
+						"type": "decimal",
+						"precision": 18,
+						"scale": 2
+					},
+					{
+						"name": "cumulative_spend",
+						"type": "decimal",
+						"precision": 18,
+						"scale": 2
+					},
+					{
+						"name": "cumulative_revenue",
+						"type": "decimal",
+						"precision": 18,
+						"scale": 2
+					},
+					{
+						"name": "cost_per_barrel",
+						"type": "decimal",
+						"precision": 18,
+						"scale": 2
+					},
+					{
+						"name": "total_downtime_hours",
+						"type": "decimal",
+						"precision": 10,
+						"scale": 2
+					},
+					{
+						"name": "cumulative_incident_cost",
+						"type": "decimal",
+						"precision": 18,
+						"scale": 2
+					},
+					{
+						"name": "year",
+						"type": "int",
+						"precision": 10
+					},
+					{
+						"name": "month",
+						"type": "tinyint",
+						"precision": 3
+					}
+				],
+				"typeProperties": {
+					"schema": "dbo",
+					"table": "GLOBAL_DOWNSTREAM"
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/linkedServices/ls_azuresql_petrolake_dev')]"
 			]
 		},
 		{
@@ -1386,6 +1921,51 @@
 			]
 		},
 		{
+			"name": "[concat(parameters('factoryName'), '/ds_midstream_azuretable')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "ls_azuretable_storage",
+					"type": "LinkedServiceReference"
+				},
+				"annotations": [],
+				"type": "AzureTable",
+				"schema": [],
+				"typeProperties": {
+					"tableName": "globalmidstreamfs"
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/linkedServices/ls_azuretable_storage')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/ds_reporting_midstream')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "ls_alds_landingzone",
+					"type": "LinkedServiceReference"
+				},
+				"annotations": [],
+				"type": "Parquet",
+				"typeProperties": {
+					"location": {
+						"type": "AzureBlobFSLocation",
+						"folderPath": "Global_Midstreamy/Gold_KPI",
+						"fileSystem": "reportingzone"
+					},
+					"compressionCodec": "snappy"
+				},
+				"schema": []
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/linkedServices/ls_alds_landingzone')]"
+			]
+		},
+		{
 			"name": "[concat(parameters('factoryName'), '/ds_reportingzone_goldlayer')]",
 			"type": "Microsoft.DataFactory/factories/datasets",
 			"apiVersion": "2018-06-01",
@@ -1408,6 +1988,27 @@
 			},
 			"dependsOn": [
 				"[concat(variables('factoryId'), '/linkedServices/ls_alds_landingzone')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/ds_sqlserver_midstream')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "ls_sql_onprem_petrolake",
+					"type": "LinkedServiceReference"
+				},
+				"annotations": [],
+				"type": "SqlServerTable",
+				"schema": [],
+				"typeProperties": {
+					"schema": "dbo",
+					"table": "global_midstream"
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/linkedServices/ls_sql_onprem_petrolake')]"
 			]
 		},
 		{
@@ -1443,6 +2044,28 @@
 					"accountKey": {
 						"type": "SecureString",
 						"value": "[parameters('ls_alds_landingzone_accountKey')]"
+					}
+				}
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/ls_azuresql_petrolake_dev')]",
+			"type": "Microsoft.DataFactory/factories/linkedServices",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"annotations": [],
+				"type": "AzureSqlDatabase",
+				"typeProperties": {
+					"server": "[parameters('ls_azuresql_petrolake_dev_properties_typeProperties_server')]",
+					"database": "[parameters('ls_azuresql_petrolake_dev_properties_typeProperties_database')]",
+					"encrypt": "mandatory",
+					"trustServerCertificate": false,
+					"authenticationType": "SQL",
+					"userName": "[parameters('ls_azuresql_petrolake_dev_properties_typeProperties_userName')]",
+					"password": {
+						"type": "SecureString",
+						"value": "[parameters('ls_azuresql_petrolake_dev_password')]"
 					}
 				}
 			},

@@ -11,6 +11,10 @@
 			"type": "secureString",
 			"metadata": "Secure string for 'accountKey' of 'ls_alds_landingzone'"
 		},
+		"ls_azuresql_petrolake_dev_password": {
+			"type": "secureString",
+			"metadata": "Secure string for 'password' of 'ls_azuresql_petrolake_dev'"
+		},
 		"ls_azuretable_storage_connectionString": {
 			"type": "secureString",
 			"metadata": "Secure string for 'connectionString' of 'ls_azuretable_storage'"
@@ -35,6 +39,18 @@
 		"ls_alds_landingzone_properties_typeProperties_url": {
 			"type": "string",
 			"defaultValue": "https://sgdigitalizationdev.dfs.core.windows.net/"
+		},
+		"ls_azuresql_petrolake_dev_properties_typeProperties_server": {
+			"type": "string",
+			"defaultValue": "sqlserverpetrolake.database.windows.net"
+		},
+		"ls_azuresql_petrolake_dev_properties_typeProperties_database": {
+			"type": "string",
+			"defaultValue": "db_petrolake_dev"
+		},
+		"ls_azuresql_petrolake_dev_properties_typeProperties_userName": {
+			"type": "string",
+			"defaultValue": "sqladmin"
 		},
 		"ls_databricks_petrolake_dev_properties_typeProperties_existingClusterId": {
 			"type": "string",
@@ -74,6 +90,9 @@
 					"ls_alds_landingzone_accountKey": {
 						"value": "[parameters('ls_alds_landingzone_accountKey')]"
 					},
+					"ls_azuresql_petrolake_dev_password": {
+						"value": "[parameters('ls_azuresql_petrolake_dev_password')]"
+					},
 					"ls_azuretable_storage_connectionString": {
 						"value": "[parameters('ls_azuretable_storage_connectionString')]"
 					},
@@ -92,6 +111,15 @@
 					"ls_alds_landingzone_properties_typeProperties_url": {
 						"value": "[parameters('ls_alds_landingzone_properties_typeProperties_url')]"
 					},
+					"ls_azuresql_petrolake_dev_properties_typeProperties_server": {
+						"value": "[parameters('ls_azuresql_petrolake_dev_properties_typeProperties_server')]"
+					},
+					"ls_azuresql_petrolake_dev_properties_typeProperties_database": {
+						"value": "[parameters('ls_azuresql_petrolake_dev_properties_typeProperties_database')]"
+					},
+					"ls_azuresql_petrolake_dev_properties_typeProperties_userName": {
+						"value": "[parameters('ls_azuresql_petrolake_dev_properties_typeProperties_userName')]"
+					},
 					"ls_databricks_petrolake_dev_properties_typeProperties_existingClusterId": {
 						"value": "[parameters('ls_databricks_petrolake_dev_properties_typeProperties_existingClusterId')]"
 					},
@@ -101,6 +129,26 @@
 				}
 			},
 			"dependsOn": []
+		},
+		{
+			"name": "adfpetrolakedatamodrendev_ArmTemplate_1",
+			"type": "Microsoft.Resources/deployments",
+			"apiVersion": "2024-03-01",
+			"properties": {
+				"mode": "incremental",
+				"templateLink": {
+					"uri": "[concat(parameters('containerUri'), '/ArmTemplate_1.json', parameters('containerSasToken'))]",
+					"contentVersion": "1.0.0.0"
+				},
+				"parameters": {
+					"factoryName": {
+						"value": "[parameters('factoryName')]"
+					}
+				}
+			},
+			"dependsOn": [
+				"[resourceId('Microsoft.Resources/deployments', 'adfpetrolakedatamodrendev_ArmTemplate_0')]"
+			]
 		}
 	]
 }
