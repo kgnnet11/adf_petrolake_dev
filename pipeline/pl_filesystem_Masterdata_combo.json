@@ -1,0 +1,98 @@
+{
+	"name": "pl_filesystem_Masterdata_combo",
+	"properties": {
+		"activities": [
+			{
+				"name": "FileSystem_Global_Downstream",
+				"type": "ExecutePipeline",
+				"dependsOn": [],
+				"policy": {
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"pipeline": {
+						"referenceName": "pl_finance_Global_Downstream",
+						"type": "PipelineReference"
+					},
+					"waitOnCompletion": true
+				}
+			},
+			{
+				"name": "waitfor60sec",
+				"type": "Wait",
+				"dependsOn": [
+					{
+						"activity": "FileSystem_Global_Downstream",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"userProperties": [],
+				"typeProperties": {
+					"waitTimeInSeconds": 60
+				}
+			},
+			{
+				"name": "Filesystem_Global_Midstream",
+				"type": "ExecutePipeline",
+				"dependsOn": [
+					{
+						"activity": "waitfor60sec",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"policy": {
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"pipeline": {
+						"referenceName": "pl_filesystem_Global_Midstream_Logistics",
+						"type": "PipelineReference"
+					},
+					"waitOnCompletion": true
+				}
+			},
+			{
+				"name": "Waitfor30sec",
+				"type": "Wait",
+				"dependsOn": [
+					{
+						"activity": "Filesystem_Global_Midstream",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"userProperties": [],
+				"typeProperties": {
+					"waitTimeInSeconds": 30
+				}
+			},
+			{
+				"name": "Filesystem_Global_Upstream",
+				"type": "ExecutePipeline",
+				"dependsOn": [
+					{
+						"activity": "Waitfor30sec",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"policy": {
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"waitOnCompletion": true
+				}
+			}
+		],
+		"annotations": []
+	}
+}

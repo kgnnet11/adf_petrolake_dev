@@ -1,0 +1,24 @@
+{
+	"name": "Filesystem_Masterdata_combo_schedule",
+	"properties": {
+		"annotations": [],
+		"runtimeState": "Started",
+		"pipelines": [
+			{
+				"pipelineReference": {
+					"referenceName": "pl_filesystem_Masterdata_combo",
+					"type": "PipelineReference"
+				}
+			}
+		],
+		"type": "ScheduleTrigger",
+		"typeProperties": {
+			"recurrence": {
+				"frequency": "Minute",
+				"interval": 15,
+				"startTime": "2026-02-18T11:00:00",
+				"timeZone": "India Standard Time"
+			}
+		}
+	}
+}
