@@ -166,7 +166,7 @@
 			},
 			"filename_midstream": {
 				"type": "string",
-				"defaultValue": "Global_Midstream_Logistics"
+				"defaultValue": "Global_Midstream_Logistics.xlsx"
 			},
 			"file_name_upstream": {
 				"type": "string",
