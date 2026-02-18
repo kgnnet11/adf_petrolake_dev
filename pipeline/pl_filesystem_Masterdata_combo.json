@@ -89,10 +89,56 @@
 				},
 				"userProperties": [],
 				"typeProperties": {
+					"pipeline": {
+						"referenceName": "pl_filesystem_Global_Upstream_Operations",
+						"type": "PipelineReference"
+					},
 					"waitOnCompletion": true
 				}
 			}
 		],
+		"parameters": {
+			"pl_global_downstream_s": {
+				"type": "array",
+				"defaultValue": [
+					"Refinery_Production",
+					"Financial_Transactions",
+					"Safety_Incidents"
+				]
+			},
+			"pl_global_midstream_s": {
+				"type": "array",
+				"defaultValue": [
+					"Pipeline_Flow",
+					"Shipping_Details",
+					"Storage_Terminals"
+				]
+			},
+			"pl_global_upstream_s": {
+				"type": "array",
+				"defaultValue": [
+					"Drilling_Operations",
+					"Equipment_Monitoring",
+					"Well_Production"
+				]
+			},
+			"filename_downstream": {
+				"type": "string",
+				"defaultValue": "Global_Downstream_Finance_Safety"
+			},
+			"filename_midstream": {
+				"type": "string",
+				"defaultValue": "Global_Midstream_Logistics"
+			},
+			"file_name_upstream": {
+				"type": "string",
+				"defaultValue": "Global_Upstream_Operations.xlsx"
+			},
+			"TargetSystem": {
+				"type": "string",
+				"defaultValue": "Both"
+			}
+		},
 		"annotations": []
 	}
 }
