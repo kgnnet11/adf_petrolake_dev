@@ -1096,6 +1096,198 @@
 			]
 		},
 		{
+			"name": "[concat(parameters('factoryName'), '/pl_filesystem_Masterdata_combo')]",
+			"type": "Microsoft.DataFactory/factories/pipelines",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"activities": [
+					{
+						"name": "FileSystem_Global_Downstream",
+						"type": "ExecutePipeline",
+						"dependsOn": [],
+						"policy": {
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"pipeline": {
+								"referenceName": "pl_finance_Global_Downstream",
+								"type": "PipelineReference"
+							},
+							"waitOnCompletion": true,
+							"parameters": {
+								"SheetNames": {
+									"value": "@pipeline().parameters.pl_global_downstream_s",
+									"type": "Expression"
+								},
+								"ExcelFileName": {
+									"value": "@pipeline().parameters.filename_downstream",
+									"type": "Expression"
+								},
+								"TargetSystem": {
+									"value": "@pipeline().parameters.TargetSystem",
+									"type": "Expression"
+								}
+							}
+						}
+					},
+					{
+						"name": "waitfor60sec",
+						"type": "Wait",
+						"dependsOn": [
+							{
+								"activity": "FileSystem_Global_Downstream",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
+						"userProperties": [],
+						"typeProperties": {
+							"waitTimeInSeconds": 60
+						}
+					},
+					{
+						"name": "Filesystem_Global_Midstream",
+						"type": "ExecutePipeline",
+						"dependsOn": [
+							{
+								"activity": "waitfor60sec",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
+						"policy": {
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"pipeline": {
+								"referenceName": "pl_filesystem_Global_Midstream_Logistics",
+								"type": "PipelineReference"
+							},
+							"waitOnCompletion": true,
+							"parameters": {
+								"SheetNames": {
+									"value": "@pipeline().parameters.pl_global_midstream_s",
+									"type": "Expression"
+								},
+								"ExcelFileName": {
+									"value": "@pipeline().parameters.filename_midstream",
+									"type": "Expression"
+								},
+								"TargetSystem": {
+									"value": "@pipeline().parameters.TargetSystem",
+									"type": "Expression"
+								}
+							}
+						}
+					},
+					{
+						"name": "Waitfor30sec",
+						"type": "Wait",
+						"dependsOn": [
+							{
+								"activity": "Filesystem_Global_Midstream",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
+						"userProperties": [],
+						"typeProperties": {
+							"waitTimeInSeconds": 30
+						}
+					},
+					{
+						"name": "Filesystem_Global_Upstream",
+						"type": "ExecutePipeline",
+						"dependsOn": [
+							{
+								"activity": "Waitfor30sec",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
+						"policy": {
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"pipeline": {
+								"referenceName": "pl_filesystem_Global_Upstream_Operations",
+								"type": "PipelineReference"
+							},
+							"waitOnCompletion": true,
+							"parameters": {
+								"SheetNames": {
+									"value": "@pipeline().parameters.pl_global_upstream_s",
+									"type": "Expression"
+								},
+								"ExcelFileName": {
+									"value": "@pipeline().parameters.file_name_upstream",
+									"type": "Expression"
+								}
+							}
+						}
+					}
+				],
+				"policy": {
+					"elapsedTimeMetric": {}
+				},
+				"parameters": {
+					"pl_global_downstream_s": {
+						"type": "array",
+						"defaultValue": [
+							"Refinery_Production",
+							"Financial_Transactions",
+							"Safety_Incidents"
+						]
+					},
+					"pl_global_midstream_s": {
+						"type": "array",
+						"defaultValue": [
+							"Pipeline_Flow",
+							"Shipping_Details",
+							"Storage_Terminals"
+						]
+					},
+					"pl_global_upstream_s": {
+						"type": "array",
+						"defaultValue": [
+							"Drilling_Operations",
+							"Equipment_Monitoring",
+							"Well_Production"
+						]
+					},
+					"filename_downstream": {
+						"type": "string",
+						"defaultValue": "Global_Downstream_Finance_Safety"
+					},
+					"filename_midstream": {
+						"type": "string",
+						"defaultValue": "Global_Midstream_Logistics.xlsx"
+					},
+					"file_name_upstream": {
+						"type": "string",
+						"defaultValue": "Global_Upstream_Operations.xlsx"
+					},
+					"TargetSystem": {
+						"type": "string",
+						"defaultValue": "Both"
+					}
+				},
+				"annotations": []
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/pipelines/pl_finance_Global_Downstream')]",
+				"[concat(variables('factoryId'), '/pipelines/pl_filesystem_Global_Midstream_Logistics')]",
+				"[concat(variables('factoryId'), '/pipelines/pl_filesystem_Global_Upstream_Operations')]"
+			]
+		},
+		{
 			"name": "[concat(parameters('factoryName'), '/pl_finance_Global_Downstream')]",
 			"type": "Microsoft.DataFactory/factories/pipelines",
 			"apiVersion": "2018-06-01",
@@ -2794,6 +2986,36 @@
 			},
 			"dependsOn": [
 				"[concat(variables('factoryId'), '/integrationRuntimes/selfhosterIRLoacal')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/Filesystem_Masterdata_combo_schedule')]",
+			"type": "Microsoft.DataFactory/factories/triggers",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"annotations": [],
+				"runtimeState": "Started",
+				"pipelines": [
+					{
+						"pipelineReference": {
+							"referenceName": "pl_filesystem_Masterdata_combo",
+							"type": "PipelineReference"
+						},
+						"parameters": {}
+					}
+				],
+				"type": "ScheduleTrigger",
+				"typeProperties": {
+					"recurrence": {
+						"frequency": "Minute",
+						"interval": 15,
+						"startTime": "2026-02-18T11:00:00",
+						"timeZone": "India Standard Time"
+					}
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/pipelines/pl_filesystem_Masterdata_combo')]"
 			]
 		},
 		{
