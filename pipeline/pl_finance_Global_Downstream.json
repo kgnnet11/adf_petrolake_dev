@@ -736,7 +736,7 @@
 												},
 												"RowsRead": {
 													"value": {
-														"value": "@activity('CP_reporting_SQLserver').output.rowsRead",
+														"value": "@activity('CP_reporting_SQLserver').output.rowsCopied\n",
 														"type": "Expression"
 													},
 													"type": "Int64"
