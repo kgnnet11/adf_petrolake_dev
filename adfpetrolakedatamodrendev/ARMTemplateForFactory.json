@@ -1264,7 +1264,7 @@
 					},
 					"filename_downstream": {
 						"type": "string",
-						"defaultValue": "Global_Downstream_Finance_Safety"
+						"defaultValue": "Global_Downstream_Finance_Safety.xlsx"
 					},
 					"filename_midstream": {
 						"type": "string",
