@@ -272,7 +272,7 @@
 												},
 												"EndTime": {
 													"value": {
-														"value": "@activity('CP_reportingzone_AzureTable').output.executionDetails[0].start\n",
+														"value": "@utcNow()\n",
 														"type": "Expression"
 													},
 													"type": "DateTime"
@@ -708,7 +708,7 @@
 												},
 												"EndTime": {
 													"value": {
-														"value": "@activity('CP_reporting_SQLserver').output.executionDetails[0].start\n",
+														"value": "@utcNow()",
 														"type": "Expression"
 													},
 													"type": "DateTime"
