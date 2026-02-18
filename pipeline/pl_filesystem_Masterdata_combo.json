@@ -15,7 +15,21 @@
 						"referenceName": "pl_finance_Global_Downstream",
 						"type": "PipelineReference"
 					},
-					"waitOnCompletion": true
+					"waitOnCompletion": true,
+					"parameters": {
+						"SheetNames": {
+							"value": "@pipeline().parameters.pl_global_downstream_s",
+							"type": "Expression"
+						},
+						"ExcelFileName": {
+							"value": "@pipeline().parameters.filename_downstream",
+							"type": "Expression"
+						},
+						"TargetSystem": {
+							"value": "@pipeline().parameters.TargetSystem",
+							"type": "Expression"
+						}
+					}
 				}
 			},
 			{
@@ -54,7 +68,21 @@
 						"referenceName": "pl_filesystem_Global_Midstream_Logistics",
 						"type": "PipelineReference"
 					},
-					"waitOnCompletion": true
+					"waitOnCompletion": true,
+					"parameters": {
+						"SheetNames": {
+							"value": "@pipeline().parameters.pl_global_midstream_s",
+							"type": "Expression"
+						},
+						"ExcelFileName": {
+							"value": "@pipeline().parameters.filename_midstream",
+							"type": "Expression"
+						},
+						"TargetSystem": {
+							"value": "@pipeline().parameters.TargetSystem",
+							"type": "Expression"
+						}
+					}
 				}
 			},
 			{
@@ -93,7 +121,17 @@
 						"referenceName": "pl_filesystem_Global_Upstream_Operations",
 						"type": "PipelineReference"
 					},
-					"waitOnCompletion": true
+					"waitOnCompletion": true,
+					"parameters": {
+						"SheetNames": {
+							"value": "@pipeline().parameters.pl_global_upstream_s",
+							"type": "Expression"
+						},
+						"ExcelFileName": {
+							"value": "@pipeline().parameters.file_name_upstream",
+							"type": "Expression"
+						}
+					}
 				}
 			}
 		],
