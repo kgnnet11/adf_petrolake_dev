@@ -487,14 +487,14 @@
 												},
 												"DataWrittenBytes": {
 													"value": {
-														"value": "@activity('CP_reportingzone_AzureTable').output.datawritten",
+														"value": "@activity('CP_reportingzone_AzureTable').output.dataWritten",
 														"type": "Expression"
 													},
 													"type": "Int64"
 												},
 												"EndTime": {
 													"value": {
-														"value": "@activity('CP_reportingzone_AzureTable').output.executionDetails[0].start\n",
+														"value": "@utcNow()\n",
 														"type": "Expression"
 													},
 													"type": "DateTime"
@@ -529,7 +529,7 @@
 												},
 												"RowsWritten": {
 													"value": {
-														"value": "@activity('CP_reportingzone_AzureTable').output.rowsWritten",
+														"value": "@activity('CP_reportingzone_AzureTable').output.rowsCopied",
 														"type": "Expression"
 													},
 													"type": "Int64"
