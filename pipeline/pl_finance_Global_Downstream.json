@@ -923,14 +923,14 @@
 												},
 												"DataWrittenBytes": {
 													"value": {
-														"value": "@activity('CP_reporting_SQLserver').output.datawritten",
+														"value": "@activity('CP_reporting_SQLserver').output.dataWritten",
 														"type": "Expression"
 													},
 													"type": "Int64"
 												},
 												"EndTime": {
 													"value": {
-														"value": "@activity('CP_reporting_SQLserver').output.executionDetails[0].start\n",
+														"value": "@utcNow()\n",
 														"type": "Expression"
 													},
 													"type": "DateTime"
@@ -965,7 +965,7 @@
 												},
 												"RowsWritten": {
 													"value": {
-														"value": "@activity('CP_reporting_SQLserver').output.rowsWritten",
+														"value": "@activity('CP_reporting_SQLserver').output.rowsCopied",
 														"type": "Expression"
 													},
 													"type": "Int64"
