@@ -297,6 +297,119 @@
 														"parameters": {}
 													}
 												]
+											},
+											{
+												"name": "sucess_data",
+												"type": "SqlServerStoredProcedure",
+												"dependsOn": [
+													{
+														"activity": "cp_reportingzone_AzureTableStorage",
+														"dependencyConditions": [
+															"Succeeded"
+														]
+													}
+												],
+												"policy": {
+													"timeout": "0.12:00:00",
+													"retry": 0,
+													"retryIntervalInSeconds": 30,
+													"secureOutput": false,
+													"secureInput": false
+												},
+												"userProperties": [],
+												"typeProperties": {
+													"storedProcedureName": "[[dbo].[usp_sucess_failure_logs]",
+													"storedProcedureParameters": {
+														"ActivityName": {
+															"value": {
+																"value": "cp_reportingzone_AzureTableStorage",
+																"type": "Expression"
+															},
+															"type": "String"
+														},
+														"DataReadBytes": {
+															"value": {
+																"value": "@activity('cp_reportingzone_AzureTableStorage').output.dataRead",
+																"type": "Expression"
+															},
+															"type": "Int64"
+														},
+														"DataWrittenBytes": {
+															"value": {
+																"value": "@activity('cp_reportingzone_AzureTableStorage').output.dataWritten",
+																"type": "Expression"
+															},
+															"type": "Int64"
+														},
+														"EndTime": {
+															"value": {
+																"value": "@utcNow()\n",
+																"type": "Expression"
+															},
+															"type": "DateTime"
+														},
+														"ErrorMessage": {
+															"value": {
+																"value": "@if(\n    equals(activity('cp_reportingzone_AzureTableStorage').Status, 'Failed'),\n    activity('cp_reportingzone_AzureTableStorage').error.message,\n    ''\n)\n",
+																"type": "Expression"
+															},
+															"type": "String"
+														},
+														"ExecutionStatus": {
+															"value": {
+																"value": "@activity('cp_reportingzone_AzureTableStorage').Status",
+																"type": "Expression"
+															},
+															"type": "String"
+														},
+														"PipelineName": {
+															"value": {
+																"value": "@pipeline().Pipeline",
+																"type": "Expression"
+															},
+															"type": "String"
+														},
+														"RowsRead": {
+															"value": {
+																"value": "@activity('cp_reportingzone_AzureTableStorage').output.rowsRead",
+																"type": "Expression"
+															},
+															"type": "Int64"
+														},
+														"RowsWritten": {
+															"value": {
+																"value": "@activity('cp_reportingzone_AzureTableStorage').output.rowsCopied",
+																"type": "Expression"
+															},
+															"type": "Int64"
+														},
+														"SinkType": {
+															"value": {
+																"value": "AzureTable",
+																"type": "Expression"
+															},
+															"type": "String"
+														},
+														"SourceType": {
+															"value": {
+																"value": "AdlsReportingZone",
+																"type": "Expression"
+															},
+															"type": "String"
+														},
+														"StartTime": {
+															"value": {
+																"value": "@utcNow()",
+																"type": "Expression"
+															},
+															"type": "DateTime"
+														}
+													}
+												},
+												"linkedServiceName": {
+													"referenceName": "ls_sql_onprem_petrolake",
+													"type": "LinkedServiceReference"
+												}
 											}
 										]
 									}
@@ -564,6 +677,119 @@
 														"parameters": {}
 													}
 												]
+											},
+											{
+												"name": "sucess_data_sql",
+												"type": "SqlServerStoredProcedure",
+												"dependsOn": [
+													{
+														"activity": "cp_reporting_SQLserver",
+														"dependencyConditions": [
+															"Succeeded"
+														]
+													}
+												],
+												"policy": {
+													"timeout": "0.12:00:00",
+													"retry": 0,
+													"retryIntervalInSeconds": 30,
+													"secureOutput": false,
+													"secureInput": false
+												},
+												"userProperties": [],
+												"typeProperties": {
+													"storedProcedureName": "[[dbo].[usp_sucess_failure_logs]",
+													"storedProcedureParameters": {
+														"ActivityName": {
+															"value": {
+																"value": "cp_reportingzone_AzureTableStorage",
+																"type": "Expression"
+															},
+															"type": "String"
+														},
+														"DataReadBytes": {
+															"value": {
+																"value": "@activity('cp_reporting_SQLserver').output.dataRead",
+																"type": "Expression"
+															},
+															"type": "Int64"
+														},
+														"DataWrittenBytes": {
+															"value": {
+																"value": "@activity('cp_reporting_SQLserver').output.dataWritten",
+																"type": "Expression"
+															},
+															"type": "Int64"
+														},
+														"EndTime": {
+															"value": {
+																"value": "@utcNow()\n",
+																"type": "Expression"
+															},
+															"type": "DateTime"
+														},
+														"ErrorMessage": {
+															"value": {
+																"value": "@if(\n    equals(activity('cp_reporting_SQLserver').Status, 'Failed'),\n    activity('cp_reporting_SQLserver').error.message,\n    ''\n)\n",
+																"type": "Expression"
+															},
+															"type": "String"
+														},
+														"ExecutionStatus": {
+															"value": {
+																"value": "@activity('cp_reporting_SQLserver').Status",
+																"type": "Expression"
+															},
+															"type": "String"
+														},
+														"PipelineName": {
+															"value": {
+																"value": "@pipeline().Pipeline",
+																"type": "Expression"
+															},
+															"type": "String"
+														},
+														"RowsRead": {
+															"value": {
+																"value": "@activity('cp_reporting_SQLserver').output.rowsRead",
+																"type": "Expression"
+															},
+															"type": "Int64"
+														},
+														"RowsWritten": {
+															"value": {
+																"value": "@activity('cp_reporting_SQLserver').output.rowsCopied",
+																"type": "Expression"
+															},
+															"type": "Int64"
+														},
+														"SinkType": {
+															"value": {
+																"value": "AzureTable",
+																"type": "Expression"
+															},
+															"type": "String"
+														},
+														"SourceType": {
+															"value": {
+																"value": "AdlsReportingZone",
+																"type": "Expression"
+															},
+															"type": "String"
+														},
+														"StartTime": {
+															"value": {
+																"value": "@utcNow()",
+																"type": "Expression"
+															},
+															"type": "DateTime"
+														}
+													}
+												},
+												"linkedServiceName": {
+													"referenceName": "ls_sql_onprem_petrolake",
+													"type": "LinkedServiceReference"
+												}
 											}
 										]
 									}
@@ -1058,7 +1284,7 @@
 															"type": "AzureBlobFSReadSettings",
 															"recursive": true,
 															"wildcardFolderPath": {
-																"value": "Global_Downstream/final_operational_kpi",
+																"value": "Global_Downstream/final_operational_kpi_parquet",
 																"type": "Expression"
 															},
 															"wildcardFileName": "*.parquet",
@@ -1080,6 +1306,228 @@
 													"enableStaging": false,
 													"translator": {
 														"type": "TabularTranslator",
+														"mappings": [
+															{
+																"source": {
+																	"name": "spend_vs_revenue_pct",
+																	"type": "Double",
+																	"physicalType": "DOUBLE"
+																},
+																"sink": {
+																	"name": "PartitionKey",
+																	"type": "String"
+																}
+															},
+															{
+																"source": {
+																	"name": "incident_cost_impact_pct",
+																	"type": "Double",
+																	"physicalType": "DOUBLE"
+																},
+																"sink": {
+																	"name": "RowKey",
+																	"type": "String"
+																}
+															},
+															{
+																"source": {
+																	"name": "cost_per_barrel",
+																	"type": "Double",
+																	"physicalType": "DOUBLE"
+																},
+																"sink": {
+																	"name": "cost_per_barrel",
+																	"type": "Double"
+																}
+															},
+															{
+																"source": {
+																	"name": "country",
+																	"type": "String",
+																	"physicalType": "UTF8"
+																},
+																"sink": {
+																	"name": "country",
+																	"type": "String"
+																}
+															},
+															{
+																"source": {
+																	"name": "cumulative_barrels",
+																	"type": "Double",
+																	"physicalType": "DOUBLE"
+																},
+																"sink": {
+																	"name": "cumulative_barrels",
+																	"type": "Double"
+																}
+															},
+															{
+																"source": {
+																	"name": "cumulative_incident_cost",
+																	"type": "Double",
+																	"physicalType": "DOUBLE"
+																},
+																"sink": {
+																	"name": "cumulative_incident_cost",
+																	"type": "Double"
+																}
+															},
+															{
+																"source": {
+																	"name": "cumulative_revenue",
+																	"type": "Double",
+																	"physicalType": "DOUBLE"
+																},
+																"sink": {
+																	"name": "cumulative_revenue",
+																	"type": "Double"
+																}
+															},
+															{
+																"source": {
+																	"name": "cumulative_spend",
+																	"type": "Double",
+																	"physicalType": "DOUBLE"
+																},
+																"sink": {
+																	"name": "cumulative_spend",
+																	"type": "Double"
+																}
+															},
+															{
+																"source": {
+																	"name": "gross_profit",
+																	"type": "Double",
+																	"physicalType": "DOUBLE"
+																},
+																"sink": {
+																	"name": "gross_profit",
+																	"type": "Double"
+																}
+															},
+															{
+																"source": {
+																	"name": "incident_count",
+																	"type": "Int64",
+																	"physicalType": "INT_64"
+																},
+																"sink": {
+																	"name": "incident_count",
+																	"type": "Int64"
+																}
+															},
+															{
+																"source": {
+																	"name": "profit_margin",
+																	"type": "Double",
+																	"physicalType": "DOUBLE"
+																},
+																"sink": {
+																	"name": "profit_margin",
+																	"type": "Double"
+																}
+															},
+															{
+																"source": {
+																	"name": "region",
+																	"type": "String",
+																	"physicalType": "UTF8"
+																},
+																"sink": {
+																	"name": "region",
+																	"type": "String"
+																}
+															},
+															{
+																"source": {
+																	"name": "total_barrels",
+																	"type": "Double",
+																	"physicalType": "DOUBLE"
+																},
+																"sink": {
+																	"name": "total_barrels",
+																	"type": "Double"
+																}
+															},
+															{
+																"source": {
+																	"name": "total_cost",
+																	"type": "Double",
+																	"physicalType": "DOUBLE"
+																},
+																"sink": {
+																	"name": "total_cost",
+																	"type": "Double"
+																}
+															},
+															{
+																"source": {
+																	"name": "total_downtime_hours",
+																	"type": "Double",
+																	"physicalType": "DOUBLE"
+																},
+																"sink": {
+																	"name": "total_downtime_hours",
+																	"type": "Double"
+																}
+															},
+															{
+																"source": {
+																	"name": "total_incident_cost",
+																	"type": "Double",
+																	"physicalType": "DOUBLE"
+																},
+																"sink": {
+																	"name": "total_incident_cost",
+																	"type": "Double"
+																}
+															},
+															{
+																"source": {
+																	"name": "total_revenue",
+																	"type": "Double",
+																	"physicalType": "DOUBLE"
+																},
+																"sink": {
+																	"name": "total_revenue",
+																	"type": "Double"
+																}
+															},
+															{
+																"source": {
+																	"name": "total_spend",
+																	"type": "Double",
+																	"physicalType": "DOUBLE"
+																},
+																"sink": {
+																	"name": "total_spend",
+																	"type": "Double"
+																}
+															},
+															{
+																"source": {
+																	"name": "month",
+																	"type": "Int32",
+																	"physicalType": "INT_32"
+																},
+																"sink": {
+																	"name": "month",
+																	"type": "Int32"
+																}
+															},
+															{
+																"source": {
+																	"name": "year",
+																	"type": "Int32",
+																	"physicalType": "INT_32"
+																},
+																"sink": {
+																	"name": "year",
+																	"type": "Int32"
+																}
+															}
+														],
 														"typeConversion": true,
 														"typeConversionSettings": {
 															"allowDataTruncation": true,
@@ -1101,6 +1549,119 @@
 														"parameters": {}
 													}
 												]
+											},
+											{
+												"name": "sucess_data",
+												"type": "SqlServerStoredProcedure",
+												"dependsOn": [
+													{
+														"activity": "CP_reportingzone_AzureTable",
+														"dependencyConditions": [
+															"Succeeded"
+														]
+													}
+												],
+												"policy": {
+													"timeout": "0.12:00:00",
+													"retry": 0,
+													"retryIntervalInSeconds": 30,
+													"secureOutput": false,
+													"secureInput": false
+												},
+												"userProperties": [],
+												"typeProperties": {
+													"storedProcedureName": "[[dbo].[usp_sucess_failure_logs]",
+													"storedProcedureParameters": {
+														"ActivityName": {
+															"value": {
+																"value": "CP_reportingzone_AzureTable",
+																"type": "Expression"
+															},
+															"type": "String"
+														},
+														"DataReadBytes": {
+															"value": {
+																"value": "@activity('CP_reportingzone_AzureTable').output.dataRead",
+																"type": "Expression"
+															},
+															"type": "Int64"
+														},
+														"DataWrittenBytes": {
+															"value": {
+																"value": "@activity('CP_reportingzone_AzureTable').output.dataWritten",
+																"type": "Expression"
+															},
+															"type": "Int64"
+														},
+														"EndTime": {
+															"value": {
+																"value": "@utcNow()\n",
+																"type": "Expression"
+															},
+															"type": "DateTime"
+														},
+														"ErrorMessage": {
+															"value": {
+																"value": "'  '",
+																"type": "Expression"
+															},
+															"type": "String"
+														},
+														"ExecutionStatus": {
+															"value": {
+																"value": "@activity('CP_reportingzone_AzureTable').Status",
+																"type": "Expression"
+															},
+															"type": "String"
+														},
+														"PipelineName": {
+															"value": {
+																"value": "@pipeline().Pipeline",
+																"type": "Expression"
+															},
+															"type": "String"
+														},
+														"RowsRead": {
+															"value": {
+																"value": "@activity('CP_reportingzone_AzureTable').output.rowsRead",
+																"type": "Expression"
+															},
+															"type": "Int64"
+														},
+														"RowsWritten": {
+															"value": {
+																"value": "@activity('CP_reportingzone_AzureTable').output.rowsCopied",
+																"type": "Expression"
+															},
+															"type": "Int64"
+														},
+														"SinkType": {
+															"value": {
+																"value": "AzureTable",
+																"type": "Expression"
+															},
+															"type": "String"
+														},
+														"SourceType": {
+															"value": {
+																"value": "AdlsReportingZone",
+																"type": "Expression"
+															},
+															"type": "String"
+														},
+														"StartTime": {
+															"value": {
+																"value": "@utcNow()",
+																"type": "Expression"
+															},
+															"type": "DateTime"
+														}
+													}
+												},
+												"linkedServiceName": {
+													"referenceName": "ls_sql_onprem_petrolake",
+													"type": "LinkedServiceReference"
+												}
 											}
 										]
 									}
@@ -1142,7 +1703,7 @@
 															"type": "AzureBlobFSReadSettings",
 															"recursive": true,
 															"wildcardFolderPath": {
-																"value": "Global_Downstream/final_operational_kpi",
+																"value": "Global_Downstream/final_operational_kpi_parquet",
 																"type": "Expression"
 															},
 															"wildcardFileName": "*.parquet",
@@ -1171,7 +1732,7 @@
 																"sink": {
 																	"name": "region",
 																	"type": "String",
-																	"physicalType": "varchar"
+																	"physicalType": "nvarchar"
 																}
 															},
 															{
@@ -1183,7 +1744,7 @@
 																"sink": {
 																	"name": "country",
 																	"type": "String",
-																	"physicalType": "varchar"
+																	"physicalType": "nvarchar"
 																}
 															},
 															{
@@ -1196,7 +1757,7 @@
 																	"name": "total_barrels",
 																	"type": "Decimal",
 																	"physicalType": "decimal",
-																	"scale": 4,
+																	"scale": 2,
 																	"precision": 18
 																}
 															},
@@ -1210,7 +1771,7 @@
 																	"name": "total_revenue",
 																	"type": "Decimal",
 																	"physicalType": "decimal",
-																	"scale": 4,
+																	"scale": 2,
 																	"precision": 18
 																}
 															},
@@ -1224,7 +1785,7 @@
 																	"name": "total_cost",
 																	"type": "Decimal",
 																	"physicalType": "decimal",
-																	"scale": 4,
+																	"scale": 2,
 																	"precision": 18
 																}
 															},
@@ -1238,8 +1799,8 @@
 																	"name": "profit_margin",
 																	"type": "Decimal",
 																	"physicalType": "decimal",
-																	"scale": 4,
-																	"precision": 9
+																	"scale": 2,
+																	"precision": 5
 																}
 															},
 															{
@@ -1252,7 +1813,7 @@
 																	"name": "gross_profit",
 																	"type": "Decimal",
 																	"physicalType": "decimal",
-																	"scale": 4,
+																	"scale": 2,
 																	"precision": 18
 																}
 															},
@@ -1266,7 +1827,7 @@
 																	"name": "total_spend",
 																	"type": "Decimal",
 																	"physicalType": "decimal",
-																	"scale": 4,
+																	"scale": 2,
 																	"precision": 18
 																}
 															},
@@ -1278,8 +1839,8 @@
 																},
 																"sink": {
 																	"name": "incident_count",
-																	"type": "Int64",
-																	"physicalType": "bigint"
+																	"type": "Int32",
+																	"physicalType": "int"
 																}
 															},
 															{
@@ -1292,7 +1853,7 @@
 																	"name": "total_incident_cost",
 																	"type": "Decimal",
 																	"physicalType": "decimal",
-																	"scale": 4,
+																	"scale": 2,
 																	"precision": 18
 																}
 															},
@@ -1306,7 +1867,7 @@
 																	"name": "cumulative_barrels",
 																	"type": "Decimal",
 																	"physicalType": "decimal",
-																	"scale": 4,
+																	"scale": 2,
 																	"precision": 18
 																}
 															},
@@ -1320,7 +1881,7 @@
 																	"name": "cumulative_spend",
 																	"type": "Decimal",
 																	"physicalType": "decimal",
-																	"scale": 4,
+																	"scale": 2,
 																	"precision": 18
 																}
 															},
@@ -1334,7 +1895,7 @@
 																	"name": "cumulative_revenue",
 																	"type": "Decimal",
 																	"physicalType": "decimal",
-																	"scale": 4,
+																	"scale": 2,
 																	"precision": 18
 																}
 															},
@@ -1348,7 +1909,7 @@
 																	"name": "cost_per_barrel",
 																	"type": "Decimal",
 																	"physicalType": "decimal",
-																	"scale": 6,
+																	"scale": 2,
 																	"precision": 18
 																}
 															},
@@ -1362,8 +1923,8 @@
 																	"name": "total_downtime_hours",
 																	"type": "Decimal",
 																	"physicalType": "decimal",
-																	"scale": 4,
-																	"precision": 18
+																	"scale": 2,
+																	"precision": 10
 																}
 															},
 															{
@@ -1376,7 +1937,7 @@
 																	"name": "cumulative_incident_cost",
 																	"type": "Decimal",
 																	"physicalType": "decimal",
-																	"scale": 4,
+																	"scale": 2,
 																	"precision": 18
 																}
 															},
@@ -1400,8 +1961,8 @@
 																},
 																"sink": {
 																	"name": "month",
-																	"type": "Int32",
-																	"physicalType": "int"
+																	"type": "Byte",
+																	"physicalType": "tinyint"
 																}
 															}
 														],
@@ -1426,98 +1987,121 @@
 														"parameters": {}
 													}
 												]
+											},
+											{
+												"name": "sucess_data_azuresql",
+												"type": "SqlServerStoredProcedure",
+												"dependsOn": [
+													{
+														"activity": "CP_reporting_SQLserver",
+														"dependencyConditions": [
+															"Succeeded"
+														]
+													}
+												],
+												"policy": {
+													"timeout": "0.12:00:00",
+													"retry": 0,
+													"retryIntervalInSeconds": 30,
+													"secureOutput": false,
+													"secureInput": false
+												},
+												"userProperties": [],
+												"typeProperties": {
+													"storedProcedureName": "[[dbo].[usp_sucess_failure_logs]",
+													"storedProcedureParameters": {
+														"ActivityName": {
+															"value": {
+																"value": "CP_reportingzone_AzureTable",
+																"type": "Expression"
+															},
+															"type": "String"
+														},
+														"DataReadBytes": {
+															"value": {
+																"value": "@activity('CP_reporting_SQLserver').output.dataRead",
+																"type": "Expression"
+															},
+															"type": "Int64"
+														},
+														"DataWrittenBytes": {
+															"value": {
+																"value": "@activity('CP_reporting_SQLserver').output.dataWritten",
+																"type": "Expression"
+															},
+															"type": "Int64"
+														},
+														"EndTime": {
+															"value": {
+																"value": "@utcNow()\n",
+																"type": "Expression"
+															},
+															"type": "DateTime"
+														},
+														"ErrorMessage": {
+															"value": {
+																"value": "' '",
+																"type": "Expression"
+															},
+															"type": "String"
+														},
+														"ExecutionStatus": {
+															"value": {
+																"value": "@activity('CP_reporting_SQLserver').Status",
+																"type": "Expression"
+															},
+															"type": "String"
+														},
+														"PipelineName": {
+															"value": {
+																"value": "@pipeline().Pipeline",
+																"type": "Expression"
+															},
+															"type": "String"
+														},
+														"RowsRead": {
+															"value": {
+																"value": "@activity('CP_reporting_SQLserver').output.rowsRead",
+																"type": "Expression"
+															},
+															"type": "Int64"
+														},
+														"RowsWritten": {
+															"value": {
+																"value": "@activity('CP_reporting_SQLserver').output.rowsCopied",
+																"type": "Expression"
+															},
+															"type": "Int64"
+														},
+														"SinkType": {
+															"value": {
+																"value": "AzureSQL",
+																"type": "Expression"
+															},
+															"type": "String"
+														},
+														"SourceType": {
+															"value": {
+																"value": "AdlsReportingZone",
+																"type": "Expression"
+															},
+															"type": "String"
+														},
+														"StartTime": {
+															"value": {
+																"value": "@utcNow()",
+																"type": "Expression"
+															},
+															"type": "DateTime"
+														}
+													}
+												},
+												"linkedServiceName": {
+													"referenceName": "ls_sql_onprem_petrolake",
+													"type": "LinkedServiceReference"
+												}
 											}
 										]
-									}
-								},
-								{
-									"name": "sp_sucess",
-									"type": "SqlServerStoredProcedure",
-									"state": "Inactive",
-									"onInactiveMarkAs": "Succeeded",
-									"dependsOn": [
-										{
-											"activity": "LoadAzuretableStorahe",
-											"dependencyConditions": [
-												"Succeeded"
-											]
-										}
-									],
-									"policy": {
-										"timeout": "0.12:00:00",
-										"retry": 0,
-										"retryIntervalInSeconds": 30,
-										"secureOutput": false,
-										"secureInput": false
-									},
-									"userProperties": [],
-									"typeProperties": {
-										"storedProcedureName": "[[dbo].[usp_ADF_Log_Pipeline_Success]",
-										"storedProcedureParameters": {
-											"PipelineRunID": {
-												"value": {
-													"value": "@pipeline().RunId",
-													"type": "Expression"
-												},
-												"type": "Guid"
-											},
-											"status": {
-												"value": {
-													"value": "sucess",
-													"type": "Expression"
-												},
-												"type": "String"
-											}
-										}
-									},
-									"linkedServiceName": {
-										"referenceName": "ls_sql_onprem_petrolake",
-										"type": "LinkedServiceReference"
-									}
-								},
-								{
-									"name": "sp_sucess_sql",
-									"type": "SqlServerStoredProcedure",
-									"state": "Inactive",
-									"onInactiveMarkAs": "Succeeded",
-									"dependsOn": [
-										{
-											"activity": "LoadSQLServer",
-											"dependencyConditions": [
-												"Succeeded"
-											]
-										}
-									],
-									"policy": {
-										"timeout": "0.12:00:00",
-										"retry": 0,
-										"retryIntervalInSeconds": 30,
-										"secureOutput": false,
-										"secureInput": false
-									},
-									"userProperties": [],
-									"typeProperties": {
-										"storedProcedureName": "[[dbo].[usp_ADF_Log_Pipeline_Success]",
-										"storedProcedureParameters": {
-											"PipelineRunID": {
-												"value": {
-													"value": "@pipeline().RunId",
-													"type": "Expression"
-												},
-												"type": "Guid"
-											},
-											"status": {
-												"value": {
-													"value": "sucess",
-													"type": "Expression"
-												},
-												"type": "String"
-											}
-										}
-									},
-									"linkedServiceName": {
-										"referenceName": "ls_sql_onprem_petrolake",
-										"type": "LinkedServiceReference"
 									}
 								}
 							]
@@ -1585,6 +2169,43 @@
 						"linkedServiceName": {
 							"referenceName": "ls_sql_onprem_petrolake",
 							"type": "LinkedServiceReference"
+						}
+					},
+					{
+						"name": "getnotofication",
+						"type": "WebActivity",
+						"dependsOn": [
+							{
+								"activity": "get_sheets",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
+						"policy": {
+							"timeout": "0.12:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"method": "POST",
+							"headers": {
+								"Content-Type": {
+									"value": "application/json",
+									"type": "Expression"
+								}
+							},
+							"url": {
+								"value": "https://prod-17.northcentralus.logic.azure.com:443/workflows/182127ba0e64438b949ba76c27f89358/triggers/When_an_HTTP_request_is_received/paths/invoke?api-version=2016-10-01&sp=%2Ftriggers%2FWhen_an_HTTP_request_is_received%2Frun&sv=1.0&sig=T_OUwJsCK6YFXV16RbRjmyZ-OFcrpOW5eGB6upnMJFo",
+								"type": "Expression"
+							},
+							"body": {
+								"value": "{\n  \"pipelineName\": \"@{pipeline().Pipeline}\",\n  \"runId\": \"@{pipeline().RunId}\",\n  \"triggerName\": \"@{pipeline().TriggerName}\",\n  \"triggerTime\": \"@{pipeline().TriggerTime}\",\n  \"activityName\": \"Copy_Product_Data\",\n  \"status\": \"Failed\",\n  \n}\n",
+								"type": "Expression"
+							}
 						}
 					}
 				],
@@ -1808,6 +2429,27 @@
 				"typeProperties": {
 					"schema": "dbo",
 					"table": "GLOBAL_DOWNSTREAM"
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/linkedServices/ls_azuresql_petrolake_dev')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/ds_azuresql_global_midstream')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "ls_azuresql_petrolake_dev",
+					"type": "LinkedServiceReference"
+				},
+				"annotations": [],
+				"type": "AzureSqlTable",
+				"schema": [],
+				"typeProperties": {
+					"schema": "dbo",
+					"table": "GLOBAL_MIDSTREAM"
 				}
 			},
 			"dependsOn": [
@@ -2163,27 +2805,6 @@
 				"typeProperties": {}
 			},
 			"dependsOn": []
-		},
-		{
-			"name": "[concat(parameters('factoryName'), '/ds_azuresql_global_midstream')]",
-			"type": "Microsoft.DataFactory/factories/datasets",
-			"apiVersion": "2018-06-01",
-			"properties": {
-				"linkedServiceName": {
-					"referenceName": "ls_azuresql_petrolake_dev",
-					"type": "LinkedServiceReference"
-				},
-				"annotations": [],
-				"type": "AzureSqlTable",
-				"schema": [],
-				"typeProperties": {
-					"schema": "dbo",
-					"table": "GLOBAL_MIDSTREAM"
-				}
-			},
-			"dependsOn": [
-				"[concat(variables('factoryId'), '/linkedServices/ls_azuresql_petrolake_dev')]"
-			]
 		}
 	]
 }
