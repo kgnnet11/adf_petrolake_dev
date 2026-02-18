@@ -501,7 +501,7 @@
 												},
 												"ErrorMessage": {
 													"value": {
-														"value": "@activity('CP_reportingzone_AzureTable').error.message",
+														"value": "'  '",
 														"type": "Expression"
 													},
 													"type": "String"
