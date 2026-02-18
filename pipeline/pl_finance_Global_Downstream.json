@@ -736,14 +736,14 @@
 												},
 												"RowsRead": {
 													"value": {
-														"value": "@activity('CP_reporting_SQLserver').output.rowsCopied\n",
+														"value": "@activity('CP_reporting_SQLserver').output.rowsRead\n",
 														"type": "Expression"
 													},
 													"type": "Int64"
 												},
 												"RowsWritten": {
 													"value": {
-														"value": "@activity('CP_reporting_SQLserver').output.rowsWritten",
+														"value": "@activity('CP_reporting_SQLserver').output.rowsCopied\n",
 														"type": "Expression"
 													},
 													"type": "Int64"
