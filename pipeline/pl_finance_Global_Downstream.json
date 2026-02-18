@@ -185,7 +185,7 @@
 													"type": "AzureBlobFSReadSettings",
 													"recursive": true,
 													"wildcardFolderPath": {
-														"value": "Global_Downstream/final_operational_kpi",
+														"value": "Global_Downstream/final_operational_kpi_parquet",
 														"type": "Expression"
 													},
 													"wildcardFileName": "*.parquet",
@@ -207,6 +207,228 @@
 											"enableStaging": false,
 											"translator": {
 												"type": "TabularTranslator",
+												"mappings": [
+													{
+														"source": {
+															"name": "spend_vs_revenue_pct",
+															"type": "Double",
+															"physicalType": "DOUBLE"
+														},
+														"sink": {
+															"name": "PartitionKey",
+															"type": "String"
+														}
+													},
+													{
+														"source": {
+															"name": "incident_cost_impact_pct",
+															"type": "Double",
+															"physicalType": "DOUBLE"
+														},
+														"sink": {
+															"name": "RowKey",
+															"type": "String"
+														}
+													},
+													{
+														"source": {
+															"name": "cost_per_barrel",
+															"type": "Double",
+															"physicalType": "DOUBLE"
+														},
+														"sink": {
+															"name": "cost_per_barrel",
+															"type": "Double"
+														}
+													},
+													{
+														"source": {
+															"name": "country",
+															"type": "String",
+															"physicalType": "UTF8"
+														},
+														"sink": {
+															"name": "country",
+															"type": "String"
+														}
+													},
+													{
+														"source": {
+															"name": "cumulative_barrels",
+															"type": "Double",
+															"physicalType": "DOUBLE"
+														},
+														"sink": {
+															"name": "cumulative_barrels",
+															"type": "Double"
+														}
+													},
+													{
+														"source": {
+															"name": "cumulative_incident_cost",
+															"type": "Double",
+															"physicalType": "DOUBLE"
+														},
+														"sink": {
+															"name": "cumulative_incident_cost",
+															"type": "Double"
+														}
+													},
+													{
+														"source": {
+															"name": "cumulative_revenue",
+															"type": "Double",
+															"physicalType": "DOUBLE"
+														},
+														"sink": {
+															"name": "cumulative_revenue",
+															"type": "Double"
+														}
+													},
+													{
+														"source": {
+															"name": "cumulative_spend",
+															"type": "Double",
+															"physicalType": "DOUBLE"
+														},
+														"sink": {
+															"name": "cumulative_spend",
+															"type": "Double"
+														}
+													},
+													{
+														"source": {
+															"name": "gross_profit",
+															"type": "Double",
+															"physicalType": "DOUBLE"
+														},
+														"sink": {
+															"name": "gross_profit",
+															"type": "Double"
+														}
+													},
+													{
+														"source": {
+															"name": "incident_count",
+															"type": "Int64",
+															"physicalType": "INT_64"
+														},
+														"sink": {
+															"name": "incident_count",
+															"type": "Int64"
+														}
+													},
+													{
+														"source": {
+															"name": "profit_margin",
+															"type": "Double",
+															"physicalType": "DOUBLE"
+														},
+														"sink": {
+															"name": "profit_margin",
+															"type": "Double"
+														}
+													},
+													{
+														"source": {
+															"name": "region",
+															"type": "String",
+															"physicalType": "UTF8"
+														},
+														"sink": {
+															"name": "region",
+															"type": "String"
+														}
+													},
+													{
+														"source": {
+															"name": "total_barrels",
+															"type": "Double",
+															"physicalType": "DOUBLE"
+														},
+														"sink": {
+															"name": "total_barrels",
+															"type": "Double"
+														}
+													},
+													{
+														"source": {
+															"name": "total_cost",
+															"type": "Double",
+															"physicalType": "DOUBLE"
+														},
+														"sink": {
+															"name": "total_cost",
+															"type": "Double"
+														}
+													},
+													{
+														"source": {
+															"name": "total_downtime_hours",
+															"type": "Double",
+															"physicalType": "DOUBLE"
+														},
+														"sink": {
+															"name": "total_downtime_hours",
+															"type": "Double"
+														}
+													},
+													{
+														"source": {
+															"name": "total_incident_cost",
+															"type": "Double",
+															"physicalType": "DOUBLE"
+														},
+														"sink": {
+															"name": "total_incident_cost",
+															"type": "Double"
+														}
+													},
+													{
+														"source": {
+															"name": "total_revenue",
+															"type": "Double",
+															"physicalType": "DOUBLE"
+														},
+														"sink": {
+															"name": "total_revenue",
+															"type": "Double"
+														}
+													},
+													{
+														"source": {
+															"name": "total_spend",
+															"type": "Double",
+															"physicalType": "DOUBLE"
+														},
+														"sink": {
+															"name": "total_spend",
+															"type": "Double"
+														}
+													},
+													{
+														"source": {
+															"name": "month",
+															"type": "Int32",
+															"physicalType": "INT_32"
+														},
+														"sink": {
+															"name": "month",
+															"type": "Int32"
+														}
+													},
+													{
+														"source": {
+															"name": "year",
+															"type": "Int32",
+															"physicalType": "INT_32"
+														},
+														"sink": {
+															"name": "year",
+															"type": "Int32"
+														}
+													}
+												],
 												"typeConversion": true,
 												"typeConversionSettings": {
 													"allowDataTruncation": true,
@@ -265,21 +487,21 @@
 												},
 												"DataWrittenBytes": {
 													"value": {
-														"value": "@activity('CP_reportingzone_AzureTable').output.dataWritten\n",
+														"value": "@activity('CP_reportingzone_AzureTable').output.datawritten",
 														"type": "Expression"
 													},
 													"type": "Int64"
 												},
 												"EndTime": {
 													"value": {
-														"value": "@utcNow()\n",
+														"value": "@activity('CP_reportingzone_AzureTable').output.executionDetails[0].start\n",
 														"type": "Expression"
 													},
 													"type": "DateTime"
 												},
 												"ErrorMessage": {
 													"value": {
-														"value": "@if(\n    empty(activity('CP_reportingzone_AzureTable').error),\n    '',\n    activity('CP_reportingzone_AzureTable').error.message\n)\n",
+														"value": "@activity('CP_reportingzone_AzureTable').error.message",
 														"type": "Expression"
 													},
 													"type": "String"
@@ -300,7 +522,7 @@
 												},
 												"RowsRead": {
 													"value": {
-														"value": "@activity('CP_reportingzone_AzureTable').output.rowsCopied\n",
+														"value": "@activity('CP_reportingzone_AzureTable').output.rowsRead",
 														"type": "Expression"
 													},
 													"type": "Int64"
@@ -701,21 +923,21 @@
 												},
 												"DataWrittenBytes": {
 													"value": {
-														"value": "@activity('CP_reporting_SQLserver').output.dataWritten",
+														"value": "@activity('CP_reporting_SQLserver').output.datawritten",
 														"type": "Expression"
 													},
 													"type": "Int64"
 												},
 												"EndTime": {
 													"value": {
-														"value": "@utcNow()",
+														"value": "@activity('CP_reporting_SQLserver').output.executionDetails[0].start\n",
 														"type": "Expression"
 													},
 													"type": "DateTime"
 												},
 												"ErrorMessage": {
 													"value": {
-														"value": "@if(\n    empty(activity('CP_reporting_SQLserver').error),\n    '',\n    activity('CP_reporting_SQLserver').error.message\n)\n",
+														"value": "@activity('CP_reporting_SQLserver').error.message",
 														"type": "Expression"
 													},
 													"type": "String"
@@ -736,14 +958,14 @@
 												},
 												"RowsRead": {
 													"value": {
-														"value": "@activity('CP_reporting_SQLserver').output.rowsRead\n",
+														"value": "@activity('CP_reporting_SQLserver').output.rowsRead",
 														"type": "Expression"
 													},
 													"type": "Int64"
 												},
 												"RowsWritten": {
 													"value": {
-														"value": "@activity('CP_reporting_SQLserver').output.rowsCopied\n",
+														"value": "@activity('CP_reporting_SQLserver').output.rowsWritten",
 														"type": "Expression"
 													},
 													"type": "Int64"
