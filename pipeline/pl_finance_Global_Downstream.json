@@ -265,7 +265,7 @@
 												},
 												"DataWrittenBytes": {
 													"value": {
-														"value": "@activity('CP_reportingzone_AzureTable').output.datawritten",
+														"value": "@activity('CP_reportingzone_AzureTable').output.dataWritten\n",
 														"type": "Expression"
 													},
 													"type": "Int64"
@@ -279,7 +279,7 @@
 												},
 												"ErrorMessage": {
 													"value": {
-														"value": "@activity('CP_reportingzone_AzureTable').error.message",
+														"value": "@if(\n    empty(activity('CP_reportingzone_AzureTable').error),\n    '',\n    activity('CP_reportingzone_AzureTable').error.message\n)\n",
 														"type": "Expression"
 													},
 													"type": "String"
@@ -300,7 +300,7 @@
 												},
 												"RowsRead": {
 													"value": {
-														"value": "@activity('CP_reportingzone_AzureTable').output.rowsRead",
+														"value": "@activity('CP_reportingzone_AzureTable').output.rowsCopied\n",
 														"type": "Expression"
 													},
 													"type": "Int64"
@@ -701,7 +701,7 @@
 												},
 												"DataWrittenBytes": {
 													"value": {
-														"value": "@activity('CP_reporting_SQLserver').output.datawritten",
+														"value": "@activity('CP_reporting_SQLserver').output.dataWritten",
 														"type": "Expression"
 													},
 													"type": "Int64"
@@ -715,7 +715,7 @@
 												},
 												"ErrorMessage": {
 													"value": {
-														"value": "@activity('CP_reporting_SQLserver').error.message",
+														"value": "@if(\n    empty(activity('CP_reporting_SQLserver').error),\n    '',\n    activity('CP_reporting_SQLserver').error.message\n)\n",
 														"type": "Expression"
 													},
 													"type": "String"
