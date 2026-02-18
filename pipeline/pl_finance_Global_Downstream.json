@@ -937,7 +937,7 @@
 												},
 												"ErrorMessage": {
 													"value": {
-														"value": "@activity('CP_reporting_SQLserver').error.message",
+														"value": "' '",
 														"type": "Expression"
 													},
 													"type": "String"
