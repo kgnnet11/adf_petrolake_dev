@@ -604,6 +604,119 @@
 												"type": "DatasetReference"
 											}
 										]
+									},
+									{
+										"name": "sucess_data_sql",
+										"type": "SqlServerStoredProcedure",
+										"dependsOn": [
+											{
+												"activity": "cp_reporting_SQLserver",
+												"dependencyConditions": [
+													"Succeeded"
+												]
+											}
+										],
+										"policy": {
+											"timeout": "0.12:00:00",
+											"retry": 0,
+											"retryIntervalInSeconds": 30,
+											"secureOutput": false,
+											"secureInput": false
+										},
+										"userProperties": [],
+										"typeProperties": {
+											"storedProcedureName": "[dbo].[usp_sucess_failure_logs]",
+											"storedProcedureParameters": {
+												"ActivityName": {
+													"value": {
+														"value": "cp_reportingzone_AzureTableStorage",
+														"type": "Expression"
+													},
+													"type": "String"
+												},
+												"DataReadBytes": {
+													"value": {
+														"value": "@activity('cp_reporting_SQLserver').output.dataRead",
+														"type": "Expression"
+													},
+													"type": "Int64"
+												},
+												"DataWrittenBytes": {
+													"value": {
+														"value": "@activity('cp_reporting_SQLserver').output.dataWritten",
+														"type": "Expression"
+													},
+													"type": "Int64"
+												},
+												"EndTime": {
+													"value": {
+														"value": "@utcNow()\n",
+														"type": "Expression"
+													},
+													"type": "DateTime"
+												},
+												"ErrorMessage": {
+													"value": {
+														"value": "@if(\n    equals(activity('cp_reporting_SQLserver').Status, 'Failed'),\n    activity('cp_reporting_SQLserver').error.message,\n    ''\n)\n",
+														"type": "Expression"
+													},
+													"type": "String"
+												},
+												"ExecutionStatus": {
+													"value": {
+														"value": "@activity('cp_reporting_SQLserver').Status",
+														"type": "Expression"
+													},
+													"type": "String"
+												},
+												"PipelineName": {
+													"value": {
+														"value": "@pipeline().Pipeline",
+														"type": "Expression"
+													},
+													"type": "String"
+												},
+												"RowsRead": {
+													"value": {
+														"value": "@activity('cp_reporting_SQLserver').output.rowsRead",
+														"type": "Expression"
+													},
+													"type": "Int64"
+												},
+												"RowsWritten": {
+													"value": {
+														"value": "@activity('cp_reporting_SQLserver').output.rowsCopied",
+														"type": "Expression"
+													},
+													"type": "Int64"
+												},
+												"SinkType": {
+													"value": {
+														"value": "AzureTable",
+														"type": "Expression"
+													},
+													"type": "String"
+												},
+												"SourceType": {
+													"value": {
+														"value": "AdlsReportingZone",
+														"type": "Expression"
+													},
+													"type": "String"
+												},
+												"StartTime": {
+													"value": {
+														"value": "@utcNow()",
+														"type": "Expression"
+													},
+													"type": "DateTime"
+												}
+											}
+										},
+										"linkedServiceName": {
+											"referenceName": "ls_sql_onprem_petrolake",
+											"type": "LinkedServiceReference"
+										}
 									}
 								]
 							}
