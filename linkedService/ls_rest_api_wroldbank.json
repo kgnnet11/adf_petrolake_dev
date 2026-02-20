@@ -1,0 +1,12 @@
+{
+	"name": "ls_rest_api_wroldbank",
+	"properties": {
+		"annotations": [],
+		"type": "RestService",
+		"typeProperties": {
+			"url": "https://api.worldbank.org/v2/country/",
+			"enableServerCertificateValidation": true,
+			"authenticationType": "Anonymous"
+		}
+	}
+}
