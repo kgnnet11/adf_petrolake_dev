@@ -32,8 +32,8 @@
 				}
 			},
 			{
-				"name": "Set_CurrentPage",
-				"type": "SetVariable",
+				"name": "If Condition",
+				"type": "IfCondition",
 				"dependsOn": [
 					{
 						"activity": "Lookup_Metadata",
@@ -42,41 +42,95 @@
 						]
 					}
 				],
-				"policy": {
-					"secureOutput": false,
-					"secureInput": false
-				},
 				"userProperties": [],
 				"typeProperties": {
-					"variableName": "currentPage",
-					"value": {
-						"value": "@add(int(activity('Lookup_Metadata').output.firstRow.LastProcessedPage), 1)",
+					"expression": {
+						"value": "@greater(length(activity('Lookup_Metadata').output.value), 0)",
 						"type": "Expression"
-					}
-				}
-			},
-			{
-				"name": "Set_LastRecordDate",
-				"type": "SetVariable",
-				"dependsOn": [
-					{
-						"activity": "Set_CurrentPage",
-						"dependencyConditions": [
-							"Succeeded"
-						]
-					}
-				],
-				"policy": {
-					"secureOutput": false,
-					"secureInput": false
-				},
-				"userProperties": [],
-				"typeProperties": {
-					"variableName": "LastRecordDate",
-					"value": {
-						"value": "@string(activity('Lookup_Metadata').output.firstRow.LastRecordDate)",
-						"type": "Expression"
-					}
+					},
+					"ifFalseActivities": [
+						{
+							"name": "Set_currentPage_F",
+							"type": "SetVariable",
+							"dependsOn": [],
+							"policy": {
+								"secureOutput": false,
+								"secureInput": false
+							},
+							"userProperties": [],
+							"typeProperties": {
+								"variableName": "currentPage",
+								"value": 1
+							}
+						},
+						{
+							"name": "Set_Lastrecorded",
+							"type": "SetVariable",
+							"dependsOn": [
+								{
+									"activity": "Set_currentPage_F",
+									"dependencyConditions": [
+										"Succeeded"
+									]
+								}
+							],
+							"policy": {
+								"secureOutput": false,
+								"secureInput": false
+							},
+							"userProperties": [],
+							"typeProperties": {
+								"variableName": "LastRecordDate",
+								"value": {
+									"value": "''",
+									"type": "Expression"
+								}
+							}
+						}
+					],
+					"ifTrueActivities": [
+						{
+							"name": "Set_CurrentPage",
+							"type": "SetVariable",
+							"dependsOn": [],
+							"policy": {
+								"secureOutput": false,
+								"secureInput": false
+							},
+							"userProperties": [],
+							"typeProperties": {
+								"variableName": "currentPage",
+								"value": {
+									"value": "@add(int(activity('Lookup_Metadata').output.value[0].LastProcessedPage), 1)",
+									"type": "Expression"
+								}
+							}
+						},
+						{
+							"name": "Set_LastRecordDate",
+							"type": "SetVariable",
+							"dependsOn": [
+								{
+									"activity": "Set_CurrentPage",
+									"dependencyConditions": [
+										"Succeeded"
+									]
+								}
+							],
+							"policy": {
+								"secureOutput": false,
+								"secureInput": false
+							},
+							"userProperties": [],
+							"typeProperties": {
+								"variableName": "LastRecordDate",
+								"value": {
+									"value": "@string(activity('Lookup_Metadata').output.value[0].LastRecordDate)",
+									"type": "Expression"
+								}
+							}
+						}
+					]
 				}
 			}
 		],
