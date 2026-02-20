@@ -128,7 +128,7 @@
 							}
 						},
 						{
-							"name": "Set variable1",
+							"name": "Set_recordsFetched",
 							"type": "SetVariable",
 							"dependsOn": [
 								{
