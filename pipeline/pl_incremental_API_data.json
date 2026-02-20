@@ -204,7 +204,7 @@
 							},
 							"userProperties": [],
 							"typeProperties": {
-								"variableName": "v_Offset",
+								"variableName": "v_Page_New",
 								"value": {
 									"value": "@item().Offset",
 									"type": "Expression"
@@ -235,9 +235,17 @@
 				"type": "Integer",
 				"defaultValue": 1
 			},
-			"v_Offset": {
+			"v_Page_New": {
 				"type": "Integer",
 				"defaultValue": 0
+			},
+			"v_Offset": {
+				"type": "Integer",
+				"defaultValue": 1
+			},
+			"v_Offset_New ": {
+				"type": "String",
+				"defaultValue": "0"
 			}
 		},
 		"annotations": []
