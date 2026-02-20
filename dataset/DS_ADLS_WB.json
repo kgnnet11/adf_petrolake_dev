@@ -1,0 +1,28 @@
+{
+	"name": "DS_ADLS_WB",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "ls_alds_landingzone",
+			"type": "LinkedServiceReference"
+		},
+		"parameters": {
+			"filename": {
+				"type": "string"
+			}
+		},
+		"annotations": [],
+		"type": "Json",
+		"typeProperties": {
+			"location": {
+				"type": "AzureBlobFSLocation",
+				"fileName": {
+					"value": "@dataset().filename",
+					"type": "Expression"
+				},
+				"folderPath": "worldbank",
+				"fileSystem": "api"
+			}
+		},
+		"schema": {}
+	}
+}

@@ -362,32 +362,94 @@
 									"type": "Expression"
 								}
 							}
+						},
+						{
+							"name": "Set_latestYear_update",
+							"type": "SetVariable",
+							"dependsOn": [
+								{
+									"activity": "Append variable",
+									"dependencyConditions": [
+										"Succeeded"
+									]
+								}
+							],
+							"policy": {
+								"secureOutput": false,
+								"secureInput": false
+							},
+							"userProperties": [],
+							"typeProperties": {
+								"variableName": "latestYear",
+								"value": {
+									"value": "@if(greater(length(variables('datesArray')),0), max(variables('datesArray')), 0)",
+									"type": "Expression"
+								}
+							}
+						},
+						{
+							"name": "Copy data_Rest_Adls_Worldbank_energy",
+							"type": "Copy",
+							"dependsOn": [
+								{
+									"activity": "Set_latestYear_update",
+									"dependencyConditions": [
+										"Succeeded"
+									]
+								}
+							],
+							"policy": {
+								"timeout": "0.12:00:00",
+								"retry": 0,
+								"retryIntervalInSeconds": 30,
+								"secureOutput": false,
+								"secureInput": false
+							},
+							"userProperties": [],
+							"typeProperties": {
+								"source": {
+									"type": "RestSource",
+									"httpRequestTimeout": "00:01:40",
+									"requestInterval": "00.00:00:00.010",
+									"requestMethod": "GET"
+								},
+								"sink": {
+									"type": "JsonSink",
+									"storeSettings": {
+										"type": "AzureBlobFSWriteSettings"
+									},
+									"formatSettings": {
+										"type": "JsonWriteSettings"
+									}
+								},
+								"enableStaging": false
+							},
+							"inputs": [
+								{
+									"referenceName": "DS_WorldBank_API",
+									"type": "DatasetReference",
+									"parameters": {
+										"relativeUrl": {
+											"value": "@concat(\n'/v2/country/all/indicator/YOUR_INDICATOR_CODE',\n'?date=',\nitem(),\n':',\nitem(),\n'&per_page=20000&format=json'\n)",
+											"type": "Expression"
+										}
+									}
+								}
+							],
+							"outputs": [
+								{
+									"referenceName": "DS_ADLS_WB",
+									"type": "DatasetReference",
+									"parameters": {
+										"filename": {
+											"value": "@concat('population_', string(variables('page')), '.json')",
+											"type": "Expression"
+										}
+									}
+								}
+							]
 						}
 					]
-				}
-			},
-			{
-				"name": "Set_latestYear_update",
-				"type": "SetVariable",
-				"dependsOn": [
-					{
-						"activity": "ForEach_dataArray",
-						"dependencyConditions": [
-							"Succeeded"
-						]
-					}
-				],
-				"policy": {
-					"secureOutput": false,
-					"secureInput": false
-				},
-				"userProperties": [],
-				"typeProperties": {
-					"variableName": "latestYear",
-					"value": {
-						"value": "@if(greater(length(variables('datesArray')),0), max(variables('datesArray')), 0)",
-						"type": "Expression"
-					}
 				}
 			},
 			{
@@ -410,50 +472,6 @@
 					"variableName": "datesArray",
 					"value": []
 				}
-			},
-			{
-				"name": "Copy data_Rest_Adls_Worldbank_energy",
-				"type": "Copy",
-				"dependsOn": [
-					{
-						"activity": "Set_latestYear_update",
-						"dependencyConditions": [
-							"Succeeded"
-						]
-					}
-				],
-				"policy": {
-					"timeout": "0.12:00:00",
-					"retry": 0,
-					"retryIntervalInSeconds": 30,
-					"secureOutput": false,
-					"secureInput": false
-				},
-				"userProperties": [],
-				"typeProperties": {
-					"source": {
-						"type": "RestSource",
-						"httpRequestTimeout": "00:01:40",
-						"requestInterval": "00.00:00:00.010",
-						"requestMethod": "GET",
-						"paginationRules": {
-							"supportRFC5988": "true"
-						}
-					},
-					"enableStaging": false
-				},
-				"inputs": [
-					{
-						"referenceName": "DS_WorldBank_API",
-						"type": "DatasetReference",
-						"parameters": {
-							"relativeUrl": {
-								"value": "@concat(\n'/v2/country/all/indicator/SP.POP.TOTL?date=',\nvariables('startDate'),\n':',\nvariables('endDate'),\n'&page=',\nvariables('page'),\n'&format=json'\n)",
-								"type": "Expression"
-							}
-						}
-					}
-				]
 			}
 		],
 		"parameters": {
@@ -469,7 +487,7 @@
 			},
 			"totalPages": {
 				"type": "Integer",
-				"defaultValue": 1
+				"defaultValue": 5
 			},
 			"recordsFetched": {
 				"type": "Integer",
@@ -496,10 +514,12 @@
 				"type": "Array"
 			},
 			"startDate": {
-				"type": "String"
+				"type": "String",
+				"defaultValue": "2022"
 			},
 			"endDate": {
-				"type": "String"
+				"type": "String",
+				"defaultValue": "2026"
 			},
 			"page": {
 				"type": "Integer",
