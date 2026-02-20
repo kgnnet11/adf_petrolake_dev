@@ -162,6 +162,30 @@
 									"type": "Expression"
 								}
 							}
+						},
+						{
+							"name": "Set_Increment",
+							"type": "SetVariable",
+							"dependsOn": [
+								{
+									"activity": "Set_PaginationType",
+									"dependencyConditions": [
+										"Succeeded"
+									]
+								}
+							],
+							"policy": {
+								"secureOutput": false,
+								"secureInput": false
+							},
+							"userProperties": [],
+							"typeProperties": {
+								"variableName": "v_IncrementType",
+								"value": {
+									"value": "@item().IncrementType",
+									"type": "Expression"
+								}
+							}
 						}
 					]
 				}
@@ -196,7 +220,7 @@
 			"v_PaginationType": {
 				"type": "String"
 			},
-			"v_\t IncrementType": {
+			"v_IncrementType": {
 				"type": "String"
 			}
 		},
