@@ -30,8 +30,120 @@
 					},
 					"firstRowOnly": false
 				}
+			},
+			{
+				"name": "loop_metada",
+				"type": "ForEach",
+				"dependsOn": [
+					{
+						"activity": "get_meta_data",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"userProperties": [],
+				"typeProperties": {
+					"items": {
+						"value": "@activity('get_meta_data').output.value",
+						"type": "Expression"
+					},
+					"isSequential": true,
+					"activities": [
+						{
+							"name": "Get_APIName",
+							"type": "SetVariable",
+							"dependsOn": [],
+							"policy": {
+								"secureOutput": false,
+								"secureInput": false
+							},
+							"userProperties": [],
+							"typeProperties": {
+								"variableName": "v_APIName",
+								"value": {
+									"value": "@item().APIName",
+									"type": "Expression"
+								}
+							}
+						},
+						{
+							"name": "Set_BaseUrl",
+							"type": "SetVariable",
+							"dependsOn": [
+								{
+									"activity": "Get_APIName",
+									"dependencyConditions": [
+										"Succeeded"
+									]
+								}
+							],
+							"policy": {
+								"secureOutput": false,
+								"secureInput": false
+							},
+							"userProperties": [],
+							"typeProperties": {
+								"variableName": "v_BaseURL",
+								"value": {
+									"value": "@item().BaseURL",
+									"type": "Expression"
+								}
+							}
+						},
+						{
+							"name": "Set_RelativeURLTemplate",
+							"type": "SetVariable",
+							"dependsOn": [
+								{
+									"activity": "Set_BaseUrl",
+									"dependencyConditions": [
+										"Succeeded"
+									]
+								}
+							],
+							"policy": {
+								"secureOutput": false,
+								"secureInput": false
+							},
+							"userProperties": [],
+							"typeProperties": {
+								"variableName": "v_RelativeTemplate",
+								"value": {
+									"value": "@item().RelativeURLTemplate",
+									"type": "Expression"
+								}
+							}
+						}
+					]
+				}
 			}
 		],
+		"variables": {
+			"v_APIName": {
+				"type": "String"
+			},
+			"v_BaseURL": {
+				"type": "String"
+			},
+			"v_RelativeTemplate": {
+				"type": "String"
+			},
+			"v_Watermark": {
+				"type": "String"
+			},
+			"v_PaginationType": {
+				"type": "String"
+			},
+			"v_Page": {
+				"type": "Integer",
+				"defaultValue": 1
+			},
+			"v_Offset": {
+				"type": "Integer",
+				"defaultValue": 0
+			}
+		},
 		"annotations": []
 	}
 }
