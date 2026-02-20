@@ -114,6 +114,78 @@
 									"type": "Expression"
 								}
 							}
+						},
+						{
+							"name": "Set_Watermark",
+							"type": "SetVariable",
+							"dependsOn": [
+								{
+									"activity": "Set_RelativeURLTemplate",
+									"dependencyConditions": [
+										"Succeeded"
+									]
+								}
+							],
+							"policy": {
+								"secureOutput": false,
+								"secureInput": false
+							},
+							"userProperties": [],
+							"typeProperties": {
+								"variableName": "v_Watermark",
+								"value": {
+									"value": "@item().LastWatermarkValue",
+									"type": "Expression"
+								}
+							}
+						},
+						{
+							"name": "Set_PaginationType",
+							"type": "SetVariable",
+							"dependsOn": [
+								{
+									"activity": "Set_Watermark",
+									"dependencyConditions": [
+										"Succeeded"
+									]
+								}
+							],
+							"policy": {
+								"secureOutput": false,
+								"secureInput": false
+							},
+							"userProperties": [],
+							"typeProperties": {
+								"variableName": "v_PaginationType",
+								"value": {
+									"value": "@item().PaginationType",
+									"type": "Expression"
+								}
+							}
+						},
+						{
+							"name": "Reset_Page",
+							"type": "SetVariable",
+							"dependsOn": [
+								{
+									"activity": "Set_PaginationType",
+									"dependencyConditions": [
+										"Succeeded"
+									]
+								}
+							],
+							"policy": {
+								"secureOutput": false,
+								"secureInput": false
+							},
+							"userProperties": [],
+							"typeProperties": {
+								"variableName": "v_Page",
+								"value": {
+									"value": "1",
+									"type": "Expression"
+								}
+							}
 						}
 					]
 				}
