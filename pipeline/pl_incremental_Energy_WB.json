@@ -200,7 +200,7 @@
 									{
 										"type": "Query",
 										"text": {
-											"value": "IF NOT EXISTS (\n    SELECT 1\n    FROM API_Metadata\n    WHERE SourceName = 'WorldBank_Energy_Use'\n)\nBEGIN\n    INSERT INTO API_Metadata \n    (SourceName, LastProcessedPage, LastRecordDate, LastRunDate, TotalRecords)\n    VALUES ('WorldBank_Energy_Use', 0, '', GETDATE(), 0)\nEND",
+											"value": "DELETE FROM API_Metadata\nWHERE SourceName = 'WorldBank_Energy_Use';\n\nINSERT INTO API_Metadata\nVALUES ('WorldBank_Energy_Use', 0, '', GETDATE(), 0);",
 											"type": "Expression"
 										}
 									}
