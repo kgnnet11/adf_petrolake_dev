@@ -193,6 +193,8 @@
 			{
 				"name": "If Condition",
 				"type": "IfCondition",
+				"state": "Inactive",
+				"onInactiveMarkAs": "Succeeded",
 				"dependsOn": [
 					{
 						"activity": "loop_metada",
