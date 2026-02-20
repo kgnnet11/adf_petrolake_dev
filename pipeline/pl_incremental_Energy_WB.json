@@ -312,7 +312,7 @@
 				"type": "SetVariable",
 				"dependsOn": [
 					{
-						"activity": "Set_dataArray",
+						"activity": "Set_datesArray",
 						"dependencyConditions": [
 							"Succeeded"
 						]
@@ -355,7 +355,7 @@
 							"typeProperties": {
 								"variableName": "dataArray",
 								"value": {
-									"value": "@string(item().date)",
+									"value": "@int(item().date)",
 									"type": "Expression"
 								}
 							}
@@ -383,6 +383,30 @@
 					"variableName": "latestYear",
 					"value": {
 						"value": "@max(variables('datesArray'))",
+						"type": "Expression"
+					}
+				}
+			},
+			{
+				"name": "Set_datesArray",
+				"type": "SetVariable",
+				"dependsOn": [
+					{
+						"activity": "Set_dataArray",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"policy": {
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"variableName": "datesArray",
+					"value": {
+						"value": "[]",
 						"type": "Expression"
 					}
 				}
