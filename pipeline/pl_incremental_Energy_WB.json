@@ -45,7 +45,7 @@
 				"userProperties": [],
 				"typeProperties": {
 					"expression": {
-						"value": "@greater(length(activity('Lookup_Metadata').output.value), 0)",
+						"value": "@equals(length(activity('Lookup_Metadata').output.value), 0)",
 						"type": "Expression"
 					},
 					"ifFalseActivities": [
@@ -100,10 +100,7 @@
 							"userProperties": [],
 							"typeProperties": {
 								"variableName": "currentPage",
-								"value": {
-									"value": "@add(int(activity('Lookup_Metadata').output.value[0].LastProcessedPage), 1)",
-									"type": "Expression"
-								}
+								"value": 1
 							}
 						},
 						{
@@ -125,14 +122,14 @@
 							"typeProperties": {
 								"variableName": "LastRecordDate",
 								"value": {
-									"value": "@string(activity('Lookup_Metadata').output.value[0].LastRecordDate)",
+									"value": "''",
 									"type": "Expression"
 								}
 							}
 						},
 						{
-							"name": "Script_AzureSql",
-							"type": "Script",
+							"name": "Set variable1",
+							"type": "SetVariable",
 							"dependsOn": [
 								{
 									"activity": "Set_LastRecordDate",
@@ -142,31 +139,52 @@
 								}
 							],
 							"policy": {
-								"timeout": "0.12:00:00",
-								"retry": 0,
-								"retryIntervalInSeconds": 30,
 								"secureOutput": false,
 								"secureInput": false
 							},
 							"userProperties": [],
-							"linkedServiceName": {
-								"referenceName": "ls_azuresql_petrolake_dev",
-								"type": "LinkedServiceReference"
-							},
 							"typeProperties": {
-								"scripts": [
-									{
-										"type": "Query",
-										"text": {
-											"value": "INSERT INTO API_Metadata (SourceName, LastProcessedPage, LastRecordDate, LastRunDate, TotalRecords)\nVALUES ('WorldBank_Energy_Use', 0, '', GETDATE(), 0)",
-											"type": "Expression"
-										}
-									}
-								],
-								"scriptBlockExecutionTimeout": "02:00:00"
+								"variableName": "recordsFetched",
+								"value": ""
 							}
 						}
 					]
+				}
+			},
+			{
+				"name": "Insert_Initial_Metadata",
+				"type": "Script",
+				"dependsOn": [
+					{
+						"activity": "If Condition",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"policy": {
+					"timeout": "0.12:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"linkedServiceName": {
+					"referenceName": "ls_azuresql_petrolake_dev",
+					"type": "LinkedServiceReference"
+				},
+				"typeProperties": {
+					"scripts": [
+						{
+							"type": "Query",
+							"text": {
+								"value": "INSERT INTO API_Metadata (SourceName, LastProcessedPage, LastRecordDate, LastRunDate, TotalRecords)\nVALUES ('WorldBank_Energy_Use', 0, '', GETDATE(), 0)",
+								"type": "Expression"
+							}
+						}
+					],
+					"scriptBlockExecutionTimeout": "02:00:00"
 				}
 			}
 		],
