@@ -181,10 +181,7 @@
 							"userProperties": [],
 							"typeProperties": {
 								"variableName": "v_Page",
-								"value": {
-									"value": "@item().Page",
-									"type": "Expression"
-								}
+								"value": 1
 							}
 						},
 						{
@@ -205,10 +202,7 @@
 							"userProperties": [],
 							"typeProperties": {
 								"variableName": "v_Page_New",
-								"value": {
-									"value": "@item().Offset",
-									"type": "Expression"
-								}
+								"value": 0
 							}
 						}
 					]
