@@ -341,18 +341,50 @@
 				],
 				"userProperties": [],
 				"typeProperties": {
+					"items": {
+						"value": "@variables('dataArray')",
+						"type": "Expression"
+					},
+					"isSequential": true,
 					"activities": [
 						{
-							"name": "Set variable1",
-							"type": "SetVariable",
+							"name": "Append variable",
+							"type": "AppendVariable",
 							"dependsOn": [],
-							"policy": {
-								"secureOutput": false,
-								"secureInput": false
-							},
-							"userProperties": []
+							"userProperties": [],
+							"typeProperties": {
+								"variableName": "dataArray",
+								"value": {
+									"value": "@string(item().date)",
+									"type": "Expression"
+								}
+							}
 						}
 					]
+				}
+			},
+			{
+				"name": "Set_latestYear_update",
+				"type": "SetVariable",
+				"dependsOn": [
+					{
+						"activity": "ForEach_dataArray",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"policy": {
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"variableName": "latestYear",
+					"value": {
+						"value": "@max(variables('datesArray'))",
+						"type": "Expression"
+					}
 				}
 			}
 		],
@@ -380,8 +412,7 @@
 				"defaultValue": "\"\""
 			},
 			"latestYear": {
-				"type": "Integer",
-				"defaultValue": "\"\""
+				"type": "Integer"
 			},
 			"RunID": {
 				"type": "Integer",
@@ -391,6 +422,9 @@
 				"type": "Integer"
 			},
 			"dataArray": {
+				"type": "Array"
+			},
+			"datesArray": {
 				"type": "Array"
 			}
 		},
