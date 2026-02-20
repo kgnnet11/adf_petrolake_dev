@@ -208,12 +208,10 @@
 				"type": "String"
 			},
 			"v_Page": {
-				"type": "Integer",
-				"defaultValue": 1
+				"type": "Integer"
 			},
 			"v_Offset": {
-				"type": "Integer",
-				"defaultValue": 0
+				"type": "Integer"
 			}
 		},
 		"annotations": []
