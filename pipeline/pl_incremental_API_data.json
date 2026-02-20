@@ -165,6 +165,19 @@
 						}
 					]
 				}
+			},
+			{
+				"name": "If Condition",
+				"type": "IfCondition",
+				"dependsOn": [
+					{
+						"activity": "loop_metada",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"userProperties": []
 			}
 		],
 		"variables": {
@@ -181,6 +194,9 @@
 				"type": "String"
 			},
 			"v_PaginationType": {
+				"type": "String"
+			},
+			"v_\t IncrementType": {
 				"type": "String"
 			}
 		},
