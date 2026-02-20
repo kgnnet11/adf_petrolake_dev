@@ -1,0 +1,38 @@
+{
+	"name": "pl_incremental_Energy_WB",
+	"properties": {
+		"parameters": {
+			"SourceName": {
+				"type": "string",
+				"defaultValue": "\"WorldBank_Energy_Use\""
+			}
+		},
+		"variables": {
+			"currentPage": {
+				"type": "Integer",
+				"defaultValue": 1
+			},
+			"totalPages": {
+				"type": "Integer",
+				"defaultValue": 1
+			},
+			"recordsFetched": {
+				"type": "Integer",
+				"defaultValue": 0
+			},
+			"LastRecordDate": {
+				"type": "String",
+				"defaultValue": "\"\""
+			},
+			"latestYear": {
+				"type": "String",
+				"defaultValue": "\"\""
+			},
+			"RunID": {
+				"type": "Integer",
+				"defaultValue": 1
+			}
+		},
+		"annotations": []
+	}
+}
