@@ -244,8 +244,8 @@
 				"defaultValue": 1
 			},
 			"v_Offset_New ": {
-				"type": "String",
-				"defaultValue": "0"
+				"type": "Integer",
+				"defaultValue": 0
 			}
 		},
 		"annotations": []
