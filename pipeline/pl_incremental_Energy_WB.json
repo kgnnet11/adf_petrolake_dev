@@ -382,7 +382,7 @@
 				"typeProperties": {
 					"variableName": "latestYear",
 					"value": {
-						"value": "@max(variables('datesArray'))",
+						"value": "@if(greater(length(variables('datesArray')),0), max(variables('datesArray')), 0)",
 						"type": "Expression"
 					}
 				}
@@ -405,10 +405,30 @@
 				"userProperties": [],
 				"typeProperties": {
 					"variableName": "datesArray",
-					"value": {
-						"value": "[]",
-						"type": "Expression"
+					"value": []
+				}
+			},
+			{
+				"name": "Copydata_api_adls",
+				"type": "Copy",
+				"dependsOn": [
+					{
+						"activity": "Set_latestYear_update",
+						"dependencyConditions": [
+							"Succeeded"
+						]
 					}
+				],
+				"policy": {
+					"timeout": "0.12:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"enableStaging": false
 				}
 			}
 		],
