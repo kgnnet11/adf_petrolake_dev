@@ -226,20 +226,16 @@
 				"type": "String"
 			},
 			"v_Page": {
-				"type": "Integer",
-				"defaultValue": 1
+				"type": "Integer"
 			},
 			"v_Page_New": {
-				"type": "Integer",
-				"defaultValue": 0
+				"type": "Integer"
 			},
 			"v_Offset": {
-				"type": "Integer",
-				"defaultValue": 1
+				"type": "Integer"
 			},
 			"v_Offset_New ": {
-				"type": "Integer",
-				"defaultValue": 0
+				"type": "Integer"
 			}
 		},
 		"annotations": []
