@@ -1,0 +1,287 @@
+{
+	"$schema": "http://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+	"contentVersion": "1.0.0.0",
+	"parameters": {
+		"factoryName": {
+			"type": "string",
+			"metadata": "Data Factory name"
+		},
+		"ls_azuresql_petrolake_dev": {
+			"type": "string"
+		}
+	},
+	"variables": {
+		"factoryId": "[concat('Microsoft.DataFactory/factories/', parameters('factoryName'))]"
+	},
+	"resources": [
+		{
+			"name": "[concat(parameters('factoryName'), '/pl_incremental_API_data')]",
+			"type": "Microsoft.DataFactory/factories/pipelines",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"activities": [
+					{
+						"name": "get_meta_data",
+						"type": "Lookup",
+						"dependsOn": [],
+						"policy": {
+							"timeout": "0.12:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"source": {
+								"type": "AzureSqlSource",
+								"sqlReaderQuery": {
+									"value": "SELECT * FROM dbo.API_Metadata\nWHERE IsActive = 1;",
+									"type": "Expression"
+								},
+								"queryTimeout": "02:00:00",
+								"partitionOption": "None"
+							},
+							"dataset": {
+								"referenceName": "ds_azuresql_metadata",
+								"type": "DatasetReference"
+							},
+							"firstRowOnly": false
+						}
+					},
+					{
+						"name": "loop_metada",
+						"type": "ForEach",
+						"dependsOn": [
+							{
+								"activity": "get_meta_data",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
+						"userProperties": [],
+						"typeProperties": {
+							"items": {
+								"value": "@activity('get_meta_data').output.value",
+								"type": "Expression"
+							},
+							"isSequential": true,
+							"activities": [
+								{
+									"name": "Get_APIName",
+									"type": "SetVariable",
+									"dependsOn": [],
+									"policy": {
+										"secureOutput": false,
+										"secureInput": false
+									},
+									"userProperties": [],
+									"typeProperties": {
+										"variableName": "v_APIName",
+										"value": {
+											"value": "@item().APIName",
+											"type": "Expression"
+										}
+									}
+								},
+								{
+									"name": "Set_BaseUrl",
+									"type": "SetVariable",
+									"dependsOn": [
+										{
+											"activity": "Get_APIName",
+											"dependencyConditions": [
+												"Succeeded"
+											]
+										}
+									],
+									"policy": {
+										"secureOutput": false,
+										"secureInput": false
+									},
+									"userProperties": [],
+									"typeProperties": {
+										"variableName": "v_BaseURL",
+										"value": {
+											"value": "@item().BaseURL",
+											"type": "Expression"
+										}
+									}
+								},
+								{
+									"name": "Set_RelativeURLTemplate",
+									"type": "SetVariable",
+									"dependsOn": [
+										{
+											"activity": "Set_BaseUrl",
+											"dependencyConditions": [
+												"Succeeded"
+											]
+										}
+									],
+									"policy": {
+										"secureOutput": false,
+										"secureInput": false
+									},
+									"userProperties": [],
+									"typeProperties": {
+										"variableName": "v_RelativeTemplate",
+										"value": {
+											"value": "@item().RelativeURLTemplate",
+											"type": "Expression"
+										}
+									}
+								},
+								{
+									"name": "Set_Watermark",
+									"type": "SetVariable",
+									"dependsOn": [
+										{
+											"activity": "Set_RelativeURLTemplate",
+											"dependencyConditions": [
+												"Succeeded"
+											]
+										}
+									],
+									"policy": {
+										"secureOutput": false,
+										"secureInput": false
+									},
+									"userProperties": [],
+									"typeProperties": {
+										"variableName": "v_Watermark",
+										"value": {
+											"value": "@item().LastWatermarkValue",
+											"type": "Expression"
+										}
+									}
+								},
+								{
+									"name": "Set_PaginationType",
+									"type": "SetVariable",
+									"dependsOn": [
+										{
+											"activity": "Set_Watermark",
+											"dependencyConditions": [
+												"Succeeded"
+											]
+										}
+									],
+									"policy": {
+										"secureOutput": false,
+										"secureInput": false
+									},
+									"userProperties": [],
+									"typeProperties": {
+										"variableName": "v_PaginationType",
+										"value": {
+											"value": "@item().PaginationType",
+											"type": "Expression"
+										}
+									}
+								},
+								{
+									"name": "Reset_Page",
+									"type": "SetVariable",
+									"dependsOn": [
+										{
+											"activity": "Set_PaginationType",
+											"dependencyConditions": [
+												"Succeeded"
+											]
+										}
+									],
+									"policy": {
+										"secureOutput": false,
+										"secureInput": false
+									},
+									"userProperties": [],
+									"typeProperties": {
+										"variableName": "v_Page",
+										"value": {
+											"value": "@item().Page",
+											"type": "Expression"
+										}
+									}
+								},
+								{
+									"name": "Reset_Offset",
+									"type": "SetVariable",
+									"dependsOn": [
+										{
+											"activity": "Reset_Page",
+											"dependencyConditions": [
+												"Succeeded"
+											]
+										}
+									],
+									"policy": {
+										"secureOutput": false,
+										"secureInput": false
+									},
+									"userProperties": [],
+									"typeProperties": {
+										"variableName": "v_Offset",
+										"value": {
+											"value": "@item().Offset",
+											"type": "Expression"
+										}
+									}
+								}
+							]
+						}
+					}
+				],
+				"variables": {
+					"v_APIName": {
+						"type": "String"
+					},
+					"v_BaseURL": {
+						"type": "String"
+					},
+					"v_RelativeTemplate": {
+						"type": "String"
+					},
+					"v_Watermark": {
+						"type": "String"
+					},
+					"v_PaginationType": {
+						"type": "String"
+					},
+					"v_Page": {
+						"type": "Integer",
+						"defaultValue": 1
+					},
+					"v_Offset": {
+						"type": "Integer",
+						"defaultValue": 0
+					}
+				},
+				"annotations": []
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/datasets/ds_azuresql_metadata')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/ds_azuresql_metadata')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "[parameters('ls_azuresql_petrolake_dev')]",
+					"type": "LinkedServiceReference"
+				},
+				"annotations": [],
+				"type": "AzureSqlTable",
+				"schema": [],
+				"typeProperties": {
+					"schema": "dbo",
+					"table": "API_Metadata"
+				}
+			},
+			"dependsOn": []
+		}
+	]
+}
