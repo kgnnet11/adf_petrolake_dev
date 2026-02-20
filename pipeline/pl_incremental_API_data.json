@@ -182,7 +182,31 @@
 							"typeProperties": {
 								"variableName": "v_Page",
 								"value": {
-									"value": "1",
+									"value": "@item().Page",
+									"type": "Expression"
+								}
+							}
+						},
+						{
+							"name": "Reset_Offset",
+							"type": "SetVariable",
+							"dependsOn": [
+								{
+									"activity": "Reset_Page",
+									"dependencyConditions": [
+										"Succeeded"
+									]
+								}
+							],
+							"policy": {
+								"secureOutput": false,
+								"secureInput": false
+							},
+							"userProperties": [],
+							"typeProperties": {
+								"variableName": "v_Offset",
+								"value": {
+									"value": "@item().Offset",
 									"type": "Expression"
 								}
 							}
@@ -208,10 +232,12 @@
 				"type": "String"
 			},
 			"v_Page": {
-				"type": "Integer"
+				"type": "Integer",
+				"defaultValue": 1
 			},
 			"v_Offset": {
-				"type": "Integer"
+				"type": "Integer",
+				"defaultValue": 0
 			}
 		},
 		"annotations": []
