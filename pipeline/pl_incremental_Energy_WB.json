@@ -445,7 +445,13 @@
 				"inputs": [
 					{
 						"referenceName": "DS_WorldBank_API",
-						"type": "DatasetReference"
+						"type": "DatasetReference",
+						"parameters": {
+							"relativeUrl": {
+								"value": "@concat(\n'/v2/country/all/indicator/SP.POP.TOTL?date=',\nvariables('startDate'),\n':',\nvariables('endDate'),\n'&page=',\nvariables('page'),\n'&format=json'\n)",
+								"type": "Expression"
+							}
+						}
 					}
 				]
 			}
@@ -488,6 +494,16 @@
 			},
 			"datesArray": {
 				"type": "Array"
+			},
+			"startDate": {
+				"type": "String"
+			},
+			"endDate": {
+				"type": "String"
+			},
+			"page": {
+				"type": "Integer",
+				"defaultValue": 1
 			}
 		},
 		"annotations": []
