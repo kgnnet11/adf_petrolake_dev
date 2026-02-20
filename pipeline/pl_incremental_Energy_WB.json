@@ -364,35 +364,11 @@
 							}
 						},
 						{
-							"name": "Set_latestYear_update",
-							"type": "SetVariable",
-							"dependsOn": [
-								{
-									"activity": "Append variable",
-									"dependencyConditions": [
-										"Succeeded"
-									]
-								}
-							],
-							"policy": {
-								"secureOutput": false,
-								"secureInput": false
-							},
-							"userProperties": [],
-							"typeProperties": {
-								"variableName": "latestYear",
-								"value": {
-									"value": "@if(greater(length(variables('datesArray')),0), max(variables('datesArray')), 0)",
-									"type": "Expression"
-								}
-							}
-						},
-						{
 							"name": "Copy data_Rest_Adls_Worldbank_energy",
 							"type": "Copy",
 							"dependsOn": [
 								{
-									"activity": "Set_latestYear_update",
+									"activity": "Append variable",
 									"dependencyConditions": [
 										"Succeeded"
 									]
