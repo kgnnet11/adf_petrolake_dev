@@ -232,7 +232,10 @@
 				"userProperties": [],
 				"typeProperties": {
 					"method": "GET",
-					"url": "https://api.worldbank.org/v2/country/IN/indicator/EG.USE.PCAP.KG.OE?format=json&page=@{variables('currentPage')}"
+					"url": {
+						"value": "https://api.worldbank.org/v2/country/IN/indicator/EG.USE.PCAP.KG.OE?format=json&page=@{variables('currentPage')}",
+						"type": "Expression"
+					}
 				}
 			},
 			{
@@ -409,7 +412,7 @@
 				}
 			},
 			{
-				"name": "Copydata_api_adls",
+				"name": "Copy data_Rest_Adls_Worldbank_energy",
 				"type": "Copy",
 				"dependsOn": [
 					{
@@ -428,8 +431,23 @@
 				},
 				"userProperties": [],
 				"typeProperties": {
+					"source": {
+						"type": "RestSource",
+						"httpRequestTimeout": "00:01:40",
+						"requestInterval": "00.00:00:00.010",
+						"requestMethod": "GET",
+						"paginationRules": {
+							"supportRFC5988": "true"
+						}
+					},
 					"enableStaging": false
-				}
+				},
+				"inputs": [
+					{
+						"referenceName": "DS_WorldBank_API",
+						"type": "DatasetReference"
+					}
+				]
 			}
 		],
 		"parameters": {
