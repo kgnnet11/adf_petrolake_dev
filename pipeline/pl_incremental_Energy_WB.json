@@ -234,6 +234,126 @@
 					"method": "GET",
 					"url": "https://api.worldbank.org/v2/country/IN/indicator/EG.USE.PCAP.KG.OE?format=json&page=@{variables('currentPage')}"
 				}
+			},
+			{
+				"name": "Set_totalPages",
+				"type": "SetVariable",
+				"dependsOn": [
+					{
+						"activity": "Call_API",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"policy": {
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"variableName": "totalPages",
+					"value": {
+						"value": "@json(activity('Call_API').output.Response)[0].pages",
+						"type": "Expression"
+					}
+				}
+			},
+			{
+				"name": "Set_totalRecords",
+				"type": "SetVariable",
+				"dependsOn": [
+					{
+						"activity": "Set_totalPages",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"policy": {
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"variableName": "totalRecords",
+					"value": {
+						"value": "@json(activity('Call_API').output.Response)[0].total",
+						"type": "Expression"
+					}
+				}
+			},
+			{
+				"name": "Set_dataArray",
+				"type": "SetVariable",
+				"dependsOn": [
+					{
+						"activity": "Set_totalRecords",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"policy": {
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"variableName": "dataArray",
+					"value": {
+						"value": "@json(activity('Call_API').output.Response)[1]",
+						"type": "Expression"
+					}
+				}
+			},
+			{
+				"name": "Set_latestYear",
+				"type": "SetVariable",
+				"dependsOn": [
+					{
+						"activity": "Set_dataArray",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"policy": {
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"variableName": "latestYear",
+					"value": 0
+				}
+			},
+			{
+				"name": "ForEach_dataArray",
+				"type": "ForEach",
+				"dependsOn": [
+					{
+						"activity": "Set_latestYear",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"userProperties": [],
+				"typeProperties": {
+					"activities": [
+						{
+							"name": "Set variable1",
+							"type": "SetVariable",
+							"dependsOn": [],
+							"policy": {
+								"secureOutput": false,
+								"secureInput": false
+							},
+							"userProperties": []
+						}
+					]
+				}
 			}
 		],
 		"parameters": {
@@ -260,12 +380,18 @@
 				"defaultValue": "\"\""
 			},
 			"latestYear": {
-				"type": "String",
+				"type": "Integer",
 				"defaultValue": "\"\""
 			},
 			"RunID": {
 				"type": "Integer",
 				"defaultValue": 1
+			},
+			"totalRecords": {
+				"type": "Integer"
+			},
+			"dataArray": {
+				"type": "Array"
 			}
 		},
 		"annotations": []
