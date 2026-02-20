@@ -182,18 +182,6 @@
 			},
 			"v_PaginationType": {
 				"type": "String"
-			},
-			"v_Page": {
-				"type": "Integer"
-			},
-			"v_Page_New": {
-				"type": "Integer"
-			},
-			"v_Offset": {
-				"type": "Integer"
-			},
-			"v_Offset_New ": {
-				"type": "Integer"
 			}
 		},
 		"annotations": []
