@@ -145,7 +145,7 @@
 							"userProperties": [],
 							"typeProperties": {
 								"variableName": "recordsFetched",
-								"value": ""
+								"value": 0
 							}
 						}
 					]
