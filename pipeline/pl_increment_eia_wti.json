@@ -146,7 +146,7 @@
 						"type": "DatasetReference",
 						"parameters": {
 							"path": {
-								"value": "landingzone/eia_wti/year=@{formatDateTime(variables('StartDate'),'yyyy')}/\nmonth=@{formatDateTime(variables('StartDate'),'MM')}/\nday=@{formatDateTime(variables('StartDate'),'dd')}/",
+								"value": "landingzone/eia_wti/year=@{formatDateTime(variables('StartDate'),'yyyy')}/month=@{formatDateTime(variables('StartDate'),'MM')}/day=@{formatDateTime(variables('StartDate'),'dd')}",
 								"type": "Expression"
 							},
 							"filename": {
