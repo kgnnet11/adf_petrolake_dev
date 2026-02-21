@@ -99,11 +99,51 @@
 					"isSequential": true,
 					"activities": [
 						{
+							"name": "CurrentPageMaxYear",
+							"type": "AppendVariable",
+							"dependsOn": [
+								{
+									"activity": "CopyActivityInsideForEach",
+									"dependencyConditions": [
+										"Succeeded"
+									]
+								}
+							],
+							"userProperties": [],
+							"typeProperties": {
+								"variableName": "AllPageMaxYears",
+								"value": {
+									"value": "@variables('CurrentPageMaxYear')",
+									"type": "Expression"
+								}
+							}
+						},
+						{
+							"name": "WebActivity_FetchPage",
+							"type": "WebActivity",
+							"dependsOn": [],
+							"policy": {
+								"timeout": "0.12:00:00",
+								"retry": 0,
+								"retryIntervalInSeconds": 30,
+								"secureOutput": false,
+								"secureInput": false
+							},
+							"userProperties": [],
+							"typeProperties": {
+								"method": "GET",
+								"url": {
+									"value": "https://api.worldbank.org/v2/country/IN/indicator/EG.USE.PCAP.KG.OE?format=json&page=@{item()}",
+									"type": "Expression"
+								}
+							}
+						},
+						{
 							"name": "CopyActivityInsideForEach",
 							"type": "Copy",
 							"dependsOn": [
 								{
-									"activity": "WebActivity_FetchPage",
+									"activity": "MaxYearLoaded1",
 									"dependencyConditions": [
 										"Succeeded"
 									]
@@ -156,12 +196,12 @@
 									"referenceName": "ds_api_adls_worldbankenergy",
 									"type": "DatasetReference",
 									"parameters": {
-										"perpage": {
-											"value": "worldbank/@{pipeline().parameters.IndicatorCode}",
+										"LoadDate": {
+											"value": "@pipeline().parameters.LoadDate",
 											"type": "Expression"
 										},
-										"file": {
-											"value": "page=@{item()}.json",
+										"PageNumber": {
+											"value": "@item()",
 											"type": "Expression"
 										}
 									}
@@ -173,7 +213,7 @@
 							"type": "SetVariable",
 							"dependsOn": [
 								{
-									"activity": "CopyActivityInsideForEach",
+									"activity": "WebActivity_FetchPage",
 									"dependencyConditions": [
 										"Succeeded"
 									]
@@ -188,46 +228,6 @@
 								"variableName": "MaxYearLoaded",
 								"value": {
 									"value": "@max(json(activity('WebActivity_FetchPage').output.Response)[1].date)",
-									"type": "Expression"
-								}
-							}
-						},
-						{
-							"name": "CurrentPageMaxYear",
-							"type": "AppendVariable",
-							"dependsOn": [
-								{
-									"activity": "MaxYearLoaded1",
-									"dependencyConditions": [
-										"Succeeded"
-									]
-								}
-							],
-							"userProperties": [],
-							"typeProperties": {
-								"variableName": "AllPageMaxYears",
-								"value": {
-									"value": "@variables('CurrentPageMaxYear')",
-									"type": "Expression"
-								}
-							}
-						},
-						{
-							"name": "WebActivity_FetchPage",
-							"type": "WebActivity",
-							"dependsOn": [],
-							"policy": {
-								"timeout": "0.12:00:00",
-								"retry": 0,
-								"retryIntervalInSeconds": 30,
-								"secureOutput": false,
-								"secureInput": false
-							},
-							"userProperties": [],
-							"typeProperties": {
-								"method": "GET",
-								"url": {
-									"value": "https://api.worldbank.org/v2/country/IN/indicator/EG.USE.PCAP.KG.OE?format=json&page=@{item()}",
 									"type": "Expression"
 								}
 							}

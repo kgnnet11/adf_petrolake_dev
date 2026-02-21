@@ -6,11 +6,11 @@
 			"type": "LinkedServiceReference"
 		},
 		"parameters": {
-			"perpage": {
+			"LoadDate": {
 				"type": "string"
 			},
-			"file": {
-				"type": "string"
+			"PageNumber": {
+				"type": "int"
 			}
 		},
 		"annotations": [],
@@ -19,11 +19,11 @@
 			"location": {
 				"type": "AzureBlobFSLocation",
 				"fileName": {
-					"value": "@dataset().file",
+					"value": "page_@{dataset().PageNumber}.json",
 					"type": "Expression"
 				},
 				"folderPath": {
-					"value": "@dataset().perpage",
+					"value": "worldbank/energy_use/@{dataset().LoadDate}",
 					"type": "Expression"
 				},
 				"fileSystem": "landingzone"

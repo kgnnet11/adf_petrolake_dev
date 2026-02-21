@@ -15,7 +15,10 @@
 		"typeProperties": {
 			"location": {
 				"type": "HttpServerLocation",
-				"relativeUrl": "/country/@{pipeline().parameters.CountryCode}/indicator/@{pipeline().parameters.IndicatorCode}?format=json&page=@{dataset().PageNumber}"
+				"relativeUrl": {
+					"value": "&page=@{dataset().PageNumber}",
+					"type": "Expression"
+				}
 			}
 		},
 		"schema": {}
