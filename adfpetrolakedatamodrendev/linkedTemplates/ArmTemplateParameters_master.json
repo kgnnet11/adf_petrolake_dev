@@ -26,6 +26,9 @@
 		"ls_sql_onprem_petrolake_password": {
 			"value": ""
 		},
+		"LS_WorldBank_properties_typeProperties_url": {
+			"value": "https://api.worldbank.org"
+		},
 		"ls_alds_landingzone_properties_typeProperties_url": {
 			"value": "https://sgdigitalizationdev.dfs.core.windows.net/"
 		},
@@ -40,6 +43,15 @@
 		},
 		"ls_databricks_petrolake_dev_properties_typeProperties_existingClusterId": {
 			"value": "0214-132145-bvcoilg0"
+		},
+		"ls_eia_properties_typeProperties_url": {
+			"value": "https://api.eia.gov/v2"
+		},
+		"ls_rest_api_wroldbank_properties_typeProperties_url": {
+			"value": "https://api.worldbank.org/v2"
+		},
+		"ls_rest_eia_wti_properties_typeProperties_url": {
+			"value": "https://api.eia.gov"
 		},
 		"ls_sql_onprem_petrolake_properties_typeProperties_userName": {
 			"value": "tippu\\adfdb"
