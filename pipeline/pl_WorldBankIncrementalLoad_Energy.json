@@ -162,11 +162,11 @@
 							]
 						},
 						{
-							"name": "MaxYearLoaded",
+							"name": "MaxYearLoaded1",
 							"type": "SetVariable",
 							"dependsOn": [
 								{
-									"activity": "Lookup1",
+									"activity": "Lookup_MaxYear_CurrentPage",
 									"dependencyConditions": [
 										"Succeeded"
 									]
@@ -186,7 +186,7 @@
 							}
 						},
 						{
-							"name": "Lookup1",
+							"name": "Lookup_MaxYear_CurrentPage",
 							"type": "Lookup",
 							"dependsOn": [
 								{
@@ -228,7 +228,7 @@
 							"type": "AppendVariable",
 							"dependsOn": [
 								{
-									"activity": "MaxYearLoaded",
+									"activity": "MaxYearLoaded1",
 									"dependencyConditions": [
 										"Succeeded"
 									]
@@ -251,7 +251,7 @@
 				"type": "SqlServerStoredProcedure",
 				"dependsOn": [
 					{
-						"activity": "ForEach1",
+						"activity": "MaxYearLoaded",
 						"dependencyConditions": [
 							"Succeeded"
 						]
@@ -294,6 +294,30 @@
 				"linkedServiceName": {
 					"referenceName": "ls_azuresql_petrolake_dev",
 					"type": "LinkedServiceReference"
+				}
+			},
+			{
+				"name": "MaxYearLoaded",
+				"type": "SetVariable",
+				"dependsOn": [
+					{
+						"activity": "ForEach1",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"policy": {
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"variableName": "MaxYearLoaded",
+					"value": {
+						"value": "@max(variables('AllPageMaxYears'))",
+						"type": "Expression"
+					}
 				}
 			}
 		],

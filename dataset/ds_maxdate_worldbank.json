@@ -5,11 +5,27 @@
 			"referenceName": "ls_alds_landingzone",
 			"type": "LinkedServiceReference"
 		},
+		"parameters": {
+			"dit": {
+				"type": "string"
+			},
+			"file": {
+				"type": "string"
+			}
+		},
 		"annotations": [],
 		"type": "Json",
 		"typeProperties": {
 			"location": {
 				"type": "AzureBlobFSLocation",
+				"fileName": {
+					"value": "@dataset().file",
+					"type": "Expression"
+				},
+				"folderPath": {
+					"value": "@dataset().dit",
+					"type": "Expression"
+				},
 				"fileSystem": "landingzone"
 			}
 		},
