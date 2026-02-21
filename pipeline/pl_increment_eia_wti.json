@@ -29,7 +29,8 @@
 					"dataset": {
 						"referenceName": "ds_eia_wti_metadata",
 						"type": "DatasetReference"
-					}
+					},
+					"firstRowOnly": true
 				}
 			},
 			{
