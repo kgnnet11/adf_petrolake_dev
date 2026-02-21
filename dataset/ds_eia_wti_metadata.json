@@ -1,0 +1,20 @@
+{
+	"name": "ds_eia_wti_metadata",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "ls_alds_landingzone",
+			"type": "LinkedServiceReference"
+		},
+		"annotations": [],
+		"type": "Json",
+		"typeProperties": {
+			"location": {
+				"type": "AzureBlobFSLocation",
+				"fileName": "eia_wti_watermark.json",
+				"folderPath": "metadata",
+				"fileSystem": "landingzone"
+			}
+		},
+		"schema": {}
+	}
+}
