@@ -1,0 +1,36 @@
+{
+	"name": "pl_WorldBankIncrementalLoad_Energy",
+	"properties": {
+		"activities": [
+			{
+				"name": "WorldBankIncrementalLoadControl",
+				"type": "Lookup",
+				"dependsOn": [],
+				"policy": {
+					"timeout": "0.12:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"source": {
+						"type": "AzureSqlSource",
+						"sqlReaderQuery": {
+							"value": "SELECT LastLoadedYear FROM dbo.WorldBankIncrementalLoadControl\nWHERE CountryCode = 'IN' AND IndicatorCode = 'EG.USE.PCAP.KG.OE';",
+							"type": "Expression"
+						},
+						"queryTimeout": "02:00:00",
+						"partitionOption": "None"
+					},
+					"dataset": {
+						"referenceName": "ds_worldbank_controldata_energy_new",
+						"type": "DatasetReference"
+					}
+				}
+			}
+		],
+		"annotations": []
+	}
+}
