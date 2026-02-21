@@ -291,6 +291,8 @@
 			{
 				"name": "MaxYearLoaded",
 				"type": "SetVariable",
+				"state": "Inactive",
+				"onInactiveMarkAs": "Succeeded",
 				"dependsOn": [
 					{
 						"activity": "ForEach1",
