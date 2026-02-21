@@ -2748,7 +2748,7 @@
 						"typeProperties": {
 							"variableName": "EndDate",
 							"value": {
-								"value": "@formatDateTime(addDays(variables('StartDate'),1),'yyyy-MM-dd')\n",
+								"value": "@formatDateTime(\n    addDays(\n        startOfMonth(addDays(variables('StartDate'), 32)), \n        -1\n    ), \n    'yyyy-MM-dd'\n)",
 								"type": "Expression"
 							}
 						}
@@ -2786,7 +2786,7 @@
 								"type": "JsonSink",
 								"storeSettings": {
 									"type": "AzureBlobFSWriteSettings",
-									"copyBehavior": "FlattenHierarchy"
+									"copyBehavior": "PreserveHierarchy"
 								},
 								"formatSettings": {
 									"type": "JsonWriteSettings"
@@ -2820,7 +2820,7 @@
 								"type": "DatasetReference",
 								"parameters": {
 									"path": {
-										"value": "landingzone/eia_wti/year=@{formatDateTime(variables('StartDate'),'yyyy')}/month=@{formatDateTime(variables('StartDate'),'MM')}/day=@{formatDateTime(variables('StartDate'),'dd')}",
+										"value": "landingzone/eia_wti_mothlydata/year=@{formatDateTime(variables('StartDate'),'yyyy')}/month=@{formatDateTime(variables('StartDate'),'MM')}",
 										"type": "Expression"
 									},
 									"filename": {
