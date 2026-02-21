@@ -71,7 +71,7 @@
 				"typeProperties": {
 					"variableName": "EndDate",
 					"value": {
-						"value": "@formatDateTime(utcNow(),'yyyy-MM-dd')",
+						"value": "@formatDateTime(addDays(variables('StartDate'),1),'yyyy-MM-dd')\n",
 						"type": "Expression"
 					}
 				}
@@ -159,14 +159,7 @@
 				"type": "SetVariable",
 				"state": "Inactive",
 				"onInactiveMarkAs": "Succeeded",
-				"dependsOn": [
-					{
-						"activity": "Script1",
-						"dependencyConditions": [
-							"Succeeded"
-						]
-					}
-				],
+				"dependsOn": [],
 				"policy": {
 					"secureOutput": false,
 					"secureInput": false
@@ -238,8 +231,8 @@
 				]
 			},
 			{
-				"name": "Script1",
-				"type": "Script",
+				"name": "Update_Watermark_SQL",
+				"type": "SqlServerStoredProcedure",
 				"dependsOn": [
 					{
 						"activity": "Copy_eia_wti_adls",
@@ -256,29 +249,21 @@
 					"secureInput": false
 				},
 				"userProperties": [],
+				"typeProperties": {
+					"storedProcedureName": "[dbo].[sp_update_watermark_eia]",
+					"storedProcedureParameters": {
+						"EndDate": {
+							"value": {
+								"value": "@variables('EndDate')",
+								"type": "Expression"
+							},
+							"type": "DateTime"
+						}
+					}
+				},
 				"linkedServiceName": {
 					"referenceName": "ls_azuresql_petrolake_dev",
 					"type": "LinkedServiceReference"
-				},
-				"typeProperties": {
-					"scripts": [
-						{
-							"parameters": [
-								{
-									"name": "EndDate",
-									"type": "Datetime",
-									"value": {
-										"value": "@variables('EndDate')",
-										"type": "Expression"
-									},
-									"direction": "Output"
-								}
-							],
-							"type": "Query",
-							"text": "UPDATE dbo.api_eia_watermark\nSET last_loaded_date = CAST(@EndDate AS DATE)\nWHERE api_name = 'EIA_WTI';"
-						}
-					],
-					"scriptBlockExecutionTimeout": "02:00:00"
 				}
 			}
 		],
