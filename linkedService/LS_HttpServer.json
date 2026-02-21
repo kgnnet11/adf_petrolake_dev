@@ -4,7 +4,7 @@
 		"annotations": [],
 		"type": "HttpServer",
 		"typeProperties": {
-			"url": "https://api.worldbank.org/v2",
+			"url": "https://api.worldbank.org/v2/country/IN/indicator/EG.USE.PCAP.KG.OE?format=json",
 			"enableServerCertificateValidation": true,
 			"authenticationType": "Anonymous"
 		}
