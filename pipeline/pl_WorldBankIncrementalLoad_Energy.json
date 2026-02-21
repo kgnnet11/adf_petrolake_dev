@@ -187,7 +187,7 @@
 							"typeProperties": {
 								"variableName": "MaxYearLoaded",
 								"value": {
-									"value": "@max(json(activity('CopyActivityInsideForEach').output.Response)[1].date)",
+									"value": "@max(json(activity('WebActivity_FetchPage').output.Response)[1].date)",
 									"type": "Expression"
 								}
 							}
@@ -226,7 +226,10 @@
 							"userProperties": [],
 							"typeProperties": {
 								"method": "GET",
-								"url": "https://api.worldbank.org/v2/country/IN/indicator/EG.USE.PCAP.KG.OE?format=json&page=@{item()}"
+								"url": {
+									"value": "https://api.worldbank.org/v2/country/IN/indicator/EG.USE.PCAP.KG.OE?format=json&page=@{item()}",
+									"type": "Expression"
+								}
 							}
 						}
 					]
