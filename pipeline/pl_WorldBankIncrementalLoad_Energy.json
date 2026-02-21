@@ -166,7 +166,7 @@
 							"type": "SetVariable",
 							"dependsOn": [
 								{
-									"activity": "Lookup_MaxYear_CurrentPage",
+									"activity": "WebActivity_FetchPage",
 									"dependencyConditions": [
 										"Succeeded"
 									]
@@ -183,44 +183,6 @@
 									"value": "@max(json(activity('CopyActivityInsideForEach').output.Response)[1].date)",
 									"type": "Expression"
 								}
-							}
-						},
-						{
-							"name": "Lookup_MaxYear_CurrentPage",
-							"type": "Lookup",
-							"dependsOn": [
-								{
-									"activity": "CopyActivityInsideForEach",
-									"dependencyConditions": [
-										"Succeeded"
-									]
-								}
-							],
-							"policy": {
-								"timeout": "0.12:00:00",
-								"retry": 0,
-								"retryIntervalInSeconds": 30,
-								"secureOutput": false,
-								"secureInput": false
-							},
-							"userProperties": [],
-							"typeProperties": {
-								"source": {
-									"type": "JsonSource",
-									"storeSettings": {
-										"type": "AzureBlobFSReadSettings",
-										"recursive": true,
-										"enablePartitionDiscovery": false
-									},
-									"formatSettings": {
-										"type": "JsonReadSettings"
-									}
-								},
-								"dataset": {
-									"referenceName": "ds_maxdate_worldbank",
-									"type": "DatasetReference"
-								},
-								"firstRowOnly": false
 							}
 						},
 						{
@@ -241,6 +203,30 @@
 									"value": "@variables('CurrentPageMaxYear')",
 									"type": "Expression"
 								}
+							}
+						},
+						{
+							"name": "WebActivity_FetchPage",
+							"type": "WebActivity",
+							"dependsOn": [
+								{
+									"activity": "CopyActivityInsideForEach",
+									"dependencyConditions": [
+										"Succeeded"
+									]
+								}
+							],
+							"policy": {
+								"timeout": "0.12:00:00",
+								"retry": 0,
+								"retryIntervalInSeconds": 30,
+								"secureOutput": false,
+								"secureInput": false
+							},
+							"userProperties": [],
+							"typeProperties": {
+								"method": "GET",
+								"url": "https://api.worldbank.org/v2/country/IN/indicator/EG.USE.PCAP.KG.OE?format=json&page=@{item()}"
 							}
 						}
 					]
