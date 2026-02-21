@@ -1,0 +1,16 @@
+{
+	"name": "ds_api_eia_sql_metadata",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "ls_azuresql_petrolake_dev",
+			"type": "LinkedServiceReference"
+		},
+		"annotations": [],
+		"type": "AzureSqlTable",
+		"schema": [],
+		"typeProperties": {
+			"schema": "dbo",
+			"table": "api_eia_watermark"
+		}
+	}
+}

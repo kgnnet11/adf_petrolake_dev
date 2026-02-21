@@ -16,18 +16,13 @@
 				"userProperties": [],
 				"typeProperties": {
 					"source": {
-						"type": "JsonSource",
-						"storeSettings": {
-							"type": "AzureBlobFSReadSettings",
-							"recursive": true,
-							"enablePartitionDiscovery": false
-						},
-						"formatSettings": {
-							"type": "JsonReadSettings"
-						}
+						"type": "AzureSqlSource",
+						"sqlReaderQuery": "SELECT last_loaded_date\nFROM dbo.api_eia_watermark\nWHERE api_name = 'EIA_WTI'",
+						"queryTimeout": "02:00:00",
+						"partitionOption": "None"
 					},
 					"dataset": {
-						"referenceName": "ds_eia_wti_metadata",
+						"referenceName": "ds_api_eia_sql_metadata",
 						"type": "DatasetReference"
 					},
 					"firstRowOnly": true
@@ -52,7 +47,7 @@
 				"typeProperties": {
 					"variableName": "StartDate",
 					"value": {
-						"value": "@activity('Lookup_Watermark').output.firstRow.last_loaded_date",
+						"value": "@formatDateTime(activity('Lookup_Watermark').output.firstRow.last_loaded_date,'yyyy-MM-dd')",
 						"type": "Expression"
 					}
 				}
@@ -76,7 +71,7 @@
 				"typeProperties": {
 					"variableName": "EndDate",
 					"value": {
-						"value": "@formatDateTime(addDays(variables('StartDate'),1),'yyyy-MM-dd')",
+						"value": "@formatDateTime(utcNow(),'yyyy-MM-dd')",
 						"type": "Expression"
 					}
 				}
@@ -162,9 +157,11 @@
 			{
 				"name": "Set_Watermark_Content",
 				"type": "SetVariable",
+				"state": "Inactive",
+				"onInactiveMarkAs": "Succeeded",
 				"dependsOn": [
 					{
-						"activity": "Copy_eia_wti_adls",
+						"activity": "Script1",
 						"dependencyConditions": [
 							"Succeeded"
 						]
@@ -186,6 +183,8 @@
 			{
 				"name": "updatewatermark",
 				"type": "Copy",
+				"state": "Inactive",
+				"onInactiveMarkAs": "Succeeded",
 				"dependsOn": [
 					{
 						"activity": "Set_Watermark_Content",
@@ -237,6 +236,50 @@
 						"type": "DatasetReference"
 					}
 				]
+			},
+			{
+				"name": "Script1",
+				"type": "Script",
+				"dependsOn": [
+					{
+						"activity": "Copy_eia_wti_adls",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"policy": {
+					"timeout": "0.12:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"linkedServiceName": {
+					"referenceName": "ls_azuresql_petrolake_dev",
+					"type": "LinkedServiceReference"
+				},
+				"typeProperties": {
+					"scripts": [
+						{
+							"parameters": [
+								{
+									"name": "EndDate",
+									"type": "Datetime",
+									"value": {
+										"value": "@variables('EndDate')",
+										"type": "Expression"
+									},
+									"direction": "Output"
+								}
+							],
+							"type": "Query",
+							"text": "UPDATE dbo.api_eia_watermark\nSET last_loaded_date = CAST(@EndDate AS DATE)\nWHERE api_name = 'EIA_WTI';"
+						}
+					],
+					"scriptBlockExecutionTimeout": "02:00:00"
+				}
 			}
 		],
 		"variables": {
