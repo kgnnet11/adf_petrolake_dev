@@ -67,6 +67,14 @@
 			"LoadDate": {
 				"type": "string",
 				"defaultValue": "'2026-02-21'"
+			},
+			"CountryCode": {
+				"type": "string",
+				"defaultValue": "'IN'"
+			},
+			"IndicatorCode": {
+				"type": "string",
+				"defaultValue": "'EG.USE.PCAP.KG.OE'"
 			}
 		},
 		"annotations": []
