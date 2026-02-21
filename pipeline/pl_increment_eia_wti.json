@@ -132,6 +132,10 @@
 							"EndDate": {
 								"value": "@variables('EndDate')",
 								"type": "Expression"
+							},
+							"api_key": {
+								"value": "L1KBoxGRJWG8BQ7nChDKT2kFwHCfVcgnBhzDPos6",
+								"type": "Expression"
 							}
 						}
 					}
