@@ -29,8 +29,46 @@
 						"type": "DatasetReference"
 					}
 				}
+			},
+			{
+				"name": "GetTotalPages",
+				"type": "WebActivity",
+				"dependsOn": [
+					{
+						"activity": "WorldBankIncrementalLoadControl",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"policy": {
+					"timeout": "0.12:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"method": "GET",
+					"url": "https://api.worldbank.org/v2/country/IN/indicator/EG.USE.PCAP.KG.OE?format=json&page=1"
+				}
 			}
 		],
+		"parameters": {
+			"LastLoadedYear": {
+				"type": "int",
+				"defaultValue": 2023
+			},
+			"CurrentPage": {
+				"type": "int",
+				"defaultValue": 1
+			},
+			"LoadDate": {
+				"type": "string",
+				"defaultValue": "'2026-02-21'"
+			}
+		},
 		"annotations": []
 	}
 }
