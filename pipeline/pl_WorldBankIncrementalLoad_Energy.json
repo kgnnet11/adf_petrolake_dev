@@ -18,7 +18,7 @@
 					"source": {
 						"type": "AzureSqlSource",
 						"sqlReaderQuery": {
-							"value": "SELECT LastLoadedYear \nFROM dbo.WorldBankIncrementalLoadControl\nWHERE CountryCode = @pipeline().parameters.CountryCode\n  AND IndicatorCode = @pipeline().parameters.IndicatorCode",
+							"value": "SELECT LastLoadedYear \nFROM dbo.WorldBankIncrementalLoadControl\nWHERE CountryCode='IN' AND IndicatorCode='EG.USE.PCAP.KG.OE';",
 							"type": "Expression"
 						},
 						"queryTimeout": "02:00:00",
@@ -101,9 +101,11 @@
 						{
 							"name": "CurrentPageMaxYear",
 							"type": "AppendVariable",
+							"state": "Inactive",
+							"onInactiveMarkAs": "Succeeded",
 							"dependsOn": [
 								{
-									"activity": "CopyActivityInsideForEach",
+									"activity": "MaxYearPerPage",
 									"dependencyConditions": [
 										"Succeeded"
 									]
@@ -133,7 +135,7 @@
 							"typeProperties": {
 								"method": "GET",
 								"url": {
-									"value": "https://api.worldbank.org/v2/country/IN/indicator/EG.USE.PCAP.KG.OE?format=json&page=@{item()}",
+									"value": "https://api.worldbank.org/v2/country/@{pipeline().parameters.CountryCode}/indicator/@{pipeline().parameters.IndicatorCode}?format=json&page=@{item()}",
 									"type": "Expression"
 								}
 							}
@@ -143,7 +145,7 @@
 							"type": "Copy",
 							"dependsOn": [
 								{
-									"activity": "MaxYearLoaded1",
+									"activity": "WebActivity_FetchPage",
 									"dependencyConditions": [
 										"Succeeded"
 									]
@@ -209,11 +211,11 @@
 							]
 						},
 						{
-							"name": "MaxYearLoaded1",
+							"name": "MaxYearPerPage",
 							"type": "SetVariable",
 							"dependsOn": [
 								{
-									"activity": "WebActivity_FetchPage",
+									"activity": "CopyActivityInsideForEach",
 									"dependencyConditions": [
 										"Succeeded"
 									]
@@ -225,11 +227,12 @@
 							},
 							"userProperties": [],
 							"typeProperties": {
-								"variableName": "MaxYearLoaded",
-								"value": {
-									"value": "@max(json(activity('WebActivity_FetchPage').output.Response)[1].date)",
-									"type": "Expression"
-								}
+								"variableName": "MaxYearPerPage",
+								"value": [
+									"@union(\n    variables('MaxYears')",
+									"\n    array(max(forEach(json(activity('Web_Page_@{item()}').output.Response)[1]",
+									" x => int(x.date))))\n)"
+								]
 							}
 						}
 					]
@@ -303,10 +306,7 @@
 				"userProperties": [],
 				"typeProperties": {
 					"variableName": "MaxYearLoaded",
-					"value": {
-						"value": "@max(variables('AllPageMaxYears'))",
-						"type": "Expression"
-					}
+					"value": "@max(variables('MaxYears'))"
 				}
 			}
 		],
@@ -344,7 +344,10 @@
 				"type": "Integer",
 				"defaultValue": 0
 			},
-			"MaxYearsPerPage": {
+			"MaxYearPerPage": {
+				"type": "Array"
+			},
+			"MaxYears": {
 				"type": "Array"
 			}
 		},
