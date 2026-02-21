@@ -203,7 +203,7 @@
 				"typeProperties": {
 					"method": "PUT",
 					"headers": {
-						"x-ms-version ": "1900-01-01"
+						"x-ms-version ": "2024-01-01"
 					},
 					"url": "https://sgdigitalizationdev.dfs.core.windows.net/landingzone/metadata/eia_wti_watermark.json?resource=file",
 					"body": {
