@@ -18,7 +18,7 @@
 					"source": {
 						"type": "AzureSqlSource",
 						"sqlReaderQuery": {
-							"value": "SELECT LastLoadedYear\nFROM dbo.WorldBankIncrementalLoadControl\nWHERE CountryCode = @CountryCode\n  AND IndicatorCode = @IndicatorCode;",
+							"value": "SELECT LastLoadedYear\nFROM dbo.WorldBankIncrementalLoadControl\nWHERE CountryCode = 'IN'\n  AND IndicatorCode = 'EG.USE.PCAP.KG.OE';",
 							"type": "Expression"
 						},
 						"queryTimeout": "02:00:00",
@@ -31,14 +31,10 @@
 							"CountryCode": {
 								"value": "@pipeline().parameters.CountryCode",
 								"type": "Expression"
-							},
-							"IndicatorCode": {
-								"value": "@pipeline().parameters.IndicatorCode",
-								"type": "Expression"
 							}
 						}
 					},
-					"firstRowOnly": false
+					"firstRowOnly": true
 				}
 			},
 			{
@@ -78,14 +74,6 @@
 			"LoadDate": {
 				"type": "string",
 				"defaultValue": "'2026-02-21'"
-			},
-			"CountryCode": {
-				"type": "string",
-				"defaultValue": "IN"
-			},
-			"IndicatorCode": {
-				"type": "string",
-				"defaultValue": "EG.USE.PCAP.KG.OE"
 			}
 		},
 		"annotations": []
