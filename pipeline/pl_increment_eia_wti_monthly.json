@@ -1,0 +1,207 @@
+{
+	"name": "pl_increment_eia_wti_monthly",
+	"properties": {
+		"activities": [
+			{
+				"name": "Lookup_Watermark",
+				"type": "Lookup",
+				"dependsOn": [],
+				"policy": {
+					"timeout": "0.12:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"source": {
+						"type": "AzureSqlSource",
+						"sqlReaderQuery": "SELECT last_loaded_date\nFROM dbo.api_eia_watermark\nWHERE api_name = 'EIA_WTI'",
+						"queryTimeout": "02:00:00",
+						"partitionOption": "None"
+					},
+					"dataset": {
+						"referenceName": "ds_api_eia_sql_metadata",
+						"type": "DatasetReference"
+					},
+					"firstRowOnly": true
+				}
+			},
+			{
+				"name": "Set_StartDate",
+				"type": "SetVariable",
+				"dependsOn": [
+					{
+						"activity": "Lookup_Watermark",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"policy": {
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"variableName": "StartDate",
+					"value": {
+						"value": "@formatDateTime(activity('Lookup_Watermark').output.firstRow.last_loaded_date,'yyyy-MM-dd')",
+						"type": "Expression"
+					}
+				}
+			},
+			{
+				"name": "Set_EndDate",
+				"type": "SetVariable",
+				"dependsOn": [
+					{
+						"activity": "Set_StartDate",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"policy": {
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"variableName": "EndDate",
+					"value": {
+						"value": "@formatDateTime(addDays(variables('StartDate'),1),'yyyy-MM-dd')\n",
+						"type": "Expression"
+					}
+				}
+			},
+			{
+				"name": "Copy_eia_wti_adls",
+				"type": "Copy",
+				"dependsOn": [
+					{
+						"activity": "Set_EndDate",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"policy": {
+					"timeout": "0.12:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"source": {
+						"type": "RestSource",
+						"httpRequestTimeout": "00:01:40",
+						"requestInterval": "00.00:00:00.010",
+						"requestMethod": "GET",
+						"paginationRules": {
+							"supportRFC5988": "true"
+						}
+					},
+					"sink": {
+						"type": "JsonSink",
+						"storeSettings": {
+							"type": "AzureBlobFSWriteSettings",
+							"copyBehavior": "FlattenHierarchy"
+						},
+						"formatSettings": {
+							"type": "JsonWriteSettings"
+						}
+					},
+					"enableStaging": false
+				},
+				"inputs": [
+					{
+						"referenceName": "ds_eia_wti_api",
+						"type": "DatasetReference",
+						"parameters": {
+							"StartDate": {
+								"value": "@variables('StartDate')",
+								"type": "Expression"
+							},
+							"EndDate": {
+								"value": "@variables('EndDate')",
+								"type": "Expression"
+							},
+							"api_key": {
+								"value": "L1KBoxGRJWG8BQ7nChDKT2kFwHCfVcgnBhzDPos6",
+								"type": "Expression"
+							}
+						}
+					}
+				],
+				"outputs": [
+					{
+						"referenceName": "ds_eia_wti_adls",
+						"type": "DatasetReference",
+						"parameters": {
+							"path": {
+								"value": "landingzone/eia_wti/year=@{formatDateTime(variables('StartDate'),'yyyy')}/month=@{formatDateTime(variables('StartDate'),'MM')}/day=@{formatDateTime(variables('StartDate'),'dd')}",
+								"type": "Expression"
+							},
+							"filename": {
+								"value": "wti_@{variables('StartDate')}.json",
+								"type": "Expression"
+							}
+						}
+					}
+				]
+			},
+			{
+				"name": "Update_Watermark_SQL",
+				"type": "SqlServerStoredProcedure",
+				"dependsOn": [
+					{
+						"activity": "Copy_eia_wti_adls",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"policy": {
+					"timeout": "0.12:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"storedProcedureName": "[dbo].[sp_update_watermark_eia]",
+					"storedProcedureParameters": {
+						"EndDate": {
+							"value": {
+								"value": "@variables('EndDate')",
+								"type": "Expression"
+							},
+							"type": "DateTime"
+						}
+					}
+				},
+				"linkedServiceName": {
+					"referenceName": "ls_azuresql_petrolake_dev",
+					"type": "LinkedServiceReference"
+				}
+			}
+		],
+		"variables": {
+			"StartDate": {
+				"type": "String"
+			},
+			"EndDate": {
+				"type": "String"
+			},
+			"WatermarkJson": {
+				"type": "String"
+			}
+		},
+		"annotations": []
+	}
+}
