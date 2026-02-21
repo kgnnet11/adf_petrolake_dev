@@ -19,7 +19,10 @@
 		"annotations": [],
 		"type": "RestResource",
 		"typeProperties": {
-			"relativeUrl": "v2/petroleum/pri/spt/data/"
+			"relativeUrl": {
+				"value": "v2/petroleum/pri/spt/data/?api_key=@{dataset().api_key}&frequency=daily&data[0]=value&start=@{dataset().StartDate}&end=@{dataset().EndDate}",
+				"type": "Expression"
+			}
 		},
 		"schema": []
 	}
