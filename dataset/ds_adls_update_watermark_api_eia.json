@@ -5,12 +5,20 @@
 			"referenceName": "ls_alds_landingzone",
 			"type": "LinkedServiceReference"
 		},
+		"parameters": {
+			"Filecontent": {
+				"type": "string"
+			}
+		},
 		"annotations": [],
 		"type": "DelimitedText",
 		"typeProperties": {
 			"location": {
 				"type": "AzureBlobFSLocation",
-				"fileName": "temp.txt",
+				"fileName": {
+					"value": "@dataset().Filecontent",
+					"type": "Expression"
+				},
 				"folderPath": "metadata",
 				"fileSystem": "landingzone"
 			},
