@@ -101,7 +101,14 @@
 						{
 							"name": "CopyActivityInsideForEach",
 							"type": "Copy",
-							"dependsOn": [],
+							"dependsOn": [
+								{
+									"activity": "WebActivity_FetchPage",
+									"dependencyConditions": [
+										"Succeeded"
+									]
+								}
+							],
 							"policy": {
 								"timeout": "0.12:00:00",
 								"retry": 0,
@@ -166,7 +173,7 @@
 							"type": "SetVariable",
 							"dependsOn": [
 								{
-									"activity": "WebActivity_FetchPage",
+									"activity": "CopyActivityInsideForEach",
 									"dependencyConditions": [
 										"Succeeded"
 									]
@@ -208,14 +215,7 @@
 						{
 							"name": "WebActivity_FetchPage",
 							"type": "WebActivity",
-							"dependsOn": [
-								{
-									"activity": "CopyActivityInsideForEach",
-									"dependencyConditions": [
-										"Succeeded"
-									]
-								}
-							],
+							"dependsOn": [],
 							"policy": {
 								"timeout": "0.12:00:00",
 								"retry": 0,
