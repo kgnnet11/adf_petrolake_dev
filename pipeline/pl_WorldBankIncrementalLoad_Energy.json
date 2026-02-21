@@ -78,6 +78,223 @@
 						"type": "Expression"
 					}
 				}
+			},
+			{
+				"name": "ForEach1",
+				"type": "ForEach",
+				"dependsOn": [
+					{
+						"activity": "TotalPages",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"userProperties": [],
+				"typeProperties": {
+					"items": {
+						"value": "@range(1, variables('TotalPages'))",
+						"type": "Expression"
+					},
+					"isSequential": true,
+					"activities": [
+						{
+							"name": "CopyActivityInsideForEach",
+							"type": "Copy",
+							"dependsOn": [],
+							"policy": {
+								"timeout": "0.12:00:00",
+								"retry": 0,
+								"retryIntervalInSeconds": 30,
+								"secureOutput": false,
+								"secureInput": false
+							},
+							"userProperties": [],
+							"typeProperties": {
+								"source": {
+									"type": "JsonSource",
+									"storeSettings": {
+										"type": "HttpReadSettings",
+										"requestMethod": "GET"
+									},
+									"formatSettings": {
+										"type": "JsonReadSettings"
+									}
+								},
+								"sink": {
+									"type": "JsonSink",
+									"storeSettings": {
+										"type": "AzureBlobFSWriteSettings"
+									},
+									"formatSettings": {
+										"type": "JsonWriteSettings"
+									}
+								},
+								"enableStaging": false
+							},
+							"inputs": [
+								{
+									"referenceName": "ds_http_worldbank",
+									"type": "DatasetReference",
+									"parameters": {
+										"PageNumber": {
+											"value": "@item()",
+											"type": "Expression"
+										}
+									}
+								}
+							],
+							"outputs": [
+								{
+									"referenceName": "ds_api_adls_worldbankenergy",
+									"type": "DatasetReference",
+									"parameters": {
+										"perpage": {
+											"value": "worldbank/@{pipeline().parameters.IndicatorCode}",
+											"type": "Expression"
+										},
+										"file": {
+											"value": "page=@{item()}.json",
+											"type": "Expression"
+										}
+									}
+								}
+							]
+						},
+						{
+							"name": "MaxYearLoaded",
+							"type": "SetVariable",
+							"dependsOn": [
+								{
+									"activity": "Lookup1",
+									"dependencyConditions": [
+										"Succeeded"
+									]
+								}
+							],
+							"policy": {
+								"secureOutput": false,
+								"secureInput": false
+							},
+							"userProperties": [],
+							"typeProperties": {
+								"variableName": "MaxYearLoaded",
+								"value": {
+									"value": "@max(json(activity('CopyActivityInsideForEach').output.Response)[1].date)",
+									"type": "Expression"
+								}
+							}
+						},
+						{
+							"name": "Lookup1",
+							"type": "Lookup",
+							"dependsOn": [
+								{
+									"activity": "CopyActivityInsideForEach",
+									"dependencyConditions": [
+										"Succeeded"
+									]
+								}
+							],
+							"policy": {
+								"timeout": "0.12:00:00",
+								"retry": 0,
+								"retryIntervalInSeconds": 30,
+								"secureOutput": false,
+								"secureInput": false
+							},
+							"userProperties": [],
+							"typeProperties": {
+								"source": {
+									"type": "JsonSource",
+									"storeSettings": {
+										"type": "AzureBlobFSReadSettings",
+										"recursive": true,
+										"enablePartitionDiscovery": false
+									},
+									"formatSettings": {
+										"type": "JsonReadSettings"
+									}
+								},
+								"dataset": {
+									"referenceName": "ds_maxdate_worldbank",
+									"type": "DatasetReference"
+								},
+								"firstRowOnly": false
+							}
+						},
+						{
+							"name": "CurrentPageMaxYear",
+							"type": "AppendVariable",
+							"dependsOn": [
+								{
+									"activity": "MaxYearLoaded",
+									"dependencyConditions": [
+										"Succeeded"
+									]
+								}
+							],
+							"userProperties": [],
+							"typeProperties": {
+								"variableName": "AllPageMaxYears",
+								"value": {
+									"value": "@variables('CurrentPageMaxYear')",
+									"type": "Expression"
+								}
+							}
+						}
+					]
+				}
+			},
+			{
+				"name": "UpdateWorldBankLoadControl",
+				"type": "SqlServerStoredProcedure",
+				"dependsOn": [
+					{
+						"activity": "ForEach1",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"policy": {
+					"timeout": "0.12:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"storedProcedureName": "[dbo].[sp_UpdateWorldBankLoadControl]",
+					"storedProcedureParameters": {
+						"CountryCode": {
+							"value": {
+								"value": "@pipeline().parameters.CountryCode",
+								"type": "Expression"
+							},
+							"type": "String"
+						},
+						"IndicatorCode": {
+							"value": {
+								"value": "@pipeline().parameters.IndicatorCode",
+								"type": "Expression"
+							},
+							"type": "String"
+						},
+						"MaxYearLoaded": {
+							"value": {
+								"value": "@variables('MaxYearLoaded')",
+								"type": "Expression"
+							},
+							"type": "Int32"
+						}
+					}
+				},
+				"linkedServiceName": {
+					"referenceName": "ls_azuresql_petrolake_dev",
+					"type": "LinkedServiceReference"
+				}
 			}
 		],
 		"parameters": {
@@ -92,11 +309,30 @@
 			"LoadDate": {
 				"type": "string",
 				"defaultValue": "'2026-02-21'"
+			},
+			"CountryCode": {
+				"type": "string",
+				"defaultValue": "IN"
+			},
+			"IndicatorCode": {
+				"type": "string",
+				"defaultValue": "EG.USE.PCAP.KG.OE"
 			}
 		},
 		"variables": {
 			"TotalPages": {
 				"type": "Integer"
+			},
+			"MaxYearLoaded": {
+				"type": "Integer",
+				"defaultValue": 0
+			},
+			"CurrentPageMaxYear": {
+				"type": "Integer",
+				"defaultValue": 0
+			},
+			"AllPageMaxYears": {
+				"type": "Array"
 			}
 		},
 		"annotations": []

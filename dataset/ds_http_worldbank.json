@@ -1,0 +1,23 @@
+{
+	"name": "ds_http_worldbank",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "LS_HttpServer",
+			"type": "LinkedServiceReference"
+		},
+		"parameters": {
+			"PageNumber": {
+				"type": "string"
+			}
+		},
+		"annotations": [],
+		"type": "Json",
+		"typeProperties": {
+			"location": {
+				"type": "HttpServerLocation",
+				"relativeUrl": "/country/@{pipeline().parameters.CountryCode}/indicator/@{pipeline().parameters.IndicatorCode}?format=json&page=@{dataset().PageNumber}"
+			}
+		},
+		"schema": {}
+	}
+}
