@@ -18,7 +18,7 @@
 					"source": {
 						"type": "AzureSqlSource",
 						"sqlReaderQuery": {
-							"value": "SELECT LastLoadedYear\nFROM dbo.WorldBankIncrementalLoadControl\nWHERE CountryCode = 'IN'\n  AND IndicatorCode = 'EG.USE.PCAP.KG.OE';",
+							"value": "SELECT LastLoadedYear \nFROM dbo.WorldBankIncrementalLoadControl\nWHERE CountryCode = @pipeline().parameters.CountryCode\n  AND IndicatorCode = @pipeline().parameters.IndicatorCode",
 							"type": "Expression"
 						},
 						"queryTimeout": "02:00:00",
@@ -52,7 +52,7 @@
 				"userProperties": [],
 				"typeProperties": {
 					"method": "GET",
-					"url": "https://api.worldbank.org/v2/country/IN/indicator/EG.USE.PCAP.KG.OE?format=json&page=1"
+					"url": "https://api.worldbank.org/v2/country/@{pipeline().parameters.CountryCode}/indicator/@{pipeline().parameters.IndicatorCode}?format=json&page=1"
 				}
 			},
 			{
@@ -340,11 +340,11 @@
 				"type": "Integer",
 				"defaultValue": 0
 			},
-			"CurrentPageMaxYear": {
+			"CurrentPage": {
 				"type": "Integer",
 				"defaultValue": 0
 			},
-			"AllPageMaxYears": {
+			"MaxYearsPerPage": {
 				"type": "Array"
 			}
 		},
