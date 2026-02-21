@@ -128,6 +128,10 @@
 							"StartDate": {
 								"value": "@variables('StartDate')",
 								"type": "Expression"
+							},
+							"EndDate": {
+								"value": "@variables('EndDate')",
+								"type": "Expression"
 							}
 						}
 					}
