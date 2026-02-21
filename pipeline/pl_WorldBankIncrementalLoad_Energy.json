@@ -26,13 +26,7 @@
 					},
 					"dataset": {
 						"referenceName": "ds_worldbank_controldata_energy_new",
-						"type": "DatasetReference",
-						"parameters": {
-							"CountryCode": {
-								"value": "@pipeline().parameters.CountryCode",
-								"type": "Expression"
-							}
-						}
+						"type": "DatasetReference"
 					},
 					"firstRowOnly": true
 				}
@@ -60,6 +54,30 @@
 					"method": "GET",
 					"url": "https://api.worldbank.org/v2/country/IN/indicator/EG.USE.PCAP.KG.OE?format=json&page=1"
 				}
+			},
+			{
+				"name": "TotalPages",
+				"type": "SetVariable",
+				"dependsOn": [
+					{
+						"activity": "GetTotalPages",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"policy": {
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"variableName": "TotalPages",
+					"value": {
+						"value": "@json(activity('GetTotalPages').output.Response)[0].pages",
+						"type": "Expression"
+					}
+				}
 			}
 		],
 		"parameters": {
@@ -74,6 +92,11 @@
 			"LoadDate": {
 				"type": "string",
 				"defaultValue": "'2026-02-21'"
+			}
+		},
+		"variables": {
+			"TotalPages": {
+				"type": "Integer"
 			}
 		},
 		"annotations": []
