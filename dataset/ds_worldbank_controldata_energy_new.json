@@ -5,6 +5,14 @@
 			"referenceName": "ls_azuresql_petrolake_dev",
 			"type": "LinkedServiceReference"
 		},
+		"parameters": {
+			"CountryCode": {
+				"type": "string"
+			},
+			"IndicatorCode": {
+				"type": "string"
+			}
+		},
 		"annotations": [],
 		"type": "AzureSqlTable",
 		"schema": [],

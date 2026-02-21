@@ -3,7 +3,7 @@
 	"properties": {
 		"activities": [
 			{
-				"name": "WorldBankIncrementalLoadControl",
+				"name": "LookupLastLoadedYear",
 				"type": "Lookup",
 				"dependsOn": [],
 				"policy": {
@@ -18,7 +18,7 @@
 					"source": {
 						"type": "AzureSqlSource",
 						"sqlReaderQuery": {
-							"value": "SELECT LastLoadedYear FROM dbo.WorldBankIncrementalLoadControl\nWHERE CountryCode = 'IN' AND IndicatorCode = 'EG.USE.PCAP.KG.OE';",
+							"value": "SELECT LastLoadedYear\nFROM dbo.WorldBankIncrementalLoadControl\nWHERE CountryCode = @CountryCode\n  AND IndicatorCode = @IndicatorCode;",
 							"type": "Expression"
 						},
 						"queryTimeout": "02:00:00",
@@ -35,7 +35,7 @@
 				"type": "WebActivity",
 				"dependsOn": [
 					{
-						"activity": "WorldBankIncrementalLoadControl",
+						"activity": "LookupLastLoadedYear",
 						"dependencyConditions": [
 							"Succeeded"
 						]
