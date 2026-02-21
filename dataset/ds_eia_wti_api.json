@@ -1,0 +1,23 @@
+{
+	"name": "ds_eia_wti_api",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "ls_rest_eia_wti",
+			"type": "LinkedServiceReference"
+		},
+		"parameters": {
+			"StartDate": {
+				"type": "string"
+			},
+			"EndDate": {
+				"type": "string"
+			}
+		},
+		"annotations": [],
+		"type": "RestResource",
+		"typeProperties": {
+			"relativeUrl": "v2/petroleum/pri/spt/data/"
+		},
+		"schema": []
+	}
+}
