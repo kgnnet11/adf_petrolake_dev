@@ -205,10 +205,7 @@
 					"headers": {
 						"x-ms-version ": "1900-01-01"
 					},
-					"url": {
-						"value": "https://sgdigitalizationdev .dfs.core.windows.net/landingzone/metadata/eia_wti_watermark.json?resource=file",
-						"type": "Expression"
-					},
+					"url": "https://sgdigitalizationdev.dfs.core.windows.net/landingzone/metadata/eia_wti_watermark.json?resource=file",
 					"body": {
 						"value": "@variables('WatermarkJson')",
 						"type": "Expression"
