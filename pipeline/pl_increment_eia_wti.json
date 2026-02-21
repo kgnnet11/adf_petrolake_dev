@@ -3,7 +3,7 @@
 	"properties": {
 		"activities": [
 			{
-				"name": "get_metadata",
+				"name": "Lookup_Watermark",
 				"type": "Lookup",
 				"dependsOn": [],
 				"policy": {
@@ -31,8 +31,67 @@
 						"type": "DatasetReference"
 					}
 				}
+			},
+			{
+				"name": "Set_StartDate",
+				"type": "SetVariable",
+				"dependsOn": [
+					{
+						"activity": "Lookup_Watermark",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"policy": {
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"variableName": "StartDate",
+					"value": {
+						"value": "@activity('Lookup_Watermark').output.firstRow.last_loaded_date",
+						"type": "Expression"
+					}
+				}
+			},
+			{
+				"name": "Set_EndDate",
+				"type": "SetVariable",
+				"dependsOn": [
+					{
+						"activity": "Set_StartDate",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"policy": {
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"variableName": "EndDate",
+					"value": {
+						"value": "@formatDateTime(addDays(variables('StartDate'),1),'yyyy-MM-dd')",
+						"type": "Expression"
+					}
+				}
 			}
 		],
+		"variables": {
+			"StartDate": {
+				"type": "String"
+			},
+			"EndDate": {
+				"type": "String"
+			},
+			"WatermarkJson": {
+				"type": "String"
+			}
+		},
 		"annotations": []
 	}
 }
