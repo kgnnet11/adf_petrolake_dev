@@ -79,6 +79,133 @@
 						"type": "Expression"
 					}
 				}
+			},
+			{
+				"name": "Copy_eia_wti_adls",
+				"type": "Copy",
+				"dependsOn": [
+					{
+						"activity": "Set_EndDate",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"policy": {
+					"timeout": "0.12:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"source": {
+						"type": "RestSource",
+						"httpRequestTimeout": "00:01:40",
+						"requestInterval": "00.00:00:00.010",
+						"requestMethod": "GET",
+						"paginationRules": {
+							"supportRFC5988": "true"
+						}
+					},
+					"sink": {
+						"type": "JsonSink",
+						"storeSettings": {
+							"type": "AzureBlobFSWriteSettings"
+						},
+						"formatSettings": {
+							"type": "JsonWriteSettings"
+						}
+					},
+					"enableStaging": false
+				},
+				"inputs": [
+					{
+						"referenceName": "ds_eia_wti_api",
+						"type": "DatasetReference",
+						"parameters": {
+							"StartDate": {
+								"value": "@variables('StartDate')",
+								"type": "Expression"
+							}
+						}
+					}
+				],
+				"outputs": [
+					{
+						"referenceName": "ds_eia_wti_adls",
+						"type": "DatasetReference",
+						"parameters": {
+							"path": {
+								"value": "landingzone/eia_wti/year=@{formatDateTime(variables('StartDate'),'yyyy')}/\nmonth=@{formatDateTime(variables('StartDate'),'MM')}/\nday=@{formatDateTime(variables('StartDate'),'dd')}/",
+								"type": "Expression"
+							},
+							"filename": {
+								"value": "wti_@{variables('StartDate')}.json",
+								"type": "Expression"
+							}
+						}
+					}
+				]
+			},
+			{
+				"name": "Set_Watermark_Content",
+				"type": "SetVariable",
+				"dependsOn": [
+					{
+						"activity": "Copy_eia_wti_adls",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"policy": {
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"variableName": "WatermarkJson",
+					"value": {
+						"value": "@concat('{\"last_loaded_date\":\"',variables('EndDate'),'\"}')",
+						"type": "Expression"
+					}
+				}
+			},
+			{
+				"name": "Update_Watermark_File",
+				"type": "WebActivity",
+				"dependsOn": [
+					{
+						"activity": "Set_Watermark_Content",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"policy": {
+					"timeout": "0.12:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"method": "PUT",
+					"headers": {
+						"x-ms-version ": "1900-01-01"
+					},
+					"url": {
+						"value": "https://sgdigitalizationdev .dfs.core.windows.net/landingzone/metadata/eia_wti_watermark.json?resource=file",
+						"type": "Expression"
+					},
+					"body": {
+						"value": "@variables('WatermarkJson')",
+						"type": "Expression"
+					}
+				}
 			}
 		],
 		"variables": {
