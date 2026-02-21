@@ -26,8 +26,19 @@
 					},
 					"dataset": {
 						"referenceName": "ds_worldbank_controldata_energy_new",
-						"type": "DatasetReference"
-					}
+						"type": "DatasetReference",
+						"parameters": {
+							"CountryCode": {
+								"value": "@pipeline().parameters.CountryCode",
+								"type": "Expression"
+							},
+							"IndicatorCode": {
+								"value": "@pipeline().parameters.IndicatorCode",
+								"type": "Expression"
+							}
+						}
+					},
+					"firstRowOnly": false
 				}
 			},
 			{
@@ -70,11 +81,11 @@
 			},
 			"CountryCode": {
 				"type": "string",
-				"defaultValue": "'IN'"
+				"defaultValue": "IN"
 			},
 			"IndicatorCode": {
 				"type": "string",
-				"defaultValue": "'EG.USE.PCAP.KG.OE'"
+				"defaultValue": "EG.USE.PCAP.KG.OE"
 			}
 		},
 		"annotations": []
