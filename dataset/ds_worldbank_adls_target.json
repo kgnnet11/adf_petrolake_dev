@@ -11,6 +11,9 @@
 			},
 			"PageNumber": {
 				"type": "int"
+			},
+			"FileName": {
+				"type": "string"
 			}
 		},
 		"annotations": [],
@@ -19,7 +22,7 @@
 			"location": {
 				"type": "AzureBlobFSLocation",
 				"fileName": {
-					"value": "page_@{dataset().PageNumber}.json",
+					"value": "@dataset().FileName",
 					"type": "Expression"
 				},
 				"folderPath": {

@@ -1,0 +1,23 @@
+{
+	"name": "ds_http_worldbank_src",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "LS_HttpServer",
+			"type": "LinkedServiceReference"
+		},
+		"parameters": {
+			"PageNumber": {
+				"type": "string"
+			}
+		},
+		"annotations": [],
+		"type": "Json",
+		"typeProperties": {
+			"location": {
+				"type": "HttpServerLocation",
+				"relativeUrl": "/v2/country/IN/indicator/EG.USE.PCAP.KG.OE?format=json&page=@{dataset().PageNumber}"
+			}
+		},
+		"schema": {}
+	}
+}
