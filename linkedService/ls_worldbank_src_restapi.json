@@ -1,0 +1,12 @@
+{
+	"name": "ls_worldbank_src_restapi",
+	"properties": {
+		"annotations": [],
+		"type": "RestService",
+		"typeProperties": {
+			"url": "https://api.worldbank.org/v2/country/IN/indicator/EG.USE.PCAP.KG.OE",
+			"enableServerCertificateValidation": true,
+			"authenticationType": "Anonymous"
+		}
+	}
+}
