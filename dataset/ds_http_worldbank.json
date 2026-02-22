@@ -8,6 +8,12 @@
 		"parameters": {
 			"PageNumber": {
 				"type": "string"
+			},
+			"CountryCode": {
+				"type": "string"
+			},
+			"IndicatorCode": {
+				"type": "string"
 			}
 		},
 		"annotations": [],
@@ -16,7 +22,7 @@
 			"location": {
 				"type": "HttpServerLocation",
 				"relativeUrl": {
-					"value": "&page=@{dataset().PageNumber}",
+					"value": "@concat(\n  '/v2/country/',\n  dataset().CountryCode,\n  '/indicator/',\n  dataset().IndicatorCode,\n  '?format=json&page=',\n  dataset().PageNumber\n)",
 					"type": "Expression"
 				}
 			}
