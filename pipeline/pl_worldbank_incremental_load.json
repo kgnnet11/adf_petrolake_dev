@@ -3,7 +3,7 @@
 	"properties": {
 		"activities": [
 			{
-				"name": "ReadControlTable",
+				"name": "Lookup_Control",
 				"type": "Lookup",
 				"dependsOn": [],
 				"policy": {
@@ -17,7 +17,7 @@
 				"typeProperties": {
 					"source": {
 						"type": "AzureSqlSource",
-						"sqlReaderQuery": "SELECT * \nFROM dbo.API_Control_Table\nWHERE API_Name = 'WorldBank_Energy'",
+						"sqlReaderQuery": "SELECT * \nFROM dbo.API_Control_Table_WBE\nWHERE API_Name = 'WorldBank_Energy'",
 						"queryTimeout": "02:00:00",
 						"partitionOption": "None"
 					},
@@ -25,6 +25,51 @@
 						"referenceName": "ds_api_worldbank_control_table",
 						"type": "DatasetReference"
 					}
+				}
+			},
+			{
+				"name": "LastLoadedYear",
+				"type": "SetVariable",
+				"dependsOn": [
+					{
+						"activity": "Lookup_Control",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"policy": {
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"variableName": "LastLoadedYear",
+					"value": {
+						"value": "@activity('Lookup_Control').output.firstRow.LastLoadedYear",
+						"type": "Expression"
+					}
+				}
+			},
+			{
+				"name": "CurrentPage",
+				"type": "SetVariable",
+				"dependsOn": [
+					{
+						"activity": "LastLoadedYear",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"policy": {
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"variableName": "CurrentPage",
+					"value": 1
 				}
 			}
 		],
