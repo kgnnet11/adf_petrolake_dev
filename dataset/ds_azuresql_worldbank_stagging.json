@@ -1,0 +1,16 @@
+{
+	"name": "ds_azuresql_worldbank_stagging",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "ls_azuresql_petrolake_dev",
+			"type": "LinkedServiceReference"
+		},
+		"annotations": [],
+		"type": "AzureSqlTable",
+		"schema": [],
+		"typeProperties": {
+			"schema": "dbo",
+			"table": "WorldBankEnergyData"
+		}
+	}
+}
