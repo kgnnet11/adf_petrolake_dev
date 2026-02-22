@@ -83,7 +83,7 @@
 				}
 			},
 			{
-				"name": "ForEach1",
+				"name": "getpages",
 				"type": "ForEach",
 				"dependsOn": [
 					{
@@ -96,146 +96,82 @@
 				"userProperties": [],
 				"typeProperties": {
 					"items": {
-						"value": "@range(1, add(variables('TotalPages'), 1))",
+						"value": "@range(1, add(json(activity('GetTotalPages').output.Response)[0].pages,1))",
 						"type": "Expression"
 					},
 					"isSequential": true,
 					"activities": [
 						{
-							"name": "If Condition1",
-							"type": "IfCondition",
+							"name": "CopyActivityInsideForEach",
+							"type": "Copy",
 							"dependsOn": [],
+							"policy": {
+								"timeout": "0.12:00:00",
+								"retry": 0,
+								"retryIntervalInSeconds": 30,
+								"secureOutput": false,
+								"secureInput": false
+							},
 							"userProperties": [],
 							"typeProperties": {
-								"expression": {
-									"value": "@greater(int(item().date), variables('LastLoadedYear'))",
-									"type": "Expression"
-								},
-								"ifTrueActivities": [
-									{
-										"name": "CopyActivityInsideForEach",
-										"type": "Copy",
-										"dependsOn": [],
-										"policy": {
-											"timeout": "0.12:00:00",
-											"retry": 0,
-											"retryIntervalInSeconds": 30,
-											"secureOutput": false,
-											"secureInput": false
-										},
-										"userProperties": [],
-										"typeProperties": {
-											"source": {
-												"type": "JsonSource",
-												"storeSettings": {
-													"type": "HttpReadSettings",
-													"requestMethod": "GET"
-												},
-												"formatSettings": {
-													"type": "JsonReadSettings"
-												}
-											},
-											"sink": {
-												"type": "JsonSink",
-												"storeSettings": {
-													"type": "AzureBlobFSWriteSettings"
-												},
-												"formatSettings": {
-													"type": "JsonWriteSettings"
-												}
-											},
-											"enableStaging": false
-										},
-										"inputs": [
-											{
-												"referenceName": "ds_http_worldbank",
-												"type": "DatasetReference",
-												"parameters": {
-													"PageNumber": {
-														"value": "@item()",
-														"type": "Expression"
-													},
-													"CountryCode": {
-														"value": "@pipeline().parameters.CountryCode",
-														"type": "Expression"
-													},
-													"IndicatorCode": {
-														"value": "@pipeline().parameters.IndicatorCode",
-														"type": "Expression"
-													}
-												}
-											}
-										],
-										"outputs": [
-											{
-												"referenceName": "ds_api_adls_worldbankenergy",
-												"type": "DatasetReference",
-												"parameters": {
-													"LoadDate": {
-														"value": "@pipeline().parameters.LoadDate",
-														"type": "Expression"
-													},
-													"PageNumber": {
-														"value": "@item()",
-														"type": "Expression"
-													}
-												}
-											}
-										]
+								"source": {
+									"type": "JsonSource",
+									"storeSettings": {
+										"type": "HttpReadSettings",
+										"requestMethod": "GET"
 									},
-									{
-										"name": "Copy data1",
-										"type": "Copy",
-										"dependsOn": [
-											{
-												"activity": "CopyActivityInsideForEach",
-												"dependencyConditions": [
-													"Succeeded"
-												]
-											}
-										],
-										"policy": {
-											"timeout": "0.12:00:00",
-											"retry": 0,
-											"retryIntervalInSeconds": 30,
-											"secureOutput": false,
-											"secureInput": false
-										},
-										"userProperties": [],
-										"typeProperties": {
-											"source": {
-												"type": "JsonSource",
-												"storeSettings": {
-													"type": "AzureBlobFSReadSettings",
-													"recursive": true,
-													"enablePartitionDiscovery": false
-												},
-												"formatSettings": {
-													"type": "JsonReadSettings"
-												}
-											},
-											"sink": {
-												"type": "AzureSqlSink",
-												"writeBehavior": "insert",
-												"sqlWriterUseTableLock": false
-											},
-											"enableStaging": false
-										},
-										"inputs": [
-											{
-												"referenceName": "ds_adls_bankdata_sql",
-												"type": "DatasetReference"
-											}
-										],
-										"outputs": [
-											{
-												"referenceName": "ds_azuresql_worldbank_stagging",
-												"type": "DatasetReference"
-											}
-										]
+									"formatSettings": {
+										"type": "JsonReadSettings"
 									}
-								]
-							}
+								},
+								"sink": {
+									"type": "JsonSink",
+									"storeSettings": {
+										"type": "AzureBlobFSWriteSettings",
+										"copyBehavior": "PreserveHierarchy"
+									},
+									"formatSettings": {
+										"type": "JsonWriteSettings"
+									}
+								},
+								"enableStaging": false
+							},
+							"inputs": [
+								{
+									"referenceName": "ds_http_worldbank",
+									"type": "DatasetReference",
+									"parameters": {
+										"PageNumber": {
+											"value": "@item()",
+											"type": "Expression"
+										},
+										"CountryCode": {
+											"value": "@pipeline().parameters.CountryCode",
+											"type": "Expression"
+										},
+										"IndicatorCode": {
+											"value": "@pipeline().parameters.IndicatorCode",
+											"type": "Expression"
+										}
+									}
+								}
+							],
+							"outputs": [
+								{
+									"referenceName": "ds_api_adls_worldbankenergy",
+									"type": "DatasetReference",
+									"parameters": {
+										"LoadDate": {
+											"value": "@pipeline().parameters.LoadDate",
+											"type": "Expression"
+										},
+										"PageNumber": {
+											"value": "@item()",
+											"type": "Expression"
+										}
+									}
+								}
+							]
 						}
 					]
 				}
@@ -243,11 +179,9 @@
 			{
 				"name": "UpdateWorldBankLoadControl",
 				"type": "SqlServerStoredProcedure",
-				"state": "Inactive",
-				"onInactiveMarkAs": "Succeeded",
 				"dependsOn": [
 					{
-						"activity": "MaxYearLoaded",
+						"activity": "getpages",
 						"dependencyConditions": [
 							"Succeeded"
 						]
@@ -279,10 +213,7 @@
 							"type": "String"
 						},
 						"MaxYearLoaded": {
-							"value": {
-								"value": "@variables('MaxYearLoaded')",
-								"type": "Expression"
-							},
+							"value": "2022",
 							"type": "Int32"
 						}
 					}
@@ -290,65 +221,6 @@
 				"linkedServiceName": {
 					"referenceName": "ls_azuresql_petrolake_dev",
 					"type": "LinkedServiceReference"
-				}
-			},
-			{
-				"name": "MaxYearLoaded",
-				"type": "SetVariable",
-				"dependsOn": [
-					{
-						"activity": "Lookup_MaxYear",
-						"dependencyConditions": [
-							"Succeeded"
-						]
-					}
-				],
-				"policy": {
-					"secureOutput": false,
-					"secureInput": false
-				},
-				"userProperties": [],
-				"typeProperties": {
-					"variableName": "MaxYearLoaded",
-					"value": {
-						"value": "@activity('Lookup_MaxYear').output.firstRow.MaxYear",
-						"type": "Expression"
-					}
-				}
-			},
-			{
-				"name": "Lookup_MaxYear",
-				"type": "Lookup",
-				"dependsOn": [
-					{
-						"activity": "ForEach1",
-						"dependencyConditions": [
-							"Succeeded"
-						]
-					}
-				],
-				"policy": {
-					"timeout": "0.12:00:00",
-					"retry": 0,
-					"retryIntervalInSeconds": 30,
-					"secureOutput": false,
-					"secureInput": false
-				},
-				"userProperties": [],
-				"typeProperties": {
-					"source": {
-						"type": "AzureSqlSource",
-						"sqlReaderQuery": {
-							"value": "SELECT LastLoadedYear\nFROM dbo.WorldBankIncrementalLoadControl",
-							"type": "Expression"
-						},
-						"queryTimeout": "02:00:00",
-						"partitionOption": "None"
-					},
-					"dataset": {
-						"referenceName": "ds_worldbank_controldata_energy_new",
-						"type": "DatasetReference"
-					}
 				}
 			}
 		],
