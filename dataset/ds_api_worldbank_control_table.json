@@ -1,0 +1,16 @@
+{
+	"name": "ds_api_worldbank_control_table",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "ls_azuresql_petrolake_dev",
+			"type": "LinkedServiceReference"
+		},
+		"annotations": [],
+		"type": "AzureSqlTable",
+		"schema": [],
+		"typeProperties": {
+			"schema": "dbo",
+			"table": "API_Control_Table_WBE"
+		}
+	}
+}

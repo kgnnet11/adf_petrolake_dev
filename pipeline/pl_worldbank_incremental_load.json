@@ -1,6 +1,33 @@
 {
 	"name": "pl_worldbank_incremental_load",
 	"properties": {
+		"activities": [
+			{
+				"name": "ReadControlTable",
+				"type": "Lookup",
+				"dependsOn": [],
+				"policy": {
+					"timeout": "0.12:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"source": {
+						"type": "AzureSqlSource",
+						"sqlReaderQuery": "SELECT * \nFROM dbo.API_Control_Table\nWHERE API_Name = 'WorldBank_Energy'",
+						"queryTimeout": "02:00:00",
+						"partitionOption": "None"
+					},
+					"dataset": {
+						"referenceName": "ds_api_worldbank_control_table",
+						"type": "DatasetReference"
+					}
+				}
+			}
+		],
 		"variables": {
 			"CurrentPage": {
 				"type": "Integer"
