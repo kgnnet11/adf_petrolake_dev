@@ -102,28 +102,6 @@
 					"isSequential": true,
 					"activities": [
 						{
-							"name": "CurrentPageMaxYear",
-							"type": "AppendVariable",
-							"state": "Inactive",
-							"onInactiveMarkAs": "Succeeded",
-							"dependsOn": [
-								{
-									"activity": "MaxYearPerPage",
-									"dependencyConditions": [
-										"Succeeded"
-									]
-								}
-							],
-							"userProperties": [],
-							"typeProperties": {
-								"variableName": "AllPageMaxYears",
-								"value": {
-									"value": "@variables('CurrentPageMaxYear')",
-									"type": "Expression"
-								}
-							}
-						},
-						{
 							"name": "CopyActivityInsideForEach",
 							"type": "Copy",
 							"dependsOn": [],
@@ -165,6 +143,14 @@
 										"PageNumber": {
 											"value": "@item()",
 											"type": "Expression"
+										},
+										"CountryCode": {
+											"value": "@pipeline().parameters.CountryCode",
+											"type": "Expression"
+										},
+										"IndicatorCode": {
+											"value": "@pipeline().parameters.IndicatorCode",
+											"type": "Expression"
 										}
 									}
 								}
@@ -185,23 +171,6 @@
 									}
 								}
 							]
-						},
-						{
-							"name": "MaxYearPerPage",
-							"type": "SetVariable",
-							"dependsOn": [],
-							"policy": {
-								"secureOutput": false,
-								"secureInput": false
-							},
-							"userProperties": [],
-							"typeProperties": {
-								"variableName": "MaxYearPerPage",
-								"value": {
-									"value": "[\"@union(\\n    variables('MaxYears')\",\"\\n    array(max(forEach(json(activity('Web_Page_@{item()}').output.Response)[1]\",\" x => int(x.date))))\\n)\"]",
-									"type": "Expression"
-								}
-							}
 						}
 					]
 				}
@@ -213,7 +182,7 @@
 				"onInactiveMarkAs": "Succeeded",
 				"dependsOn": [
 					{
-						"activity": "MaxYearLoaded",
+						"activity": "LastLoadedYear",
 						"dependencyConditions": [
 							"Succeeded"
 						]
@@ -259,13 +228,11 @@
 				}
 			},
 			{
-				"name": "MaxYearLoaded",
+				"name": "LastLoadedYear",
 				"type": "SetVariable",
-				"state": "Inactive",
-				"onInactiveMarkAs": "Succeeded",
 				"dependsOn": [
 					{
-						"activity": "ForEach1",
+						"activity": "Lookup_LastLoadedYear",
 						"dependencyConditions": [
 							"Succeeded"
 						]
@@ -277,10 +244,42 @@
 				},
 				"userProperties": [],
 				"typeProperties": {
-					"variableName": "MaxYearLoaded",
+					"variableName": "LastLoadedYear",
 					"value": {
-						"value": "@max(variables('MaxYears'))",
+						"value": "@activity('Lookup_LastLoadedYear').output.firstRow.LastLoadedYear",
 						"type": "Expression"
+					}
+				}
+			},
+			{
+				"name": "Lookup_LastLoadedYear",
+				"type": "Lookup",
+				"dependsOn": [
+					{
+						"activity": "ForEach1",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"policy": {
+					"timeout": "0.12:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"source": {
+						"type": "AzureSqlSource",
+						"sqlReaderQuery": "SELECT LastLoadedYear \nFROM dbo.WorldBankIncrementalLoadControl\nWHERE CountryCode='@{pipeline().parameters.CountryCode}'\nAND IndicatorCode='@{pipeline().parameters.IndicatorCode}';",
+						"queryTimeout": "02:00:00",
+						"partitionOption": "None"
+					},
+					"dataset": {
+						"referenceName": "ds_worldbank_controldata_energy_new",
+						"type": "DatasetReference"
 					}
 				}
 			}
@@ -320,6 +319,9 @@
 			},
 			"MaxYears": {
 				"type": "Array"
+			},
+			"LastLoadedYear": {
+				"type": "String"
 			}
 		},
 		"annotations": []
