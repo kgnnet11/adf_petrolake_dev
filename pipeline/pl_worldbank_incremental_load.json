@@ -152,19 +152,18 @@
 							"userProperties": [],
 							"typeProperties": {
 								"source": {
-									"type": "JsonSource",
+									"type": "RestSource",
 									"additionalColumns": [
 										{
 											"name": "Collectionreference",
 											"value": "$[1]"
 										}
 									],
-									"storeSettings": {
-										"type": "HttpReadSettings",
-										"requestMethod": "GET"
-									},
-									"formatSettings": {
-										"type": "JsonReadSettings"
+									"httpRequestTimeout": "00:01:40",
+									"requestInterval": "00.00:00:00.010",
+									"requestMethod": "GET",
+									"paginationRules": {
+										"supportRFC5988": "true"
 									}
 								},
 								"sink": {
@@ -181,7 +180,7 @@
 							},
 							"inputs": [
 								{
-									"referenceName": "ds_http_worldbank_src",
+									"referenceName": "ds_worldbank_src_restapi",
 									"type": "DatasetReference",
 									"parameters": {
 										"PageNumber": {
