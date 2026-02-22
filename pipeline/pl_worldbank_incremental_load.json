@@ -71,6 +71,138 @@
 					"variableName": "CurrentPage",
 					"value": 1
 				}
+			},
+			{
+				"name": "Get_Metadata",
+				"type": "WebActivity",
+				"dependsOn": [
+					{
+						"activity": "CurrentPage",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"policy": {
+					"timeout": "0.12:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"method": "GET",
+					"url": "https://api.worldbank.org/v2/country/IN/indicator/EG.USE.PCAP.KG.OE?format=json&page=1"
+				}
+			},
+			{
+				"name": "SetTotalPages",
+				"type": "SetVariable",
+				"dependsOn": [
+					{
+						"activity": "Get_Metadata",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"policy": {
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"variableName": "TotalPages",
+					"value": {
+						"value": "@json(activity('Get_Metadata').output.Response)[0].pages",
+						"type": "Expression"
+					}
+				}
+			},
+			{
+				"name": "UNTILLOOP",
+				"type": "Until",
+				"dependsOn": [
+					{
+						"activity": "SetTotalPages",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"userProperties": [],
+				"typeProperties": {
+					"expression": {
+						"value": "@greater(variables('CurrentPage'), variables('TotalPages'))",
+						"type": "Expression"
+					},
+					"activities": [
+						{
+							"name": "cp_worldbank_api_adls",
+							"type": "Copy",
+							"dependsOn": [],
+							"policy": {
+								"timeout": "0.12:00:00",
+								"retry": 0,
+								"retryIntervalInSeconds": 30,
+								"secureOutput": false,
+								"secureInput": false
+							},
+							"userProperties": [],
+							"typeProperties": {
+								"source": {
+									"type": "RestSource",
+									"httpRequestTimeout": "00:01:40",
+									"requestInterval": "00.00:00:00.010",
+									"requestMethod": "GET",
+									"paginationRules": {
+										"supportRFC5988": "true"
+									}
+								},
+								"sink": {
+									"type": "JsonSink",
+									"storeSettings": {
+										"type": "AzureBlobFSWriteSettings"
+									},
+									"formatSettings": {
+										"type": "JsonWriteSettings"
+									}
+								},
+								"enableStaging": false
+							},
+							"inputs": [
+								{
+									"referenceName": "ds_worldbank_src_restapi",
+									"type": "DatasetReference",
+									"parameters": {
+										"PageNumber": {
+											"value": "@variables('CurrentPage')",
+											"type": "Expression"
+										}
+									}
+								}
+							],
+							"outputs": [
+								{
+									"referenceName": "ds_worldbank_adls_target",
+									"type": "DatasetReference",
+									"parameters": {
+										"Year": {
+											"value": "@formatDateTime(utcnow(),'yyyy')",
+											"type": "Expression"
+										},
+										"PageNumber": {
+											"value": "@variables('CurrentPage')",
+											"type": "Expression"
+										}
+									}
+								}
+							]
+						}
+					],
+					"timeout": "0.12:00:00"
+				}
 			}
 		],
 		"variables": {

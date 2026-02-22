@@ -1,0 +1,20 @@
+{
+	"name": "ds_worldbank_src_restapi",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "ls_worldbank_src_restapi",
+			"type": "LinkedServiceReference"
+		},
+		"parameters": {
+			"PageNumber": {
+				"type": "int"
+			}
+		},
+		"annotations": [],
+		"type": "RestResource",
+		"typeProperties": {
+			"relativeUrl": "?format=json&page=@{dataset().PageNumber}"
+		},
+		"schema": []
+	}
+}

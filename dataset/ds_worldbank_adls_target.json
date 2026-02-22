@@ -1,0 +1,34 @@
+{
+	"name": "ds_worldbank_adls_target",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "ls_alds_landingzone",
+			"type": "LinkedServiceReference"
+		},
+		"parameters": {
+			"Year": {
+				"type": "string"
+			},
+			"PageNumber": {
+				"type": "int"
+			}
+		},
+		"annotations": [],
+		"type": "Json",
+		"typeProperties": {
+			"location": {
+				"type": "AzureBlobFSLocation",
+				"fileName": {
+					"value": "page_@{dataset().PageNumber}.json",
+					"type": "Expression"
+				},
+				"folderPath": {
+					"value": "worldbankenergy/raw_json/year=@{dataset().Year}/",
+					"type": "Expression"
+				},
+				"fileSystem": "landingzone"
+			}
+		},
+		"schema": {}
+	}
+}
