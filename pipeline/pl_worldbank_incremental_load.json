@@ -1,0 +1,23 @@
+{
+	"name": "pl_worldbank_incremental_load",
+	"properties": {
+		"variables": {
+			"CurrentPage": {
+				"type": "Integer"
+			},
+			"TotalPages": {
+				"type": "Integer"
+			},
+			"LastLoadedYear": {
+				"type": "Integer"
+			},
+			"MaxYearInPage": {
+				"type": "Integer"
+			}
+		},
+		"folder": {
+			"name": "Worldbankenergydata"
+		},
+		"annotations": []
+	}
+}
