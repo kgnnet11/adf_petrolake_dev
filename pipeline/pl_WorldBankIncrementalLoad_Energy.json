@@ -52,7 +52,10 @@
 				"userProperties": [],
 				"typeProperties": {
 					"method": "GET",
-					"url": "https://api.worldbank.org/v2/country/@{pipeline().parameters.CountryCode}/indicator/@{pipeline().parameters.IndicatorCode}?format=json&page=1"
+					"url": {
+						"value": "@concat(\n  'https://api.worldbank.org/v2/country/',\n  pipeline().parameters.CountryCode,\n  '/indicator/',\n  pipeline().parameters.IndicatorCode,\n  '?format=json&page=1'\n)",
+						"type": "Expression"
+					}
 				}
 			},
 			{
@@ -93,7 +96,7 @@
 				"userProperties": [],
 				"typeProperties": {
 					"items": {
-						"value": "@range(1, variables('TotalPages'))",
+						"value": "@range(1, add(variables('TotalPages'), 1))",
 						"type": "Expression"
 					},
 					"isSequential": true,
@@ -228,11 +231,10 @@
 							"userProperties": [],
 							"typeProperties": {
 								"variableName": "MaxYearPerPage",
-								"value": [
-									"@union(\n    variables('MaxYears')",
-									"\n    array(max(forEach(json(activity('Web_Page_@{item()}').output.Response)[1]",
-									" x => int(x.date))))\n)"
-								]
+								"value": {
+									"value": "[\"@union(\\n    variables('MaxYears')\",\"\\n    array(max(forEach(json(activity('Web_Page_@{item()}').output.Response)[1]\",\" x => int(x.date))))\\n)\"]",
+									"type": "Expression"
+								}
 							}
 						}
 					]
@@ -241,6 +243,8 @@
 			{
 				"name": "UpdateWorldBankLoadControl",
 				"type": "SqlServerStoredProcedure",
+				"state": "Inactive",
+				"onInactiveMarkAs": "Succeeded",
 				"dependsOn": [
 					{
 						"activity": "MaxYearLoaded",
@@ -308,7 +312,10 @@
 				"userProperties": [],
 				"typeProperties": {
 					"variableName": "MaxYearLoaded",
-					"value": "@max(variables('MaxYears'))"
+					"value": {
+						"value": "@max(variables('MaxYears'))",
+						"type": "Expression"
+					}
 				}
 			}
 		],
@@ -316,10 +323,6 @@
 			"LastLoadedYear": {
 				"type": "int",
 				"defaultValue": 2023
-			},
-			"CurrentPage": {
-				"type": "int",
-				"defaultValue": 1
 			},
 			"LoadDate": {
 				"type": "string",
@@ -344,7 +347,7 @@
 			},
 			"CurrentPage": {
 				"type": "Integer",
-				"defaultValue": 0
+				"defaultValue": 1
 			},
 			"MaxYearPerPage": {
 				"type": "Array"
