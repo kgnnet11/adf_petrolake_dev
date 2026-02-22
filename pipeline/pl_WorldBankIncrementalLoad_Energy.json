@@ -182,7 +182,7 @@
 				"onInactiveMarkAs": "Succeeded",
 				"dependsOn": [
 					{
-						"activity": "LastLoadedYear",
+						"activity": "MaxYearLoaded",
 						"dependencyConditions": [
 							"Succeeded"
 						]
@@ -228,7 +228,7 @@
 				}
 			},
 			{
-				"name": "LastLoadedYear",
+				"name": "MaxYearLoaded",
 				"type": "SetVariable",
 				"dependsOn": [
 					{
@@ -246,7 +246,7 @@
 				"typeProperties": {
 					"variableName": "LastLoadedYear",
 					"value": {
-						"value": "@activity('Lookup_LastLoadedYear').output.firstRow.LastLoadedYear",
+						"value": "@activity('Lookup_LastLoadedYear').output.firstRow.MaxYear",
 						"type": "Expression"
 					}
 				}
