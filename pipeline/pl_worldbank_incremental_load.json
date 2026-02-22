@@ -115,7 +115,7 @@
 				"typeProperties": {
 					"variableName": "TotalPages",
 					"value": {
-						"value": "@json(activity('Get_Metadata').output.Response)[0].pages",
+						"value": "@int(json(activity('Get_Metadata').output.Response)[0].pages)",
 						"type": "Expression"
 					}
 				}
@@ -199,6 +199,30 @@
 									}
 								}
 							]
+						},
+						{
+							"name": "IncrementPage",
+							"type": "SetVariable",
+							"dependsOn": [
+								{
+									"activity": "cp_worldbank_api_adls",
+									"dependencyConditions": [
+										"Succeeded"
+									]
+								}
+							],
+							"policy": {
+								"secureOutput": false,
+								"secureInput": false
+							},
+							"userProperties": [],
+							"typeProperties": {
+								"variableName": "IncrementPage",
+								"value": {
+									"value": "@add(variables('CurrentPage'),1)",
+									"type": "Expression"
+								}
+							}
 						}
 					],
 					"timeout": "0.12:00:00"
@@ -216,6 +240,9 @@
 				"type": "Integer"
 			},
 			"MaxYearInPage": {
+				"type": "Integer"
+			},
+			"IncrementPage": {
 				"type": "Integer"
 			}
 		},
