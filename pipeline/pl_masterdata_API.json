@@ -237,6 +237,12 @@
 				}
 			}
 		],
+		"variables": {
+			"TargetSystem": {
+				"type": "String",
+				"defaultValue": "Both"
+			}
+		},
 		"annotations": []
 	}
 }
