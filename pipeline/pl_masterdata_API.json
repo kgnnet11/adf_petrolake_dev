@@ -238,7 +238,8 @@
 		],
 		"parameters": {
 			"TargetSystem": {
-				"type": "string"
+				"type": "string",
+				"defaultValue": "Both"
 			}
 		},
 		"annotations": []
