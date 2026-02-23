@@ -20,7 +20,8 @@
 						"LastLoadedYear": 2022,
 						"LoadDate": "2026-02-01",
 						"CountryCode": "IN",
-						"IndicatorCode": "EG.USE.PCAP.KG.OE"
+						"IndicatorCode": "EG.USE.PCAP.KG.OE",
+						"TargetSysem": "Both"
 					}
 				}
 			},
@@ -236,12 +237,6 @@
 				}
 			}
 		],
-		"parameters": {
-			"TargetSystem": {
-				"type": "string",
-				"defaultValue": "Both"
-			}
-		},
 		"annotations": []
 	}
 }
