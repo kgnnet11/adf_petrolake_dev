@@ -91,8 +91,8 @@
 				}
 			},
 			{
-				"name": "load_reportingzone_AzureTable",
-				"type": "IfCondition",
+				"name": "cp_reportingzone_Azuretablestorage",
+				"type": "Copy",
 				"dependsOn": [
 					{
 						"activity": "NB_Discovery_Reporting",
@@ -101,77 +101,63 @@
 						]
 					}
 				],
+				"policy": {
+					"timeout": "0.12:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
 				"userProperties": [],
 				"typeProperties": {
-					"expression": {
-						"value": "\n@or(\n   equals(pipeline().parameters.TargetSystem, 'AzureTable'),\n   equals(pipeline().parameters.TargetSystem, 'Both')\n)",
-						"type": "Expression"
-					},
-					"ifTrueActivities": [
-						{
-							"name": "cp_reportingzone_Azuretablestorage",
-							"type": "Copy",
-							"dependsOn": [],
-							"policy": {
-								"timeout": "0.12:00:00",
-								"retry": 0,
-								"retryIntervalInSeconds": 30,
-								"secureOutput": false,
-								"secureInput": false
+					"source": {
+						"type": "ParquetSource",
+						"storeSettings": {
+							"type": "AzureBlobFSReadSettings",
+							"recursive": true,
+							"wildcardFolderPath": {
+								"value": "Worldbank/energy_data_reporting",
+								"type": "Expression"
 							},
-							"userProperties": [],
-							"typeProperties": {
-								"source": {
-									"type": "ParquetSource",
-									"storeSettings": {
-										"type": "AzureBlobFSReadSettings",
-										"recursive": true,
-										"wildcardFolderPath": {
-											"value": "Worldbank/energy_data_reporting",
-											"type": "Expression"
-										},
-										"wildcardFileName": "*.parquet",
-										"enablePartitionDiscovery": false
-									},
-									"formatSettings": {
-										"type": "ParquetReadSettings"
-									}
-								},
-								"sink": {
-									"type": "AzureTableSink",
-									"azureTableInsertType": "merge",
-									"azureTableDefaultPartitionKeyValue": "petrolake",
-									"writeBatchSize": 10000
-								},
-								"enableStaging": false,
-								"translator": {
-									"type": "TabularTranslator",
-									"typeConversion": true,
-									"typeConversionSettings": {
-										"allowDataTruncation": true,
-										"treatBooleanAsNumber": false
-									}
-								}
-							},
-							"inputs": [
-								{
-									"referenceName": "ds_adls_reporting_worldbank_api",
-									"type": "DatasetReference"
-								}
-							],
-							"outputs": [
-								{
-									"referenceName": "ds_azuretable_worldbank_api",
-									"type": "DatasetReference"
-								}
-							]
+							"wildcardFileName": "*.parquet",
+							"enablePartitionDiscovery": false
+						},
+						"formatSettings": {
+							"type": "ParquetReadSettings"
 						}
-					]
-				}
+					},
+					"sink": {
+						"type": "AzureTableSink",
+						"azureTableInsertType": "merge",
+						"azureTableDefaultPartitionKeyValue": "petrolake",
+						"writeBatchSize": 10000
+					},
+					"enableStaging": false,
+					"translator": {
+						"type": "TabularTranslator",
+						"typeConversion": true,
+						"typeConversionSettings": {
+							"allowDataTruncation": true,
+							"treatBooleanAsNumber": false
+						}
+					}
+				},
+				"inputs": [
+					{
+						"referenceName": "ds_adls_reporting_worldbank_api",
+						"type": "DatasetReference"
+					}
+				],
+				"outputs": [
+					{
+						"referenceName": "ds_azuretable_worldbank_api",
+						"type": "DatasetReference"
+					}
+				]
 			},
 			{
-				"name": "load_reportingzone_AzureSql",
-				"type": "IfCondition",
+				"name": "cp_reporting_azuresql",
+				"type": "Copy",
 				"dependsOn": [
 					{
 						"activity": "NB_Discovery_Reporting",
@@ -180,220 +166,206 @@
 						]
 					}
 				],
+				"policy": {
+					"timeout": "0.12:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
 				"userProperties": [],
 				"typeProperties": {
-					"expression": {
-						"value": "\n@or(\n   equals(pipeline().parameters.TargetSystem, 'AZURESQL'),\n   equals(pipeline().parameters.TargetSystem, 'Both')\n)",
-						"type": "Expression"
-					},
-					"ifTrueActivities": [
-						{
-							"name": "cp_reporting_azuresql",
-							"type": "Copy",
-							"dependsOn": [],
-							"policy": {
-								"timeout": "0.12:00:00",
-								"retry": 0,
-								"retryIntervalInSeconds": 30,
-								"secureOutput": false,
-								"secureInput": false
+					"source": {
+						"type": "ParquetSource",
+						"storeSettings": {
+							"type": "AzureBlobFSReadSettings",
+							"recursive": true,
+							"wildcardFolderPath": {
+								"value": "Worldbank/energy_data_reporting",
+								"type": "Expression"
 							},
-							"userProperties": [],
-							"typeProperties": {
+							"wildcardFileName": "*.parquet",
+							"enablePartitionDiscovery": false
+						},
+						"formatSettings": {
+							"type": "ParquetReadSettings"
+						}
+					},
+					"sink": {
+						"type": "AzureSqlSink",
+						"writeBehavior": "insert",
+						"sqlWriterUseTableLock": false,
+						"tableOption": "autoCreate",
+						"disableMetricsCollection": false
+					},
+					"enableStaging": false,
+					"translator": {
+						"type": "TabularTranslator",
+						"mappings": [
+							{
 								"source": {
-									"type": "ParquetSource",
-									"storeSettings": {
-										"type": "AzureBlobFSReadSettings",
-										"recursive": true,
-										"wildcardFolderPath": {
-											"value": "Worldbank/energy_data_reporting",
-											"type": "Expression"
-										},
-										"wildcardFileName": "*.parquet",
-										"enablePartitionDiscovery": false
-									},
-									"formatSettings": {
-										"type": "ParquetReadSettings"
-									}
+									"name": "year",
+									"type": "Int32",
+									"physicalType": "INT_32"
 								},
 								"sink": {
-									"type": "AzureSqlSink",
-									"writeBehavior": "insert",
-									"sqlWriterUseTableLock": false,
-									"tableOption": "autoCreate",
-									"disableMetricsCollection": false
-								},
-								"enableStaging": false,
-								"translator": {
-									"type": "TabularTranslator",
-									"mappings": [
-										{
-											"source": {
-												"name": "year",
-												"type": "Int32",
-												"physicalType": "INT_32"
-											},
-											"sink": {
-												"name": "year",
-												"type": "Int32",
-												"physicalType": "int"
-											}
-										},
-										{
-											"source": {
-												"name": "source_system",
-												"type": "String",
-												"physicalType": "UTF8"
-											},
-											"sink": {
-												"name": "source_system",
-												"type": "String",
-												"physicalType": "nvarchar"
-											}
-										},
-										{
-											"source": {
-												"name": "country_id",
-												"type": "String",
-												"physicalType": "UTF8"
-											},
-											"sink": {
-												"name": "country_id",
-												"type": "String",
-												"physicalType": "nvarchar"
-											}
-										},
-										{
-											"source": {
-												"name": "country_name",
-												"type": "String",
-												"physicalType": "UTF8"
-											},
-											"sink": {
-												"name": "country_name",
-												"type": "String",
-												"physicalType": "nvarchar"
-											}
-										},
-										{
-											"source": {
-												"name": "indicator_id",
-												"type": "String",
-												"physicalType": "UTF8"
-											},
-											"sink": {
-												"name": "indicator_id",
-												"type": "String",
-												"physicalType": "nvarchar"
-											}
-										},
-										{
-											"source": {
-												"name": "indicator_name",
-												"type": "String",
-												"physicalType": "UTF8"
-											},
-											"sink": {
-												"name": "indicator_name",
-												"type": "String",
-												"physicalType": "nvarchar"
-											}
-										},
-										{
-											"source": {
-												"name": "indicator_value_rounded",
-												"type": "Double",
-												"physicalType": "DOUBLE"
-											},
-											"sink": {
-												"name": "indicator_value_rounded",
-												"type": "Double",
-												"physicalType": "float"
-											}
-										},
-										{
-											"source": {
-												"name": "cumulative_value",
-												"type": "Double",
-												"physicalType": "DOUBLE"
-											},
-											"sink": {
-												"name": "cumulative_value",
-												"type": "Double",
-												"physicalType": "float"
-											}
-										},
-										{
-											"source": {
-												"name": "curation_status",
-												"type": "String",
-												"physicalType": "UTF8"
-											},
-											"sink": {
-												"name": "curation_status",
-												"type": "String",
-												"physicalType": "nvarchar"
-											}
-										},
-										{
-											"source": {
-												"name": "ingestion_date",
-												"type": "String",
-												"physicalType": "UTF8"
-											},
-											"sink": {
-												"name": "ingestion_date",
-												"type": "Date",
-												"physicalType": "date"
-											}
-										},
-										{
-											"source": {
-												"name": "yoy_change",
-												"type": "Double",
-												"physicalType": "DOUBLE"
-											},
-											"sink": {
-												"name": "yoy_change",
-												"type": "Double",
-												"physicalType": "float"
-											}
-										},
-										{
-											"source": {
-												"name": "is_latest",
-												"type": "String",
-												"physicalType": "UTF8"
-											},
-											"sink": {
-												"name": "is_latest",
-												"type": "String",
-												"physicalType": "nvarchar"
-											}
-										}
-									],
-									"typeConversion": true,
-									"typeConversionSettings": {
-										"allowDataTruncation": true,
-										"treatBooleanAsNumber": false
-									}
+									"name": "year",
+									"type": "Int32",
+									"physicalType": "int"
 								}
 							},
-							"inputs": [
-								{
-									"referenceName": "ds_adls_reporting_worldbank_api",
-									"type": "DatasetReference"
+							{
+								"source": {
+									"name": "source_system",
+									"type": "String",
+									"physicalType": "UTF8"
+								},
+								"sink": {
+									"name": "source_system",
+									"type": "String",
+									"physicalType": "nvarchar"
 								}
-							],
-							"outputs": [
-								{
-									"referenceName": "ds_azuresql_worldbank_api",
-									"type": "DatasetReference"
+							},
+							{
+								"source": {
+									"name": "country_id",
+									"type": "String",
+									"physicalType": "UTF8"
+								},
+								"sink": {
+									"name": "country_id",
+									"type": "String",
+									"physicalType": "nvarchar"
 								}
-							]
+							},
+							{
+								"source": {
+									"name": "country_name",
+									"type": "String",
+									"physicalType": "UTF8"
+								},
+								"sink": {
+									"name": "country_name",
+									"type": "String",
+									"physicalType": "nvarchar"
+								}
+							},
+							{
+								"source": {
+									"name": "indicator_id",
+									"type": "String",
+									"physicalType": "UTF8"
+								},
+								"sink": {
+									"name": "indicator_id",
+									"type": "String",
+									"physicalType": "nvarchar"
+								}
+							},
+							{
+								"source": {
+									"name": "indicator_name",
+									"type": "String",
+									"physicalType": "UTF8"
+								},
+								"sink": {
+									"name": "indicator_name",
+									"type": "String",
+									"physicalType": "nvarchar"
+								}
+							},
+							{
+								"source": {
+									"name": "indicator_value_rounded",
+									"type": "Double",
+									"physicalType": "DOUBLE"
+								},
+								"sink": {
+									"name": "indicator_value_rounded",
+									"type": "Double",
+									"physicalType": "float"
+								}
+							},
+							{
+								"source": {
+									"name": "cumulative_value",
+									"type": "Double",
+									"physicalType": "DOUBLE"
+								},
+								"sink": {
+									"name": "cumulative_value",
+									"type": "Double",
+									"physicalType": "float"
+								}
+							},
+							{
+								"source": {
+									"name": "curation_status",
+									"type": "String",
+									"physicalType": "UTF8"
+								},
+								"sink": {
+									"name": "curation_status",
+									"type": "String",
+									"physicalType": "nvarchar"
+								}
+							},
+							{
+								"source": {
+									"name": "ingestion_date",
+									"type": "String",
+									"physicalType": "UTF8"
+								},
+								"sink": {
+									"name": "ingestion_date",
+									"type": "Date",
+									"physicalType": "date"
+								}
+							},
+							{
+								"source": {
+									"name": "yoy_change",
+									"type": "Double",
+									"physicalType": "DOUBLE"
+								},
+								"sink": {
+									"name": "yoy_change",
+									"type": "Double",
+									"physicalType": "float"
+								}
+							},
+							{
+								"source": {
+									"name": "is_latest",
+									"type": "String",
+									"physicalType": "UTF8"
+								},
+								"sink": {
+									"name": "is_latest",
+									"type": "String",
+									"physicalType": "nvarchar"
+								}
+							}
+						],
+						"typeConversion": true,
+						"typeConversionSettings": {
+							"allowDataTruncation": true,
+							"treatBooleanAsNumber": false
 						}
-					]
-				}
+					}
+				},
+				"inputs": [
+					{
+						"referenceName": "ds_adls_reporting_worldbank_api",
+						"type": "DatasetReference"
+					}
+				],
+				"outputs": [
+					{
+						"referenceName": "ds_azuresql_worldbank_api",
+						"type": "DatasetReference"
+					}
+				]
 			}
 		],
 		"parameters": {
