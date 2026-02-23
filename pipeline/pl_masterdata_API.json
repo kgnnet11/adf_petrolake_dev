@@ -123,6 +123,7 @@
 								"sink": {
 									"type": "AzureTableSink",
 									"azureTableInsertType": "merge",
+									"azureTableDefaultPartitionKeyValue": "petrolake",
 									"writeBatchSize": 10000
 								},
 								"enableStaging": false,
