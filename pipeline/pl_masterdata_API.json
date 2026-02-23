@@ -183,7 +183,7 @@
 				"userProperties": [],
 				"typeProperties": {
 					"expression": {
-						"value": "\n@or(\n   equals(pipeline().parameters.TargetSystem, 'AzureSQL'),\n   equals(pipeline().parameters.TargetSystem, 'Both')\n)",
+						"value": "\n@or(\n   equals(pipeline().parameters.TargetSystem, 'AZURESQL'),\n   equals(pipeline().parameters.TargetSystem, 'Both')\n)",
 						"type": "Expression"
 					},
 					"ifTrueActivities": [
@@ -219,11 +219,159 @@
 								"sink": {
 									"type": "AzureSqlSink",
 									"writeBehavior": "insert",
-									"sqlWriterUseTableLock": false
+									"sqlWriterUseTableLock": false,
+									"tableOption": "autoCreate",
+									"disableMetricsCollection": false
 								},
 								"enableStaging": false,
 								"translator": {
 									"type": "TabularTranslator",
+									"mappings": [
+										{
+											"source": {
+												"name": "year",
+												"type": "Int32",
+												"physicalType": "INT_32"
+											},
+											"sink": {
+												"name": "year",
+												"type": "Int32",
+												"physicalType": "int"
+											}
+										},
+										{
+											"source": {
+												"name": "source_system",
+												"type": "String",
+												"physicalType": "UTF8"
+											},
+											"sink": {
+												"name": "source_system",
+												"type": "String",
+												"physicalType": "nvarchar"
+											}
+										},
+										{
+											"source": {
+												"name": "country_id",
+												"type": "String",
+												"physicalType": "UTF8"
+											},
+											"sink": {
+												"name": "country_id",
+												"type": "String",
+												"physicalType": "nvarchar"
+											}
+										},
+										{
+											"source": {
+												"name": "country_name",
+												"type": "String",
+												"physicalType": "UTF8"
+											},
+											"sink": {
+												"name": "country_name",
+												"type": "String",
+												"physicalType": "nvarchar"
+											}
+										},
+										{
+											"source": {
+												"name": "indicator_id",
+												"type": "String",
+												"physicalType": "UTF8"
+											},
+											"sink": {
+												"name": "indicator_id",
+												"type": "String",
+												"physicalType": "nvarchar"
+											}
+										},
+										{
+											"source": {
+												"name": "indicator_name",
+												"type": "String",
+												"physicalType": "UTF8"
+											},
+											"sink": {
+												"name": "indicator_name",
+												"type": "String",
+												"physicalType": "nvarchar"
+											}
+										},
+										{
+											"source": {
+												"name": "indicator_value_rounded",
+												"type": "Double",
+												"physicalType": "DOUBLE"
+											},
+											"sink": {
+												"name": "indicator_value_rounded",
+												"type": "Double",
+												"physicalType": "float"
+											}
+										},
+										{
+											"source": {
+												"name": "cumulative_value",
+												"type": "Double",
+												"physicalType": "DOUBLE"
+											},
+											"sink": {
+												"name": "cumulative_value",
+												"type": "Double",
+												"physicalType": "float"
+											}
+										},
+										{
+											"source": {
+												"name": "curation_status",
+												"type": "String",
+												"physicalType": "UTF8"
+											},
+											"sink": {
+												"name": "curation_status",
+												"type": "String",
+												"physicalType": "nvarchar"
+											}
+										},
+										{
+											"source": {
+												"name": "ingestion_date",
+												"type": "String",
+												"physicalType": "UTF8"
+											},
+											"sink": {
+												"name": "ingestion_date",
+												"type": "Date",
+												"physicalType": "date"
+											}
+										},
+										{
+											"source": {
+												"name": "yoy_change",
+												"type": "Double",
+												"physicalType": "DOUBLE"
+											},
+											"sink": {
+												"name": "yoy_change",
+												"type": "Double",
+												"physicalType": "float"
+											}
+										},
+										{
+											"source": {
+												"name": "is_latest",
+												"type": "String",
+												"physicalType": "UTF8"
+											},
+											"sink": {
+												"name": "is_latest",
+												"type": "String",
+												"physicalType": "nvarchar"
+											}
+										}
+									],
 									"typeConversion": true,
 									"typeConversionSettings": {
 										"allowDataTruncation": true,
