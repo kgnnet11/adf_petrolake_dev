@@ -77,8 +77,105 @@
 					"referenceName": "ls_databriicks_Apl_dev",
 					"type": "LinkedServiceReference"
 				}
+			},
+			{
+				"name": "load_reportingzone_AzureTable",
+				"type": "IfCondition",
+				"dependsOn": [
+					{
+						"activity": "NB_Discovery_Reporting",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"userProperties": [],
+				"typeProperties": {
+					"expression": {
+						"value": "\n@or(\n   equals(pipeline().parameters.TargetSystem, 'AzureTable'),\n   equals(pipeline().parameters.TargetSystem, 'Both')\n)",
+						"type": "Expression"
+					},
+					"ifTrueActivities": [
+						{
+							"name": "cp_reportingzone_Azuretablestorage",
+							"type": "Copy",
+							"dependsOn": [],
+							"policy": {
+								"timeout": "0.12:00:00",
+								"retry": 0,
+								"retryIntervalInSeconds": 30,
+								"secureOutput": false,
+								"secureInput": false
+							},
+							"userProperties": [],
+							"typeProperties": {
+								"source": {
+									"type": "ParquetSource",
+									"storeSettings": {
+										"type": "AzureBlobFSReadSettings",
+										"recursive": true,
+										"enablePartitionDiscovery": false
+									},
+									"formatSettings": {
+										"type": "ParquetReadSettings"
+									}
+								},
+								"sink": {
+									"type": "AzureTableSink",
+									"azureTableInsertType": "merge",
+									"writeBatchSize": 10000
+								},
+								"enableStaging": false,
+								"translator": {
+									"type": "TabularTranslator",
+									"typeConversion": true,
+									"typeConversionSettings": {
+										"allowDataTruncation": true,
+										"treatBooleanAsNumber": false
+									}
+								}
+							},
+							"inputs": [
+								{
+									"referenceName": "ds_adls_reporting_worldbank_api",
+									"type": "DatasetReference"
+								}
+							],
+							"outputs": [
+								{
+									"referenceName": "ds_azuretable_worldbank_api",
+									"type": "DatasetReference"
+								}
+							]
+						}
+					]
+				}
+			},
+			{
+				"name": "load_reportingzone_AzureSql",
+				"type": "IfCondition",
+				"dependsOn": [
+					{
+						"activity": "NB_Discovery_Reporting",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"userProperties": [],
+				"typeProperties": {
+					"expression": {
+						"value": "\n@or(\n   equals(pipeline().parameters.TargetSystem, 'AzureSQL'),\n   equals(pipeline().parameters.TargetSystem, 'Both')\n)",
+						"type": "Expression"
+					}
+				}
 			}
 		],
+		"parameters": {
+			"TargetSystem": {
+				"type": "string"
+			}
+		},
 		"annotations": []
 	}
 }

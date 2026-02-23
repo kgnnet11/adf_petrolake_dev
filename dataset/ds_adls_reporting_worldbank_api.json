@@ -1,0 +1,20 @@
+{
+	"name": "ds_adls_reporting_worldbank_api",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "ls_alds_landingzone",
+			"type": "LinkedServiceReference"
+		},
+		"annotations": [],
+		"type": "Parquet",
+		"typeProperties": {
+			"location": {
+				"type": "AzureBlobFSLocation",
+				"folderPath": "Worldbank/energy_data_reporting",
+				"fileSystem": "reportingzone"
+			},
+			"compressionCodec": "snappy"
+		},
+		"schema": []
+	}
+}
