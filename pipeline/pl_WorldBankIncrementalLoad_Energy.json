@@ -264,6 +264,9 @@
 				"type": "String"
 			}
 		},
+		"folder": {
+			"name": "ApISource"
+		},
 		"annotations": []
 	}
 }

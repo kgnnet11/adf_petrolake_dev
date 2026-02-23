@@ -1,0 +1,84 @@
+{
+	"name": "pl_masterdata_API",
+	"properties": {
+		"activities": [
+			{
+				"name": "Energy_json_data_incremental",
+				"type": "ExecutePipeline",
+				"dependsOn": [],
+				"policy": {
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"pipeline": {
+						"referenceName": "pl_WorldBankIncrementalLoad_Energy",
+						"type": "PipelineReference"
+					},
+					"waitOnCompletion": true,
+					"parameters": {
+						"LastLoadedYear": 2022,
+						"LoadDate": "2026-02-01",
+						"CountryCode": "IN",
+						"IndicatorCode": "EG.USE.PCAP.KG.OE"
+					}
+				}
+			},
+			{
+				"name": "NB_Landing_Discovery",
+				"type": "DatabricksNotebook",
+				"dependsOn": [
+					{
+						"activity": "Energy_json_data_incremental",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"policy": {
+					"timeout": "0.12:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"notebookPath": "/Users/kgnnet11@gmail.com/API_DATA_Transformations/Worldbank_energy_data/landing_discovey"
+				},
+				"linkedServiceName": {
+					"referenceName": "ls_databriicks_Apl_dev",
+					"type": "LinkedServiceReference"
+				}
+			},
+			{
+				"name": "NB_Discovery_Reporting",
+				"type": "DatabricksNotebook",
+				"dependsOn": [
+					{
+						"activity": "NB_Landing_Discovery",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"policy": {
+					"timeout": "0.12:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"notebookPath": "/Users/kgnnet11@gmail.com/API_DATA_Transformations/Worldbank_energy_data/discovery_reporting"
+				},
+				"linkedServiceName": {
+					"referenceName": "ls_databriicks_Apl_dev",
+					"type": "LinkedServiceReference"
+				}
+			}
+		],
+		"annotations": []
+	}
+}
