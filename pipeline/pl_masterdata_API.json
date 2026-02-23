@@ -17,11 +17,22 @@
 					},
 					"waitOnCompletion": true,
 					"parameters": {
-						"LastLoadedYear": 2022,
-						"LoadDate": "2026-02-01",
-						"CountryCode": "IN",
-						"IndicatorCode": "EG.USE.PCAP.KG.OE",
-						"TargetSysem": "Both"
+						"LastLoadedYear": {
+							"value": "@pipeline().parameters.LastLoadedYear",
+							"type": "Expression"
+						},
+						"LoadDate": {
+							"value": "@pipeline().parameters.LoadDate",
+							"type": "Expression"
+						},
+						"CountryCode": {
+							"value": "@pipeline().parameters.CountryCode",
+							"type": "Expression"
+						},
+						"IndicatorCode": {
+							"value": "@pipeline().parameters.IndicatorCode",
+							"type": "Expression"
+						}
 					}
 				}
 			},
@@ -237,10 +248,26 @@
 				}
 			}
 		],
-		"variables": {
+		"parameters": {
 			"TargetSystem": {
-				"type": "String",
+				"type": "string",
 				"defaultValue": "Both"
+			},
+			"LastLoadedYear": {
+				"type": "int",
+				"defaultValue": 2022
+			},
+			"LoadDate": {
+				"type": "string",
+				"defaultValue": "2026-02-01"
+			},
+			"CountryCode": {
+				"type": "string",
+				"defaultValue": "IN"
+			},
+			"IndicatorCode": {
+				"type": "string",
+				"defaultValue": "EG.USE.PCAP.KG.OE"
 			}
 		},
 		"annotations": []

@@ -240,9 +240,6 @@
 			"IndicatorCode": {
 				"type": "string",
 				"defaultValue": "EG.USE.PCAP.KG.OE"
-			},
-			"TargetSysem": {
-				"type": "string"
 			}
 		},
 		"variables": {
