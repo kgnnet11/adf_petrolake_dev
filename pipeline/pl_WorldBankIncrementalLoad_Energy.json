@@ -161,8 +161,8 @@
 									"referenceName": "ds_api_adls_worldbankenergy",
 									"type": "DatasetReference",
 									"parameters": {
-										"LoadDate": {
-											"value": "@pipeline().parameters.LoadDate",
+										"countryname": {
+											"value": "@pipeline().parameters.CountryCode",
 											"type": "Expression"
 										},
 										"PageNumber": {
@@ -231,11 +231,11 @@
 			},
 			"LoadDate": {
 				"type": "string",
-				"defaultValue": "2026-02-21"
+				"defaultValue": "2026-01-28"
 			},
 			"CountryCode": {
 				"type": "string",
-				"defaultValue": "IN"
+				"defaultValue": "US"
 			},
 			"IndicatorCode": {
 				"type": "string",

@@ -6,7 +6,7 @@
 			"type": "LinkedServiceReference"
 		},
 		"parameters": {
-			"LoadDate": {
+			"countryname": {
 				"type": "string"
 			},
 			"PageNumber": {
@@ -23,7 +23,7 @@
 					"type": "Expression"
 				},
 				"folderPath": {
-					"value": "worldbank/energy_use/@{dataset().LoadDate}",
+					"value": "worldbank/energy_use/@{dataset().countryname}",
 					"type": "Expression"
 				},
 				"fileSystem": "landingzone"
