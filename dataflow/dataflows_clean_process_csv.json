@@ -19,10 +19,24 @@
 					"name": "orders"
 				}
 			],
-			"sinks": [],
+			"sinks": [
+				{
+					"linkedService": {
+						"referenceName": "ls_alds_landingzone",
+						"type": "LinkedServiceReference"
+					},
+					"name": "loadoutput"
+				}
+			],
 			"transformations": [
 				{
 					"name": "AddNewcolumns"
+				},
+				{
+					"name": "RemoveBadRequest"
+				},
+				{
+					"name": "selectNeedColumns"
 				}
 			],
 			"scriptLines": [
@@ -52,9 +66,30 @@
 				"     columnNamesAsHeader: true,",
 				"     multiLineRow: true) ~> orders",
 				"Customer derive(fullname = concat(byName('First Name'), ' ',byName('Last Name')),",
-				"          subscription_year = year(toDate(byName('Subscription Date'),'dd-MM-yyyy')),",
-				"          subscription_month = month(toDate(byName('Subscription Date'), 'dd-MM-yyyy')),",
-				"          country_upper = upper(byName('Country'))) ~> AddNewcolumns"
+				"          subscription_year = year(toDate(byName('Subscription Date'),'yyyy-MM-dd')),",
+				"          subscription_month = month(toDate(byName('Subscription Date'), 'yyyy-MM-dd')),",
+				"          country_upper = upper(byName('Country'))) ~> AddNewcolumns",
+				"AddNewcolumns filter(!isNull(byName('Email')) && !isNull(byName('Customer Id'))) ~> RemoveBadRequest",
+				"RemoveBadRequest select(skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true) ~> selectNeedColumns",
+				"selectNeedColumns sink(allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     format: 'delta',",
+				"     fileSystem: 'dataflows',",
+				"     folderPath: 'ouput',",
+				"     mergeSchema: false,",
+				"     autoCompact: false,",
+				"     optimizedWrite: true,",
+				"     vacuum: 0,",
+				"     deletable: false,",
+				"     insertable: true,",
+				"     updateable: false,",
+				"     upsertable: false,",
+				"     umask: 0022,",
+				"     preCommands: [],",
+				"     postCommands: [],",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true) ~> loadoutput"
 			]
 		}
 	}
