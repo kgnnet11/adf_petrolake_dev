@@ -51,7 +51,10 @@
 				"     quoteChar: '\\\"',",
 				"     columnNamesAsHeader: true,",
 				"     multiLineRow: true) ~> orders",
-				"Customer derive() ~> AddNewcolumns"
+				"Customer derive(fullname = concat(byName('First Name'), ' ',byName('Last Name')),",
+				"          subscription_year = year(toDate(byName('Subscription Date'),'dd-MM-yyyy')),",
+				"          subscription_month = month(toDate(byName('Subscription Date'), 'dd-MM-yyyy')),",
+				"          country_upper = upper(byName('Country'))) ~> AddNewcolumns"
 			]
 		}
 	}
