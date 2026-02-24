@@ -1,0 +1,272 @@
+{
+	"name": "pl_WorldBankIncrementalLoad_Energy_SG",
+	"properties": {
+		"activities": [
+			{
+				"name": "LookupLastLoadedYear",
+				"type": "Lookup",
+				"dependsOn": [],
+				"policy": {
+					"timeout": "0.12:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"source": {
+						"type": "AzureSqlSource",
+						"sqlReaderQuery": {
+							"value": "SELECT LastLoadedYear \nFROM dbo.WorldBankIncrementalLoadControl\nWHERE IndicatorCode='EG.USE.PCAP.KG.OE';",
+							"type": "Expression"
+						},
+						"queryTimeout": "02:00:00",
+						"partitionOption": "None"
+					},
+					"dataset": {
+						"referenceName": "ds_worldbank_controldata_energy_new",
+						"type": "DatasetReference"
+					},
+					"firstRowOnly": true
+				}
+			},
+			{
+				"name": "GetTotalPages",
+				"type": "WebActivity",
+				"dependsOn": [
+					{
+						"activity": "LookupLastLoadedYear",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"policy": {
+					"timeout": "0.12:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"method": "GET",
+					"url": {
+						"value": "@concat(\n  'https://api.worldbank.org/v2/country/',\n  pipeline().parameters.CountryCode,\n  '/indicator/',\n  pipeline().parameters.IndicatorCode,\n  '?format=json&page=1'\n)",
+						"type": "Expression"
+					}
+				}
+			},
+			{
+				"name": "TotalPages",
+				"type": "SetVariable",
+				"dependsOn": [
+					{
+						"activity": "GetTotalPages",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"policy": {
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"variableName": "TotalPages",
+					"value": {
+						"value": "@json(activity('GetTotalPages').output.Response)[0].pages",
+						"type": "Expression"
+					}
+				}
+			},
+			{
+				"name": "getpages",
+				"type": "ForEach",
+				"dependsOn": [
+					{
+						"activity": "TotalPages",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"userProperties": [],
+				"typeProperties": {
+					"items": {
+						"value": "@range(1, add(json(activity('GetTotalPages').output.Response)[0].pages,1))",
+						"type": "Expression"
+					},
+					"isSequential": true,
+					"activities": [
+						{
+							"name": "CopyActivityInsideForEach",
+							"type": "Copy",
+							"dependsOn": [],
+							"policy": {
+								"timeout": "0.12:00:00",
+								"retry": 0,
+								"retryIntervalInSeconds": 30,
+								"secureOutput": false,
+								"secureInput": false
+							},
+							"userProperties": [],
+							"typeProperties": {
+								"source": {
+									"type": "JsonSource",
+									"storeSettings": {
+										"type": "HttpReadSettings",
+										"requestMethod": "GET"
+									},
+									"formatSettings": {
+										"type": "JsonReadSettings"
+									}
+								},
+								"sink": {
+									"type": "JsonSink",
+									"storeSettings": {
+										"type": "AzureBlobFSWriteSettings",
+										"copyBehavior": "FlattenHierarchy"
+									},
+									"formatSettings": {
+										"type": "JsonWriteSettings"
+									}
+								},
+								"enableStaging": false
+							},
+							"inputs": [
+								{
+									"referenceName": "ds_http_worldbank",
+									"type": "DatasetReference",
+									"parameters": {
+										"PageNumber": {
+											"value": "@item()",
+											"type": "Expression"
+										},
+										"CountryCode": {
+											"value": "@pipeline().parameters.CountryCode",
+											"type": "Expression"
+										},
+										"IndicatorCode": {
+											"value": "@pipeline().parameters.IndicatorCode",
+											"type": "Expression"
+										}
+									}
+								}
+							],
+							"outputs": [
+								{
+									"referenceName": "ds_api_adls_worldbankenergy",
+									"type": "DatasetReference",
+									"parameters": {
+										"countryname": {
+											"value": "@pipeline().parameters.CountryCode",
+											"type": "Expression"
+										},
+										"PageNumber": {
+											"value": "@item()",
+											"type": "Expression"
+										}
+									}
+								}
+							]
+						}
+					]
+				}
+			},
+			{
+				"name": "UpdateWorldBankLoadControl",
+				"type": "SqlServerStoredProcedure",
+				"dependsOn": [
+					{
+						"activity": "getpages",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"policy": {
+					"timeout": "0.12:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"storedProcedureName": "[dbo].[sp_UpdateWorldBankLoadControl]",
+					"storedProcedureParameters": {
+						"CountryCode": {
+							"value": {
+								"value": "@pipeline().parameters.CountryCode",
+								"type": "Expression"
+							},
+							"type": "String"
+						},
+						"IndicatorCode": {
+							"value": {
+								"value": "@pipeline().parameters.IndicatorCode",
+								"type": "Expression"
+							},
+							"type": "String"
+						},
+						"MaxYearLoaded": {
+							"value": "2022",
+							"type": "Int32"
+						}
+					}
+				},
+				"linkedServiceName": {
+					"referenceName": "ls_azuresql_petrolake_dev",
+					"type": "LinkedServiceReference"
+				}
+			}
+		],
+		"parameters": {
+			"LastLoadedYear": {
+				"type": "int",
+				"defaultValue": 2021
+			},
+			"LoadDate": {
+				"type": "string",
+				"defaultValue": "2026-01-28"
+			},
+			"CountryCode": {
+				"type": "string",
+				"defaultValue": "SG"
+			},
+			"IndicatorCode": {
+				"type": "string",
+				"defaultValue": "EG.USE.PCAP.KG.OE"
+			}
+		},
+		"variables": {
+			"TotalPages": {
+				"type": "Integer"
+			},
+			"MaxYearLoaded": {
+				"type": "Integer",
+				"defaultValue": 0
+			},
+			"CurrentPage": {
+				"type": "Integer",
+				"defaultValue": 1
+			},
+			"MaxYearPerPage": {
+				"type": "Array"
+			},
+			"MaxYears": {
+				"type": "Array"
+			},
+			"LastLoadedYear": {
+				"type": "String"
+			}
+		},
+		"folder": {
+			"name": "ApISource"
+		},
+		"annotations": []
+	}
+}
