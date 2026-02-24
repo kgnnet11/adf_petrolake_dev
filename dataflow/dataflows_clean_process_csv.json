@@ -1,0 +1,58 @@
+{
+	"name": "dataflows_clean_process_csv",
+	"properties": {
+		"type": "MappingDataFlow",
+		"typeProperties": {
+			"sources": [
+				{
+					"linkedService": {
+						"referenceName": "ls_alds_landingzone",
+						"type": "LinkedServiceReference"
+					},
+					"name": "Customer"
+				},
+				{
+					"linkedService": {
+						"referenceName": "ls_alds_landingzone",
+						"type": "LinkedServiceReference"
+					},
+					"name": "orders"
+				}
+			],
+			"sinks": [],
+			"transformations": [
+				{
+					"name": "AddNewcolumns"
+				}
+			],
+			"scriptLines": [
+				"source(useSchema: false,",
+				"     allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     ignoreNoFilesFound: false,",
+				"     format: 'delimited',",
+				"     fileSystem: 'dataflows',",
+				"     folderPath: 'input',",
+				"     fileName: 'customers-1000.csv',",
+				"     columnDelimiter: ',',",
+				"     escapeChar: '\\\\',",
+				"     quoteChar: '\\\"',",
+				"     columnNamesAsHeader: true) ~> Customer",
+				"source(useSchema: false,",
+				"     allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     ignoreNoFilesFound: false,",
+				"     format: 'delimited',",
+				"     fileSystem: 'dataflows',",
+				"     folderPath: 'input',",
+				"     fileName: 'orders_sample.csv',",
+				"     columnDelimiter: ',',",
+				"     escapeChar: '\\\\',",
+				"     quoteChar: '\\\"',",
+				"     columnNamesAsHeader: true,",
+				"     multiLineRow: true) ~> orders",
+				"Customer derive() ~> AddNewcolumns"
+			]
+		}
+	}
+}
