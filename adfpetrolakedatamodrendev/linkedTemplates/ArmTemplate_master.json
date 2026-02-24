@@ -27,6 +27,10 @@
 			"type": "secureString",
 			"metadata": "Secure string for 'accessToken' of 'ls_databricks_petrolake_dev'"
 		},
+		"ls_databriicks_Apl_dev_accessToken": {
+			"type": "secureString",
+			"metadata": "Secure string for 'accessToken' of 'ls_databriicks_Apl_dev'"
+		},
 		"ls_sql_onprem_petrolake_connectionString": {
 			"type": "secureString",
 			"metadata": "Secure string for 'connectionString' of 'ls_sql_onprem_petrolake'",
@@ -35,6 +39,10 @@
 		"ls_sql_onprem_petrolake_password": {
 			"type": "secureString",
 			"metadata": "Secure string for 'password' of 'ls_sql_onprem_petrolake'"
+		},
+		"LS_HttpServer_properties_typeProperties_url": {
+			"type": "string",
+			"defaultValue": "https://api.worldbank.org"
 		},
 		"LS_WorldBank_properties_typeProperties_url": {
 			"type": "string",
@@ -60,6 +68,10 @@
 			"type": "string",
 			"defaultValue": "0214-132145-bvcoilg0"
 		},
+		"ls_databriicks_Apl_dev_properties_typeProperties_existingClusterId": {
+			"type": "string",
+			"defaultValue": "0223-030315-yim4knuo"
+		},
 		"ls_eia_properties_typeProperties_url": {
 			"type": "string",
 			"defaultValue": "https://api.eia.gov/v2"
@@ -75,6 +87,10 @@
 		"ls_sql_onprem_petrolake_properties_typeProperties_userName": {
 			"type": "string",
 			"defaultValue": "tippu\\adfdb"
+		},
+		"ls_worldbank_src_restapi_properties_typeProperties_url": {
+			"type": "string",
+			"defaultValue": "https://api.worldbank.org/v2/country/IN/indicator/EG.USE.PCAP.KG.OE"
 		},
 		"containerUri": {
 			"type": "string",
@@ -118,6 +134,12 @@
 					"ls_databricks_petrolake_dev_accessToken": {
 						"value": "[parameters('ls_databricks_petrolake_dev_accessToken')]"
 					},
+					"ls_databriicks_Apl_dev_accessToken": {
+						"value": "[parameters('ls_databriicks_Apl_dev_accessToken')]"
+					},
+					"LS_HttpServer_properties_typeProperties_url": {
+						"value": "[parameters('LS_HttpServer_properties_typeProperties_url')]"
+					},
 					"LS_WorldBank_properties_typeProperties_url": {
 						"value": "[parameters('LS_WorldBank_properties_typeProperties_url')]"
 					},
@@ -136,6 +158,9 @@
 					"ls_databricks_petrolake_dev_properties_typeProperties_existingClusterId": {
 						"value": "[parameters('ls_databricks_petrolake_dev_properties_typeProperties_existingClusterId')]"
 					},
+					"ls_databriicks_Apl_dev_properties_typeProperties_existingClusterId": {
+						"value": "[parameters('ls_databriicks_Apl_dev_properties_typeProperties_existingClusterId')]"
+					},
 					"ls_eia_properties_typeProperties_url": {
 						"value": "[parameters('ls_eia_properties_typeProperties_url')]"
 					},
@@ -144,6 +169,9 @@
 					},
 					"ls_rest_eia_wti_properties_typeProperties_url": {
 						"value": "[parameters('ls_rest_eia_wti_properties_typeProperties_url')]"
+					},
+					"ls_worldbank_src_restapi_properties_typeProperties_url": {
+						"value": "[parameters('ls_worldbank_src_restapi_properties_typeProperties_url')]"
 					}
 				}
 			},
@@ -162,15 +190,6 @@
 				"parameters": {
 					"factoryName": {
 						"value": "[parameters('factoryName')]"
-					},
-					"ls_sql_onprem_petrolake_connectionString": {
-						"value": "[parameters('ls_sql_onprem_petrolake_connectionString')]"
-					},
-					"ls_sql_onprem_petrolake_password": {
-						"value": "[parameters('ls_sql_onprem_petrolake_password')]"
-					},
-					"ls_sql_onprem_petrolake_properties_typeProperties_userName": {
-						"value": "[parameters('ls_sql_onprem_petrolake_properties_typeProperties_userName')]"
 					}
 				}
 			},
@@ -191,11 +210,40 @@
 				"parameters": {
 					"factoryName": {
 						"value": "[parameters('factoryName')]"
+					},
+					"ls_sql_onprem_petrolake_connectionString": {
+						"value": "[parameters('ls_sql_onprem_petrolake_connectionString')]"
+					},
+					"ls_sql_onprem_petrolake_password": {
+						"value": "[parameters('ls_sql_onprem_petrolake_password')]"
+					},
+					"ls_sql_onprem_petrolake_properties_typeProperties_userName": {
+						"value": "[parameters('ls_sql_onprem_petrolake_properties_typeProperties_userName')]"
 					}
 				}
 			},
 			"dependsOn": [
 				"[resourceId('Microsoft.Resources/deployments', 'adfpetrolakedatamodrendev_ArmTemplate_1')]"
+			]
+		},
+		{
+			"name": "adfpetrolakedatamodrendev_ArmTemplate_3",
+			"type": "Microsoft.Resources/deployments",
+			"apiVersion": "2024-03-01",
+			"properties": {
+				"mode": "incremental",
+				"templateLink": {
+					"uri": "[concat(parameters('containerUri'), '/ArmTemplate_3.json', parameters('containerSasToken'))]",
+					"contentVersion": "1.0.0.0"
+				},
+				"parameters": {
+					"factoryName": {
+						"value": "[parameters('factoryName')]"
+					}
+				}
+			},
+			"dependsOn": [
+				"[resourceId('Microsoft.Resources/deployments', 'adfpetrolakedatamodrendev_ArmTemplate_2')]"
 			]
 		}
 	]

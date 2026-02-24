@@ -20,11 +20,17 @@
 		"ls_databricks_petrolake_dev_accessToken": {
 			"value": ""
 		},
+		"ls_databriicks_Apl_dev_accessToken": {
+			"value": ""
+		},
 		"ls_sql_onprem_petrolake_connectionString": {
 			"value": "integrated security=True;Data Source=TIPPU\\SQLEXPRESS01;Initial Catalog=petrolake_db_dev"
 		},
 		"ls_sql_onprem_petrolake_password": {
 			"value": ""
+		},
+		"LS_HttpServer_properties_typeProperties_url": {
+			"value": "https://api.worldbank.org"
 		},
 		"LS_WorldBank_properties_typeProperties_url": {
 			"value": "https://api.worldbank.org"
@@ -44,6 +50,9 @@
 		"ls_databricks_petrolake_dev_properties_typeProperties_existingClusterId": {
 			"value": "0214-132145-bvcoilg0"
 		},
+		"ls_databriicks_Apl_dev_properties_typeProperties_existingClusterId": {
+			"value": "0223-030315-yim4knuo"
+		},
 		"ls_eia_properties_typeProperties_url": {
 			"value": "https://api.eia.gov/v2"
 		},
@@ -55,6 +64,9 @@
 		},
 		"ls_sql_onprem_petrolake_properties_typeProperties_userName": {
 			"value": "tippu\\adfdb"
+		},
+		"ls_worldbank_src_restapi_properties_typeProperties_url": {
+			"value": "https://api.worldbank.org/v2/country/IN/indicator/EG.USE.PCAP.KG.OE"
 		},
 		"containerUri": {
 			"value": ""

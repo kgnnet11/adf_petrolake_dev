@@ -27,6 +27,14 @@
 			"type": "secureString",
 			"metadata": "Secure string for 'accessToken' of 'ls_databricks_petrolake_dev'"
 		},
+		"ls_databriicks_Apl_dev_accessToken": {
+			"type": "secureString",
+			"metadata": "Secure string for 'accessToken' of 'ls_databriicks_Apl_dev'"
+		},
+		"LS_HttpServer_properties_typeProperties_url": {
+			"type": "string",
+			"defaultValue": "https://api.worldbank.org"
+		},
 		"LS_WorldBank_properties_typeProperties_url": {
 			"type": "string",
 			"defaultValue": "https://api.worldbank.org"
@@ -51,6 +59,10 @@
 			"type": "string",
 			"defaultValue": "0214-132145-bvcoilg0"
 		},
+		"ls_databriicks_Apl_dev_properties_typeProperties_existingClusterId": {
+			"type": "string",
+			"defaultValue": "0223-030315-yim4knuo"
+		},
 		"ls_eia_properties_typeProperties_url": {
 			"type": "string",
 			"defaultValue": "https://api.eia.gov/v2"
@@ -62,12 +74,31 @@
 		"ls_rest_eia_wti_properties_typeProperties_url": {
 			"type": "string",
 			"defaultValue": "https://api.eia.gov"
+		},
+		"ls_worldbank_src_restapi_properties_typeProperties_url": {
+			"type": "string",
+			"defaultValue": "https://api.worldbank.org/v2/country/IN/indicator/EG.USE.PCAP.KG.OE"
 		}
 	},
 	"variables": {
 		"factoryId": "[concat('Microsoft.DataFactory/factories/', parameters('factoryName'))]"
 	},
 	"resources": [
+		{
+			"name": "[concat(parameters('factoryName'), '/LS_HttpServer')]",
+			"type": "Microsoft.DataFactory/factories/linkedServices",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"annotations": [],
+				"type": "HttpServer",
+				"typeProperties": {
+					"url": "[parameters('LS_HttpServer_properties_typeProperties_url')]",
+					"enableServerCertificateValidation": true,
+					"authenticationType": "Anonymous"
+				}
+			},
+			"dependsOn": []
+		},
 		{
 			"name": "[concat(parameters('factoryName'), '/LS_WorldBank')]",
 			"type": "Microsoft.DataFactory/factories/linkedServices",
@@ -167,6 +198,24 @@
 			"dependsOn": []
 		},
 		{
+			"name": "[concat(parameters('factoryName'), '/ls_databriicks_Apl_dev')]",
+			"type": "Microsoft.DataFactory/factories/linkedServices",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"annotations": [],
+				"type": "AzureDatabricks",
+				"typeProperties": {
+					"domain": "https://adb-7405607865295769.9.azuredatabricks.net",
+					"accessToken": {
+						"type": "SecureString",
+						"value": "[parameters('ls_databriicks_Apl_dev_accessToken')]"
+					},
+					"existingClusterId": "[parameters('ls_databriicks_Apl_dev_properties_typeProperties_existingClusterId')]"
+				}
+			},
+			"dependsOn": []
+		},
+		{
 			"name": "[concat(parameters('factoryName'), '/ls_eia')]",
 			"type": "Microsoft.DataFactory/factories/linkedServices",
 			"apiVersion": "2018-06-01",
@@ -207,6 +256,41 @@
 					"url": "[parameters('ls_rest_eia_wti_properties_typeProperties_url')]",
 					"enableServerCertificateValidation": true,
 					"authenticationType": "Anonymous"
+				}
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/ls_worldbank_src_restapi')]",
+			"type": "Microsoft.DataFactory/factories/linkedServices",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"annotations": [],
+				"type": "RestService",
+				"typeProperties": {
+					"url": "[parameters('ls_worldbank_src_restapi_properties_typeProperties_url')]",
+					"enableServerCertificateValidation": true,
+					"authenticationType": "Anonymous"
+				}
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/Filesystem_Masterdata_combo_schedule')]",
+			"type": "Microsoft.DataFactory/factories/triggers",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"annotations": [],
+				"runtimeState": "Stopped",
+				"pipelines": [],
+				"type": "ScheduleTrigger",
+				"typeProperties": {
+					"recurrence": {
+						"frequency": "Minute",
+						"interval": 15,
+						"startTime": "2026-02-18T11:00:00",
+						"timeZone": "India Standard Time"
+					}
 				}
 			},
 			"dependsOn": []
@@ -283,6 +367,31 @@
 			]
 		},
 		{
+			"name": "[concat(parameters('factoryName'), '/ds_adls_bankdata_sql')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "ls_alds_landingzone",
+					"type": "LinkedServiceReference"
+				},
+				"annotations": [],
+				"type": "Json",
+				"typeProperties": {
+					"location": {
+						"type": "AzureBlobFSLocation",
+						"fileName": "page_1.json",
+						"folderPath": "worldbank/energy_use/'2026-02-21'",
+						"fileSystem": "landingzone"
+					}
+				},
+				"schema": {}
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/linkedServices/ls_alds_landingzone')]"
+			]
+		},
+		{
 			"name": "[concat(parameters('factoryName'), '/ds_adls_josn')]",
 			"type": "Microsoft.DataFactory/factories/datasets",
 			"apiVersion": "2018-06-01",
@@ -353,7 +462,7 @@
 			]
 		},
 		{
-			"name": "[concat(parameters('factoryName'), '/ds_adls_update_watermark_api_eia')]",
+			"name": "[concat(parameters('factoryName'), '/ds_adls_reporting_worldbank_api')]",
 			"type": "Microsoft.DataFactory/factories/datasets",
 			"apiVersion": "2018-06-01",
 			"properties": {
@@ -361,238 +470,20 @@
 					"referenceName": "ls_alds_landingzone",
 					"type": "LinkedServiceReference"
 				},
-				"parameters": {
-					"Filecontent": {
-						"type": "string"
-					}
-				},
 				"annotations": [],
-				"type": "DelimitedText",
+				"type": "Parquet",
 				"typeProperties": {
 					"location": {
 						"type": "AzureBlobFSLocation",
-						"fileName": {
-							"value": "@dataset().Filecontent",
-							"type": "Expression"
-						},
-						"folderPath": "metadata",
-						"fileSystem": "landingzone"
+						"folderPath": "Worldbank/energy_data_reporting",
+						"fileSystem": "reportingzone"
 					},
-					"columnDelimiter": ",",
-					"escapeChar": "\\",
-					"firstRowAsHeader": false,
-					"quoteChar": "\""
+					"compressionCodec": "snappy"
 				},
 				"schema": []
 			},
 			"dependsOn": [
 				"[concat(variables('factoryId'), '/linkedServices/ls_alds_landingzone')]"
-			]
-		},
-		{
-			"name": "[concat(parameters('factoryName'), '/ds_api_eia_sql_metadata')]",
-			"type": "Microsoft.DataFactory/factories/datasets",
-			"apiVersion": "2018-06-01",
-			"properties": {
-				"linkedServiceName": {
-					"referenceName": "ls_azuresql_petrolake_dev",
-					"type": "LinkedServiceReference"
-				},
-				"annotations": [],
-				"type": "AzureSqlTable",
-				"schema": [],
-				"typeProperties": {
-					"schema": "dbo",
-					"table": "api_eia_watermark"
-				}
-			},
-			"dependsOn": [
-				"[concat(variables('factoryId'), '/linkedServices/ls_azuresql_petrolake_dev')]"
-			]
-		},
-		{
-			"name": "[concat(parameters('factoryName'), '/ds_azuresql_Global_Downstream')]",
-			"type": "Microsoft.DataFactory/factories/datasets",
-			"apiVersion": "2018-06-01",
-			"properties": {
-				"linkedServiceName": {
-					"referenceName": "ls_azuresql_petrolake_dev",
-					"type": "LinkedServiceReference"
-				},
-				"annotations": [],
-				"type": "AzureSqlTable",
-				"schema": [
-					{
-						"name": "region",
-						"type": "nvarchar"
-					},
-					{
-						"name": "country",
-						"type": "nvarchar"
-					},
-					{
-						"name": "total_barrels",
-						"type": "decimal",
-						"precision": 18,
-						"scale": 2
-					},
-					{
-						"name": "total_revenue",
-						"type": "decimal",
-						"precision": 18,
-						"scale": 2
-					},
-					{
-						"name": "total_cost",
-						"type": "decimal",
-						"precision": 18,
-						"scale": 2
-					},
-					{
-						"name": "profit_margin",
-						"type": "decimal",
-						"precision": 5,
-						"scale": 2
-					},
-					{
-						"name": "gross_profit",
-						"type": "decimal",
-						"precision": 18,
-						"scale": 2
-					},
-					{
-						"name": "total_spend",
-						"type": "decimal",
-						"precision": 18,
-						"scale": 2
-					},
-					{
-						"name": "incident_count",
-						"type": "int",
-						"precision": 10
-					},
-					{
-						"name": "total_incident_cost",
-						"type": "decimal",
-						"precision": 18,
-						"scale": 2
-					},
-					{
-						"name": "cumulative_barrels",
-						"type": "decimal",
-						"precision": 18,
-						"scale": 2
-					},
-					{
-						"name": "cumulative_spend",
-						"type": "decimal",
-						"precision": 18,
-						"scale": 2
-					},
-					{
-						"name": "cumulative_revenue",
-						"type": "decimal",
-						"precision": 18,
-						"scale": 2
-					},
-					{
-						"name": "cost_per_barrel",
-						"type": "decimal",
-						"precision": 18,
-						"scale": 2
-					},
-					{
-						"name": "total_downtime_hours",
-						"type": "decimal",
-						"precision": 10,
-						"scale": 2
-					},
-					{
-						"name": "cumulative_incident_cost",
-						"type": "decimal",
-						"precision": 18,
-						"scale": 2
-					},
-					{
-						"name": "year",
-						"type": "int",
-						"precision": 10
-					},
-					{
-						"name": "month",
-						"type": "tinyint",
-						"precision": 3
-					}
-				],
-				"typeProperties": {
-					"schema": "dbo",
-					"table": "GLOBAL_DOWNSTREAM"
-				}
-			},
-			"dependsOn": [
-				"[concat(variables('factoryId'), '/linkedServices/ls_azuresql_petrolake_dev')]"
-			]
-		},
-		{
-			"name": "[concat(parameters('factoryName'), '/ds_azuresql_global_midstream')]",
-			"type": "Microsoft.DataFactory/factories/datasets",
-			"apiVersion": "2018-06-01",
-			"properties": {
-				"linkedServiceName": {
-					"referenceName": "ls_azuresql_petrolake_dev",
-					"type": "LinkedServiceReference"
-				},
-				"annotations": [],
-				"type": "AzureSqlTable",
-				"schema": [],
-				"typeProperties": {
-					"schema": "dbo",
-					"table": "GLOBAL_MIDSTREAM"
-				}
-			},
-			"dependsOn": [
-				"[concat(variables('factoryId'), '/linkedServices/ls_azuresql_petrolake_dev')]"
-			]
-		},
-		{
-			"name": "[concat(parameters('factoryName'), '/ds_azuresql_metadata')]",
-			"type": "Microsoft.DataFactory/factories/datasets",
-			"apiVersion": "2018-06-01",
-			"properties": {
-				"linkedServiceName": {
-					"referenceName": "ls_azuresql_petrolake_dev",
-					"type": "LinkedServiceReference"
-				},
-				"annotations": [],
-				"type": "AzureSqlTable",
-				"schema": [],
-				"typeProperties": {
-					"schema": "dbo",
-					"table": "API_Metadata"
-				}
-			},
-			"dependsOn": [
-				"[concat(variables('factoryId'), '/linkedServices/ls_azuresql_petrolake_dev')]"
-			]
-		},
-		{
-			"name": "[concat(parameters('factoryName'), '/ds_azuretable_storage')]",
-			"type": "Microsoft.DataFactory/factories/datasets",
-			"apiVersion": "2018-06-01",
-			"properties": {
-				"linkedServiceName": {
-					"referenceName": "ls_azuretable_storage",
-					"type": "LinkedServiceReference"
-				},
-				"annotations": [],
-				"type": "AzureTable",
-				"schema": [],
-				"typeProperties": {
-					"tableName": "globaldownstream"
-				}
-			},
-			"dependsOn": [
-				"[concat(variables('factoryId'), '/linkedServices/ls_azuretable_storage')]"
 			]
 		}
 	]

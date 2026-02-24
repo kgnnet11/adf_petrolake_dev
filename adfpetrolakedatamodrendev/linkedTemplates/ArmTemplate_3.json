@@ -1,0 +1,421 @@
+{
+	"$schema": "http://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+	"contentVersion": "1.0.0.0",
+	"parameters": {
+		"factoryName": {
+			"type": "string",
+			"metadata": "Data Factory name",
+			"defaultValue": "adfpetrolakedatamodrendev"
+		}
+	},
+	"variables": {
+		"factoryId": "[concat('Microsoft.DataFactory/factories/', parameters('factoryName'))]"
+	},
+	"resources": [
+		{
+			"name": "[concat(parameters('factoryName'), '/pl_masterdata_API')]",
+			"type": "Microsoft.DataFactory/factories/pipelines",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"activities": [
+					{
+						"name": "Energy_json_data_incremental",
+						"type": "ExecutePipeline",
+						"dependsOn": [],
+						"policy": {
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"pipeline": {
+								"referenceName": "pl_WorldBankIncrementalLoad_Energy",
+								"type": "PipelineReference"
+							},
+							"waitOnCompletion": true,
+							"parameters": {
+								"LastLoadedYear": {
+									"value": "@pipeline().parameters.LastLoadedYear",
+									"type": "Expression"
+								},
+								"LoadDate": {
+									"value": "@pipeline().parameters.LoadDate",
+									"type": "Expression"
+								},
+								"CountryCode": {
+									"value": "@pipeline().parameters.CountryCode",
+									"type": "Expression"
+								},
+								"IndicatorCode": {
+									"value": "@pipeline().parameters.IndicatorCode",
+									"type": "Expression"
+								}
+							}
+						}
+					},
+					{
+						"name": "NB_Landing_Discovery",
+						"type": "DatabricksNotebook",
+						"dependsOn": [
+							{
+								"activity": "Energy_json_data_incremental",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
+						"policy": {
+							"timeout": "0.12:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"notebookPath": "/Users/kgnnet11@gmail.com/API_DATA_Transformations/Worldbank_energy_data/landing_discovey"
+						},
+						"linkedServiceName": {
+							"referenceName": "ls_databriicks_Apl_dev",
+							"type": "LinkedServiceReference"
+						}
+					},
+					{
+						"name": "NB_Discovery_Reporting",
+						"type": "DatabricksNotebook",
+						"dependsOn": [
+							{
+								"activity": "NB_Landing_Discovery",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
+						"policy": {
+							"timeout": "0.12:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"notebookPath": "/Users/kgnnet11@gmail.com/API_DATA_Transformations/Worldbank_energy_data/discovery_reporting"
+						},
+						"linkedServiceName": {
+							"referenceName": "ls_databriicks_Apl_dev",
+							"type": "LinkedServiceReference"
+						}
+					},
+					{
+						"name": "cp_reportingzone_Azuretablestorage",
+						"type": "Copy",
+						"dependsOn": [
+							{
+								"activity": "NB_Discovery_Reporting",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
+						"policy": {
+							"timeout": "0.12:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"source": {
+								"type": "ParquetSource",
+								"storeSettings": {
+									"type": "AzureBlobFSReadSettings",
+									"recursive": true,
+									"wildcardFolderPath": {
+										"value": "Worldbank/energy_data_reporting",
+										"type": "Expression"
+									},
+									"wildcardFileName": "*.parquet",
+									"enablePartitionDiscovery": false
+								},
+								"formatSettings": {
+									"type": "ParquetReadSettings"
+								}
+							},
+							"sink": {
+								"type": "AzureTableSink",
+								"azureTableInsertType": "merge",
+								"azureTableDefaultPartitionKeyValue": "petrolake",
+								"writeBatchSize": 10000
+							},
+							"enableStaging": false,
+							"translator": {
+								"type": "TabularTranslator",
+								"typeConversion": true,
+								"typeConversionSettings": {
+									"allowDataTruncation": true,
+									"treatBooleanAsNumber": false
+								}
+							}
+						},
+						"inputs": [
+							{
+								"referenceName": "ds_adls_reporting_worldbank_api",
+								"type": "DatasetReference",
+								"parameters": {}
+							}
+						],
+						"outputs": [
+							{
+								"referenceName": "ds_azuretable_worldbank_api",
+								"type": "DatasetReference",
+								"parameters": {}
+							}
+						]
+					},
+					{
+						"name": "cp_reporting_azuresql",
+						"type": "Copy",
+						"dependsOn": [
+							{
+								"activity": "NB_Discovery_Reporting",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
+						"policy": {
+							"timeout": "0.12:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"source": {
+								"type": "ParquetSource",
+								"storeSettings": {
+									"type": "AzureBlobFSReadSettings",
+									"recursive": true,
+									"wildcardFolderPath": {
+										"value": "Worldbank/energy_data_reporting",
+										"type": "Expression"
+									},
+									"wildcardFileName": "*.parquet",
+									"enablePartitionDiscovery": false
+								},
+								"formatSettings": {
+									"type": "ParquetReadSettings"
+								}
+							},
+							"sink": {
+								"type": "AzureSqlSink",
+								"writeBehavior": "insert",
+								"sqlWriterUseTableLock": false,
+								"tableOption": "autoCreate",
+								"disableMetricsCollection": false
+							},
+							"enableStaging": false,
+							"translator": {
+								"type": "TabularTranslator",
+								"mappings": [
+									{
+										"source": {
+											"name": "year",
+											"type": "Int32",
+											"physicalType": "INT_32"
+										},
+										"sink": {
+											"name": "year",
+											"type": "Int32",
+											"physicalType": "int"
+										}
+									},
+									{
+										"source": {
+											"name": "source_system",
+											"type": "String",
+											"physicalType": "UTF8"
+										},
+										"sink": {
+											"name": "source_system",
+											"type": "String",
+											"physicalType": "nvarchar"
+										}
+									},
+									{
+										"source": {
+											"name": "country_id",
+											"type": "String",
+											"physicalType": "UTF8"
+										},
+										"sink": {
+											"name": "country_id",
+											"type": "String",
+											"physicalType": "nvarchar"
+										}
+									},
+									{
+										"source": {
+											"name": "country_name",
+											"type": "String",
+											"physicalType": "UTF8"
+										},
+										"sink": {
+											"name": "country_name",
+											"type": "String",
+											"physicalType": "nvarchar"
+										}
+									},
+									{
+										"source": {
+											"name": "indicator_id",
+											"type": "String",
+											"physicalType": "UTF8"
+										},
+										"sink": {
+											"name": "indicator_id",
+											"type": "String",
+											"physicalType": "nvarchar"
+										}
+									},
+									{
+										"source": {
+											"name": "indicator_name",
+											"type": "String",
+											"physicalType": "UTF8"
+										},
+										"sink": {
+											"name": "indicator_name",
+											"type": "String",
+											"physicalType": "nvarchar"
+										}
+									},
+									{
+										"source": {
+											"name": "indicator_value_rounded",
+											"type": "Double",
+											"physicalType": "DOUBLE"
+										},
+										"sink": {
+											"name": "indicator_value_rounded",
+											"type": "Double",
+											"physicalType": "float"
+										}
+									},
+									{
+										"source": {
+											"name": "cumulative_value",
+											"type": "Double",
+											"physicalType": "DOUBLE"
+										},
+										"sink": {
+											"name": "cumulative_value",
+											"type": "Double",
+											"physicalType": "float"
+										}
+									},
+									{
+										"source": {
+											"name": "curation_status",
+											"type": "String",
+											"physicalType": "UTF8"
+										},
+										"sink": {
+											"name": "curation_status",
+											"type": "String",
+											"physicalType": "nvarchar"
+										}
+									},
+									{
+										"source": {
+											"name": "ingestion_date",
+											"type": "String",
+											"physicalType": "UTF8"
+										},
+										"sink": {
+											"name": "ingestion_date",
+											"type": "Date",
+											"physicalType": "date"
+										}
+									},
+									{
+										"source": {
+											"name": "yoy_change",
+											"type": "Double",
+											"physicalType": "DOUBLE"
+										},
+										"sink": {
+											"name": "yoy_change",
+											"type": "Double",
+											"physicalType": "float"
+										}
+									},
+									{
+										"source": {
+											"name": "is_latest",
+											"type": "String",
+											"physicalType": "UTF8"
+										},
+										"sink": {
+											"name": "is_latest",
+											"type": "String",
+											"physicalType": "nvarchar"
+										}
+									}
+								],
+								"typeConversion": true,
+								"typeConversionSettings": {
+									"allowDataTruncation": true,
+									"treatBooleanAsNumber": false
+								}
+							}
+						},
+						"inputs": [
+							{
+								"referenceName": "ds_adls_reporting_worldbank_api",
+								"type": "DatasetReference",
+								"parameters": {}
+							}
+						],
+						"outputs": [
+							{
+								"referenceName": "ds_azuresql_worldbank_api",
+								"type": "DatasetReference",
+								"parameters": {}
+							}
+						]
+					}
+				],
+				"policy": {
+					"elapsedTimeMetric": {}
+				},
+				"parameters": {
+					"TargetSystem": {
+						"type": "string",
+						"defaultValue": "Both"
+					},
+					"LastLoadedYear": {
+						"type": "int",
+						"defaultValue": 2022
+					},
+					"LoadDate": {
+						"type": "string",
+						"defaultValue": "2026-02-01"
+					},
+					"CountryCode": {
+						"type": "string",
+						"defaultValue": "IN"
+					},
+					"IndicatorCode": {
+						"type": "string",
+						"defaultValue": "EG.USE.PCAP.KG.OE"
+					}
+				},
+				"annotations": []
+			},
+			"dependsOn": []
+		}
+	]
+}
