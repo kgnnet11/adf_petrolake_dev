@@ -1,0 +1,23 @@
+{
+	"name": "ds_salesforce_src_bulkload",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "ls_salesforce_cloudv2",
+			"type": "LinkedServiceReference"
+		},
+		"parameters": {
+			"ObjectName": {
+				"type": "string"
+			}
+		},
+		"annotations": [],
+		"type": "SalesforceServiceCloudV2Object",
+		"schema": [],
+		"typeProperties": {
+			"objectApiName": {
+				"value": "@dataset().ObjectName",
+				"type": "Expression"
+			}
+		}
+	}
+}
