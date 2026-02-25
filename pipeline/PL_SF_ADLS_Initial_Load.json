@@ -1,0 +1,53 @@
+{
+	"name": "PL_SF_ADLS_Initial_Load",
+	"properties": {
+		"activities": [
+			{
+				"name": "Get_Object_List",
+				"type": "Lookup",
+				"dependsOn": [],
+				"policy": {
+					"timeout": "0.12:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"source": {
+						"type": "SalesforceServiceCloudV2Source",
+						"query": {
+							"value": "SELECT QualifiedApiName\nFROM EntityDefinition\nWHERE QualifiedApiName LIKE '%__c'\nAND IsQueryable = true\nAND IsDeprecatedAndHidden = false",
+							"type": "Expression"
+						},
+						"includeDeletedObjects": false,
+						"partitionOption": "AutoDetect"
+					},
+					"dataset": {
+						"referenceName": "ds_lookup_salesforce_getobjects",
+						"type": "DatasetReference"
+					},
+					"firstRowOnly": false
+				}
+			},
+			{
+				"name": "Filter_Objects",
+				"type": "ForEach",
+				"dependsOn": [
+					{
+						"activity": "Get_Object_List",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"userProperties": [],
+				"typeProperties": {
+					"isSequential": true
+				}
+			}
+		],
+		"annotations": []
+	}
+}
