@@ -36,7 +36,7 @@
 				"type": "ForEach",
 				"dependsOn": [
 					{
-						"activity": "Get_Object_List",
+						"activity": "Filter_Required_Objects",
 						"dependencyConditions": [
 							"Succeeded"
 						]
@@ -45,7 +45,7 @@
 				"userProperties": [],
 				"typeProperties": {
 					"items": {
-						"value": "@activity('Get_Object_List').output.value",
+						"value": "@activity('Filter_Required_Objects').output.value",
 						"type": "Expression"
 					},
 					"isSequential": true,
@@ -112,6 +112,29 @@
 							]
 						}
 					]
+				}
+			},
+			{
+				"name": "Filter_Required_Objects",
+				"type": "Filter",
+				"dependsOn": [
+					{
+						"activity": "Get_Object_List",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"userProperties": [],
+				"typeProperties": {
+					"items": {
+						"value": "@activity('Get_Object_List').output.value",
+						"type": "Expression"
+					},
+					"condition": {
+						"value": "@contains(\n    createArray(\n        'Account_1__c',\n        'Pricing_Contract_1__c',\n        'PricingContracts_Detailed_1__c',\n        'Production_Record_1__c',\n        'Shipment_Records_1__c',\n        'Tank_Inventory_1__c',\n        'Well_Site_1__c'\n    ),\n    item().QualifiedApiName\n)",
+						"type": "Expression"
+					}
 				}
 			}
 		],
