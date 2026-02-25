@@ -1,0 +1,12 @@
+{
+	"name": "ds_salceforce_Maxdate",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "ls_salesforce_cloudv2",
+			"type": "LinkedServiceReference"
+		},
+		"annotations": [],
+		"type": "SalesforceServiceCloudV2Object",
+		"schema": []
+	}
+}

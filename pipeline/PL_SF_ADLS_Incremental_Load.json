@@ -137,19 +137,19 @@
 							"userProperties": [],
 							"typeProperties": {
 								"source": {
-									"type": "AzureSqlSource",
-									"sqlReaderQuery": {
-										"value": "SELECT MAX(SystemModstamp) AS NewWatermark\nFROM @{item()}",
+									"type": "SalesforceServiceCloudV2Source",
+									"query": {
+										"value": "@concat(\n'SELECT MAX(SystemModstamp) NewWatermark FROM ',\nitem()\n)",
 										"type": "Expression"
 									},
-									"queryTimeout": "02:00:00",
-									"partitionOption": "None"
+									"includeDeletedObjects": false,
+									"partitionOption": "AutoDetect"
 								},
 								"dataset": {
-									"referenceName": "ds_incremental_SF_ADLS_Azuresql_Metadata",
+									"referenceName": "ds_salceforce_Maxdate",
 									"type": "DatasetReference"
 								},
-								"firstRowOnly": false
+								"firstRowOnly": true
 							}
 						},
 						{
@@ -176,7 +176,7 @@
 								"storedProcedureParameters": {
 									"NewWatermark": {
 										"value": {
-											"value": "@activity('GetNewMAX').output.value",
+											"value": "@activity('GetNewMAX').output.firstRow.NewWatermark",
 											"type": "Expression"
 										},
 										"type": "DateTime"
