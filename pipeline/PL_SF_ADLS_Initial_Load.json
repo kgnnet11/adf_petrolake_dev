@@ -92,13 +92,22 @@
 							"inputs": [
 								{
 									"referenceName": "ds_salesforce_src_bulkload",
-									"type": "DatasetReference"
+									"type": "DatasetReference",
+									"parameters": {
+										"ObjectName": {
+											"value": "@item().QualifiedApiName",
+											"type": "Expression"
+										}
+									}
 								}
 							],
 							"outputs": [
 								{
 									"referenceName": "ds_adls_tgt_bulkload",
-									"type": "DatasetReference"
+									"type": "DatasetReference",
+									"parameters": {
+										"ObjectName": "@item().QualifiedApiName"
+									}
 								}
 							]
 						}
