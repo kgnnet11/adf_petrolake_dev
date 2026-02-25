@@ -5,6 +5,9 @@
 		"factoryName": {
 			"value": "adfpetrolakedatamodrendev"
 		},
+		"SalesforceServiceCloud1_clientSecret": {
+			"value": ""
+		},
 		"ls_alds_landingzone_accountKey": {
 			"value": ""
 		},
@@ -23,6 +26,9 @@
 		"ls_databriicks_Apl_dev_accessToken": {
 			"value": ""
 		},
+		"ls_salesforce_cloudv2_clientSecret": {
+			"value": ""
+		},
 		"ls_sql_onprem_petrolake_connectionString": {
 			"value": "integrated security=True;Data Source=TIPPU\\SQLEXPRESS01;Initial Catalog=petrolake_db_dev"
 		},
@@ -34,6 +40,12 @@
 		},
 		"LS_WorldBank_properties_typeProperties_url": {
 			"value": "https://api.worldbank.org"
+		},
+		"SalesforceServiceCloud1_properties_typeProperties_environmentUrl": {
+			"value": "https://orgfarm-1c16fbb5f5-dev-ed.develop.my.salesforce.com"
+		},
+		"SalesforceServiceCloud1_properties_typeProperties_clientId": {
+			"value": "3MVG9HtWXcDGV.nEZNJYoubEKa7pH4AgNRyTkXsmuizIBn.bUn6Fhx72gTgKBnj9FrDvJk..chZjQHVLRYFSv"
 		},
 		"ls_alds_landingzone_properties_typeProperties_url": {
 			"value": "https://sgdigitalizationdev.dfs.core.windows.net/"
@@ -61,6 +73,12 @@
 		},
 		"ls_rest_eia_wti_properties_typeProperties_url": {
 			"value": "https://api.eia.gov"
+		},
+		"ls_salesforce_cloudv2_properties_typeProperties_environmentUrl": {
+			"value": "https://orgfarm-1c16fbb5f5-dev-ed.develop.my.salesforce.com"
+		},
+		"ls_salesforce_cloudv2_properties_typeProperties_clientId": {
+			"value": "3MVG9HtWXcDGV.nEZNJYoubEKa7pH4AgNRyTkXsmuizIBn.bUn6Fhx72gTgKBnj9FrDvJk..chZjQHVLRYFSv"
 		},
 		"ls_sql_onprem_petrolake_properties_typeProperties_userName": {
 			"value": "tippu\\adfdb"

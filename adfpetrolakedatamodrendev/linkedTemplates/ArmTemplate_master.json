@@ -7,6 +7,10 @@
 			"metadata": "Data Factory name",
 			"defaultValue": "adfpetrolakedatamodrendev"
 		},
+		"SalesforceServiceCloud1_clientSecret": {
+			"type": "secureString",
+			"metadata": "Secure string for 'clientSecret' of 'SalesforceServiceCloud1'"
+		},
 		"ls_alds_landingzone_accountKey": {
 			"type": "secureString",
 			"metadata": "Secure string for 'accountKey' of 'ls_alds_landingzone'"
@@ -31,6 +35,10 @@
 			"type": "secureString",
 			"metadata": "Secure string for 'accessToken' of 'ls_databriicks_Apl_dev'"
 		},
+		"ls_salesforce_cloudv2_clientSecret": {
+			"type": "secureString",
+			"metadata": "Secure string for 'clientSecret' of 'ls_salesforce_cloudv2'"
+		},
 		"ls_sql_onprem_petrolake_connectionString": {
 			"type": "secureString",
 			"metadata": "Secure string for 'connectionString' of 'ls_sql_onprem_petrolake'",
@@ -47,6 +55,14 @@
 		"LS_WorldBank_properties_typeProperties_url": {
 			"type": "string",
 			"defaultValue": "https://api.worldbank.org"
+		},
+		"SalesforceServiceCloud1_properties_typeProperties_environmentUrl": {
+			"type": "string",
+			"defaultValue": "https://orgfarm-1c16fbb5f5-dev-ed.develop.my.salesforce.com"
+		},
+		"SalesforceServiceCloud1_properties_typeProperties_clientId": {
+			"type": "string",
+			"defaultValue": "3MVG9HtWXcDGV.nEZNJYoubEKa7pH4AgNRyTkXsmuizIBn.bUn6Fhx72gTgKBnj9FrDvJk..chZjQHVLRYFSv"
 		},
 		"ls_alds_landingzone_properties_typeProperties_url": {
 			"type": "string",
@@ -84,6 +100,14 @@
 			"type": "string",
 			"defaultValue": "https://api.eia.gov"
 		},
+		"ls_salesforce_cloudv2_properties_typeProperties_environmentUrl": {
+			"type": "string",
+			"defaultValue": "https://orgfarm-1c16fbb5f5-dev-ed.develop.my.salesforce.com"
+		},
+		"ls_salesforce_cloudv2_properties_typeProperties_clientId": {
+			"type": "string",
+			"defaultValue": "3MVG9HtWXcDGV.nEZNJYoubEKa7pH4AgNRyTkXsmuizIBn.bUn6Fhx72gTgKBnj9FrDvJk..chZjQHVLRYFSv"
+		},
 		"ls_sql_onprem_petrolake_properties_typeProperties_userName": {
 			"type": "string",
 			"defaultValue": "tippu\\adfdb"
@@ -119,6 +143,9 @@
 					"factoryName": {
 						"value": "[parameters('factoryName')]"
 					},
+					"SalesforceServiceCloud1_clientSecret": {
+						"value": "[parameters('SalesforceServiceCloud1_clientSecret')]"
+					},
 					"ls_alds_landingzone_accountKey": {
 						"value": "[parameters('ls_alds_landingzone_accountKey')]"
 					},
@@ -137,11 +164,20 @@
 					"ls_databriicks_Apl_dev_accessToken": {
 						"value": "[parameters('ls_databriicks_Apl_dev_accessToken')]"
 					},
+					"ls_salesforce_cloudv2_clientSecret": {
+						"value": "[parameters('ls_salesforce_cloudv2_clientSecret')]"
+					},
 					"LS_HttpServer_properties_typeProperties_url": {
 						"value": "[parameters('LS_HttpServer_properties_typeProperties_url')]"
 					},
 					"LS_WorldBank_properties_typeProperties_url": {
 						"value": "[parameters('LS_WorldBank_properties_typeProperties_url')]"
+					},
+					"SalesforceServiceCloud1_properties_typeProperties_environmentUrl": {
+						"value": "[parameters('SalesforceServiceCloud1_properties_typeProperties_environmentUrl')]"
+					},
+					"SalesforceServiceCloud1_properties_typeProperties_clientId": {
+						"value": "[parameters('SalesforceServiceCloud1_properties_typeProperties_clientId')]"
 					},
 					"ls_alds_landingzone_properties_typeProperties_url": {
 						"value": "[parameters('ls_alds_landingzone_properties_typeProperties_url')]"
@@ -169,6 +205,12 @@
 					},
 					"ls_rest_eia_wti_properties_typeProperties_url": {
 						"value": "[parameters('ls_rest_eia_wti_properties_typeProperties_url')]"
+					},
+					"ls_salesforce_cloudv2_properties_typeProperties_environmentUrl": {
+						"value": "[parameters('ls_salesforce_cloudv2_properties_typeProperties_environmentUrl')]"
+					},
+					"ls_salesforce_cloudv2_properties_typeProperties_clientId": {
+						"value": "[parameters('ls_salesforce_cloudv2_properties_typeProperties_clientId')]"
 					},
 					"ls_worldbank_src_restapi_properties_typeProperties_url": {
 						"value": "[parameters('ls_worldbank_src_restapi_properties_typeProperties_url')]"
