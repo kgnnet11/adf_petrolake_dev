@@ -5,12 +5,24 @@
 			"referenceName": "ls_alds_landingzone",
 			"type": "LinkedServiceReference"
 		},
+		"parameters": {
+			"ObjectName": {
+				"type": "string"
+			}
+		},
 		"annotations": [],
 		"type": "DelimitedText",
 		"typeProperties": {
 			"location": {
 				"type": "AzureBlobFSLocation",
-				"folderPath": "salesforce",
+				"fileName": {
+					"value": "@concat(dataset().ObjectName,'_full_',formatDateTime(utcNow(),'yyyyMMddHHmmss'),'.csv')",
+					"type": "Expression"
+				},
+				"folderPath": {
+					"value": "salesforce/@{dataset().ObjectName}",
+					"type": "Expression"
+				},
 				"fileSystem": "landingzone"
 			},
 			"columnDelimiter": ",",
