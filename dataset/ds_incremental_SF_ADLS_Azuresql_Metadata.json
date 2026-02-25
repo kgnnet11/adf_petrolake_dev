@@ -1,0 +1,16 @@
+{
+	"name": "ds_incremental_SF_ADLS_Azuresql_Metadata",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "ls_azuresql_petrolake_dev",
+			"type": "LinkedServiceReference"
+		},
+		"annotations": [],
+		"type": "AzureSqlTable",
+		"schema": [],
+		"typeProperties": {
+			"schema": "dbo",
+			"table": "SF_Watermark_Control"
+		}
+	}
+}
