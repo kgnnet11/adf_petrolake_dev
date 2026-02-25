@@ -1,0 +1,49 @@
+{
+	"name": "ds_src_servicenow_incident",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "ls_servicenow_incedents",
+			"type": "LinkedServiceReference"
+		},
+		"annotations": [],
+		"type": "ServiceNowV2Object",
+		"schema": [
+			{
+				"name": "sys_updated_on",
+				"type": "glide_date_time"
+			},
+			{
+				"name": "entitlement",
+				"type": "reference"
+			},
+			{
+				"name": "sys_created_on",
+				"type": "glide_date_time"
+			},
+			{
+				"name": "sys_id",
+				"type": "GUID"
+			},
+			{
+				"name": "sys_updated_by",
+				"type": "string"
+			},
+			{
+				"name": "instance",
+				"type": "reference"
+			},
+			{
+				"name": "sys_created_by",
+				"type": "string"
+			},
+			{
+				"name": "sys_mod_count",
+				"type": "integer"
+			}
+		],
+		"typeProperties": {
+			"tableName": "ais_child_table",
+			"valueType": "actual"
+		}
+	}
+}
