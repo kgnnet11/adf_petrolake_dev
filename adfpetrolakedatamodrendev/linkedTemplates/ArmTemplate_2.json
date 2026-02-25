@@ -26,6 +26,38 @@
 	},
 	"resources": [
 		{
+			"name": "[concat(parameters('factoryName'), '/ds_filesystem_Global_Upstream_Operations')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "ls_blob_filesystem",
+					"type": "LinkedServiceReference"
+				},
+				"parameters": {
+					"sheetname": {
+						"type": "string"
+					}
+				},
+				"annotations": [],
+				"type": "Excel",
+				"typeProperties": {
+					"sheetName": {
+						"value": "@dataset().sheetname",
+						"type": "Expression"
+					},
+					"location": {
+						"type": "AzureBlobStorageLocation",
+						"fileName": "Global_Upstream_Operations.xlsx",
+						"container": "filesystemdata"
+					},
+					"firstRowAsHeader": true
+				},
+				"schema": []
+			},
+			"dependsOn": []
+		},
+		{
 			"name": "[concat(parameters('factoryName'), '/ds_filesystem_dailyload_adls_landingzone')]",
 			"type": "Microsoft.DataFactory/factories/datasets",
 			"apiVersion": "2018-06-01",
@@ -118,6 +150,25 @@
 					}
 				},
 				"schema": {}
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/ds_incremental_SF_ADLS_Azuresql_Metadata')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "ls_azuresql_petrolake_dev",
+					"type": "LinkedServiceReference"
+				},
+				"annotations": [],
+				"type": "AzureSqlTable",
+				"schema": [],
+				"typeProperties": {
+					"schema": "dbo",
+					"table": "SF_Watermark_Control"
+				}
 			},
 			"dependsOn": []
 		},
@@ -307,6 +358,22 @@
 						"type": "Expression"
 					}
 				}
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/ds_salesforce_src_incremental')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "ls_salesforce_cloudv2",
+					"type": "LinkedServiceReference"
+				},
+				"annotations": [],
+				"type": "SalesforceServiceCloudV2Object",
+				"schema": [],
+				"typeProperties": {}
 			},
 			"dependsOn": []
 		},
@@ -533,513 +600,6 @@
 				}
 			},
 			"dependsOn": []
-		},
-		{
-			"name": "[concat(parameters('factoryName'), '/PL_SF_ADLS_Initial_Load')]",
-			"type": "Microsoft.DataFactory/factories/pipelines",
-			"apiVersion": "2018-06-01",
-			"properties": {
-				"activities": [
-					{
-						"name": "Get_Object_List",
-						"type": "Lookup",
-						"dependsOn": [],
-						"policy": {
-							"timeout": "0.12:00:00",
-							"retry": 0,
-							"retryIntervalInSeconds": 30,
-							"secureOutput": false,
-							"secureInput": false
-						},
-						"userProperties": [],
-						"typeProperties": {
-							"source": {
-								"type": "SalesforceServiceCloudV2Source",
-								"query": {
-									"value": "SELECT QualifiedApiName\nFROM EntityDefinition\nWHERE QualifiedApiName LIKE '%__c'\nAND IsQueryable = true\nAND IsDeprecatedAndHidden = false",
-									"type": "Expression"
-								},
-								"includeDeletedObjects": false,
-								"partitionOption": "AutoDetect"
-							},
-							"dataset": {
-								"referenceName": "ds_lookup_salesforce_getobjects",
-								"type": "DatasetReference",
-								"parameters": {}
-							},
-							"firstRowOnly": false
-						}
-					},
-					{
-						"name": "Filter_Objects",
-						"type": "ForEach",
-						"dependsOn": [
-							{
-								"activity": "Filter_Required_Objects",
-								"dependencyConditions": [
-									"Succeeded"
-								]
-							}
-						],
-						"userProperties": [],
-						"typeProperties": {
-							"items": {
-								"value": "@activity('Filter_Required_Objects').output.value",
-								"type": "Expression"
-							},
-							"isSequential": true,
-							"activities": [
-								{
-									"name": "Copydata_Salesforce_Adls_bulk",
-									"type": "Copy",
-									"dependsOn": [],
-									"policy": {
-										"timeout": "0.12:00:00",
-										"retry": 0,
-										"retryIntervalInSeconds": 30,
-										"secureOutput": false,
-										"secureInput": false
-									},
-									"userProperties": [],
-									"typeProperties": {
-										"source": {
-											"type": "SalesforceServiceCloudV2Source",
-											"includeDeletedObjects": false,
-											"partitionOption": "AutoDetect"
-										},
-										"sink": {
-											"type": "DelimitedTextSink",
-											"storeSettings": {
-												"type": "AzureBlobFSWriteSettings"
-											},
-											"formatSettings": {
-												"type": "DelimitedTextWriteSettings",
-												"quoteAllText": true,
-												"fileExtension": ".txt"
-											}
-										},
-										"enableStaging": false,
-										"translator": {
-											"type": "TabularTranslator",
-											"typeConversion": true,
-											"typeConversionSettings": {
-												"allowDataTruncation": true,
-												"treatBooleanAsNumber": false
-											}
-										}
-									},
-									"inputs": [
-										{
-											"referenceName": "ds_salesforce_src_bulkload",
-											"type": "DatasetReference",
-											"parameters": {
-												"ObjectName": {
-													"value": "@item().QualifiedApiName",
-													"type": "Expression"
-												}
-											}
-										}
-									],
-									"outputs": [
-										{
-											"referenceName": "ds_adls_tgt_bulkload",
-											"type": "DatasetReference",
-											"parameters": {
-												"ObjectName": "@item().QualifiedApiName"
-											}
-										}
-									]
-								}
-							]
-						}
-					},
-					{
-						"name": "Filter_Required_Objects",
-						"type": "Filter",
-						"dependsOn": [
-							{
-								"activity": "Get_Object_List",
-								"dependencyConditions": [
-									"Succeeded"
-								]
-							}
-						],
-						"userProperties": [],
-						"typeProperties": {
-							"items": {
-								"value": "@activity('Get_Object_List').output.value",
-								"type": "Expression"
-							},
-							"condition": {
-								"value": "@contains(\n    createArray(\n        'Account_1__c',\n        'Pricing_Contract_1__c',\n        'PricingContracts_Detailed_1__c',\n        'Production_Record_1__c',\n        'Shipment_Records_1__c',\n        'Tank_Inventory_1__c',\n        'Well_Site_1__c'\n    ),\n    item().QualifiedApiName\n)",
-								"type": "Expression"
-							}
-						}
-					}
-				],
-				"policy": {
-					"elapsedTimeMetric": {}
-				},
-				"annotations": []
-			},
-			"dependsOn": [
-				"[concat(variables('factoryId'), '/datasets/ds_lookup_salesforce_getobjects')]",
-				"[concat(variables('factoryId'), '/datasets/ds_salesforce_src_bulkload')]"
-			]
-		},
-		{
-			"name": "[concat(parameters('factoryName'), '/pipeline1')]",
-			"type": "Microsoft.DataFactory/factories/pipelines",
-			"apiVersion": "2018-06-01",
-			"properties": {
-				"activities": [
-					{
-						"name": "cp_salesforce_adls_account",
-						"type": "Copy",
-						"dependsOn": [],
-						"policy": {
-							"timeout": "0.12:00:00",
-							"retry": 0,
-							"retryIntervalInSeconds": 30,
-							"secureOutput": false,
-							"secureInput": false
-						},
-						"userProperties": [],
-						"typeProperties": {
-							"source": {
-								"type": "SalesforceServiceCloudV2Source",
-								"includeDeletedObjects": false,
-								"partitionOption": "AutoDetect"
-							},
-							"sink": {
-								"type": "DelimitedTextSink",
-								"storeSettings": {
-									"type": "AzureBlobFSWriteSettings"
-								},
-								"formatSettings": {
-									"type": "DelimitedTextWriteSettings",
-									"quoteAllText": true,
-									"fileExtension": ".txt"
-								}
-							},
-							"enableStaging": false,
-							"translator": {
-								"type": "TabularTranslator",
-								"typeConversion": true,
-								"typeConversionSettings": {
-									"allowDataTruncation": true,
-									"treatBooleanAsNumber": false
-								}
-							}
-						},
-						"inputs": [
-							{
-								"referenceName": "ds_salesforce_v2",
-								"type": "DatasetReference",
-								"parameters": {}
-							}
-						],
-						"outputs": [
-							{
-								"referenceName": "ds_salesforce_adls",
-								"type": "DatasetReference",
-								"parameters": {}
-							}
-						]
-					}
-				],
-				"policy": {
-					"elapsedTimeMetric": {}
-				},
-				"annotations": []
-			},
-			"dependsOn": [
-				"[concat(variables('factoryId'), '/datasets/ds_salesforce_v2')]",
-				"[concat(variables('factoryId'), '/datasets/ds_salesforce_adls')]"
-			]
-		},
-		{
-			"name": "[concat(parameters('factoryName'), '/pl_WorldBankIncrementalLoad_Energy')]",
-			"type": "Microsoft.DataFactory/factories/pipelines",
-			"apiVersion": "2018-06-01",
-			"properties": {
-				"activities": [
-					{
-						"name": "LookupLastLoadedYear",
-						"type": "Lookup",
-						"dependsOn": [],
-						"policy": {
-							"timeout": "0.12:00:00",
-							"retry": 0,
-							"retryIntervalInSeconds": 30,
-							"secureOutput": false,
-							"secureInput": false
-						},
-						"userProperties": [],
-						"typeProperties": {
-							"source": {
-								"type": "AzureSqlSource",
-								"sqlReaderQuery": {
-									"value": "SELECT LastLoadedYear \nFROM dbo.WorldBankIncrementalLoadControl\nWHERE IndicatorCode='EG.USE.PCAP.KG.OE';",
-									"type": "Expression"
-								},
-								"queryTimeout": "02:00:00",
-								"partitionOption": "None"
-							},
-							"dataset": {
-								"referenceName": "ds_worldbank_controldata_energy_new",
-								"type": "DatasetReference",
-								"parameters": {}
-							},
-							"firstRowOnly": true
-						}
-					},
-					{
-						"name": "GetTotalPages",
-						"type": "WebActivity",
-						"dependsOn": [
-							{
-								"activity": "LookupLastLoadedYear",
-								"dependencyConditions": [
-									"Succeeded"
-								]
-							}
-						],
-						"policy": {
-							"timeout": "0.12:00:00",
-							"retry": 0,
-							"retryIntervalInSeconds": 30,
-							"secureOutput": false,
-							"secureInput": false
-						},
-						"userProperties": [],
-						"typeProperties": {
-							"method": "GET",
-							"headers": {},
-							"url": {
-								"value": "@concat(\n  'https://api.worldbank.org/v2/country/',\n  pipeline().parameters.CountryCode,\n  '/indicator/',\n  pipeline().parameters.IndicatorCode,\n  '?format=json&page=1'\n)",
-								"type": "Expression"
-							}
-						}
-					},
-					{
-						"name": "TotalPages",
-						"type": "SetVariable",
-						"dependsOn": [
-							{
-								"activity": "GetTotalPages",
-								"dependencyConditions": [
-									"Succeeded"
-								]
-							}
-						],
-						"policy": {
-							"secureOutput": false,
-							"secureInput": false
-						},
-						"userProperties": [],
-						"typeProperties": {
-							"variableName": "TotalPages",
-							"value": {
-								"value": "@json(activity('GetTotalPages').output.Response)[0].pages",
-								"type": "Expression"
-							}
-						}
-					},
-					{
-						"name": "getpages",
-						"type": "ForEach",
-						"dependsOn": [
-							{
-								"activity": "TotalPages",
-								"dependencyConditions": [
-									"Succeeded"
-								]
-							}
-						],
-						"userProperties": [],
-						"typeProperties": {
-							"items": {
-								"value": "@range(1, add(json(activity('GetTotalPages').output.Response)[0].pages,1))",
-								"type": "Expression"
-							},
-							"isSequential": true,
-							"activities": [
-								{
-									"name": "CopyActivityInsideForEach",
-									"type": "Copy",
-									"dependsOn": [],
-									"policy": {
-										"timeout": "0.12:00:00",
-										"retry": 0,
-										"retryIntervalInSeconds": 30,
-										"secureOutput": false,
-										"secureInput": false
-									},
-									"userProperties": [],
-									"typeProperties": {
-										"source": {
-											"type": "JsonSource",
-											"storeSettings": {
-												"type": "HttpReadSettings",
-												"requestMethod": "GET"
-											},
-											"formatSettings": {
-												"type": "JsonReadSettings"
-											}
-										},
-										"sink": {
-											"type": "JsonSink",
-											"storeSettings": {
-												"type": "AzureBlobFSWriteSettings",
-												"copyBehavior": "FlattenHierarchy"
-											},
-											"formatSettings": {
-												"type": "JsonWriteSettings"
-											}
-										},
-										"enableStaging": false
-									},
-									"inputs": [
-										{
-											"referenceName": "ds_http_worldbank",
-											"type": "DatasetReference",
-											"parameters": {
-												"PageNumber": {
-													"value": "@item()",
-													"type": "Expression"
-												},
-												"CountryCode": {
-													"value": "@pipeline().parameters.CountryCode",
-													"type": "Expression"
-												},
-												"IndicatorCode": {
-													"value": "@pipeline().parameters.IndicatorCode",
-													"type": "Expression"
-												}
-											}
-										}
-									],
-									"outputs": [
-										{
-											"referenceName": "ds_api_adls_worldbankenergy",
-											"type": "DatasetReference",
-											"parameters": {
-												"countryname": {
-													"value": "@pipeline().parameters.CountryCode",
-													"type": "Expression"
-												},
-												"PageNumber": {
-													"value": "@item()",
-													"type": "Expression"
-												}
-											}
-										}
-									]
-								}
-							]
-						}
-					},
-					{
-						"name": "UpdateWorldBankLoadControl",
-						"type": "SqlServerStoredProcedure",
-						"dependsOn": [
-							{
-								"activity": "getpages",
-								"dependencyConditions": [
-									"Succeeded"
-								]
-							}
-						],
-						"policy": {
-							"timeout": "0.12:00:00",
-							"retry": 0,
-							"retryIntervalInSeconds": 30,
-							"secureOutput": false,
-							"secureInput": false
-						},
-						"userProperties": [],
-						"typeProperties": {
-							"storedProcedureName": "[[dbo].[sp_UpdateWorldBankLoadControl]",
-							"storedProcedureParameters": {
-								"CountryCode": {
-									"value": {
-										"value": "@pipeline().parameters.CountryCode",
-										"type": "Expression"
-									},
-									"type": "String"
-								},
-								"IndicatorCode": {
-									"value": {
-										"value": "@pipeline().parameters.IndicatorCode",
-										"type": "Expression"
-									},
-									"type": "String"
-								},
-								"MaxYearLoaded": {
-									"value": "2022",
-									"type": "Int32"
-								}
-							}
-						},
-						"linkedServiceName": {
-							"referenceName": "ls_azuresql_petrolake_dev",
-							"type": "LinkedServiceReference"
-						}
-					}
-				],
-				"policy": {
-					"elapsedTimeMetric": {}
-				},
-				"parameters": {
-					"LastLoadedYear": {
-						"type": "int",
-						"defaultValue": 2022
-					},
-					"LoadDate": {
-						"type": "string",
-						"defaultValue": "2026-01-28"
-					},
-					"CountryCode": {
-						"type": "string",
-						"defaultValue": "EU"
-					},
-					"IndicatorCode": {
-						"type": "string",
-						"defaultValue": "EG.USE.PCAP.KG.OE"
-					}
-				},
-				"variables": {
-					"TotalPages": {
-						"type": "Integer"
-					},
-					"MaxYearLoaded": {
-						"type": "Integer",
-						"defaultValue": 0
-					},
-					"CurrentPage": {
-						"type": "Integer",
-						"defaultValue": 1
-					},
-					"MaxYearPerPage": {
-						"type": "Array"
-					},
-					"MaxYears": {
-						"type": "Array"
-					},
-					"LastLoadedYear": {
-						"type": "String"
-					}
-				},
-				"folder": {
-					"name": "ApISource"
-				},
-				"annotations": []
-			},
-			"dependsOn": [
-				"[concat(variables('factoryId'), '/datasets/ds_worldbank_controldata_energy_new')]",
-				"[concat(variables('factoryId'), '/datasets/ds_http_worldbank')]"
-			]
 		}
 	]
 }

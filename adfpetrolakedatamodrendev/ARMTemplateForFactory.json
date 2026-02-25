@@ -122,6 +122,239 @@
 	},
 	"resources": [
 		{
+			"name": "[concat(parameters('factoryName'), '/PL_SF_ADLS_Incremental_Load')]",
+			"type": "Microsoft.DataFactory/factories/pipelines",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"activities": [
+					{
+						"name": "Each_Item_loop",
+						"type": "ForEach",
+						"dependsOn": [],
+						"userProperties": [],
+						"typeProperties": {
+							"items": {
+								"value": "@pipeline().parameters.ObjectList",
+								"type": "Expression"
+							},
+							"isSequential": true,
+							"activities": [
+								{
+									"name": "Read_Items",
+									"type": "Lookup",
+									"dependsOn": [],
+									"policy": {
+										"timeout": "0.12:00:00",
+										"retry": 0,
+										"retryIntervalInSeconds": 30,
+										"secureOutput": false,
+										"secureInput": false
+									},
+									"userProperties": [],
+									"typeProperties": {
+										"source": {
+											"type": "AzureSqlSource",
+											"sqlReaderQuery": {
+												"value": "SELECT LastWatermark\nFROM dbo.SF_Watermark_Control\nWHERE ObjectName = '@{item()}'",
+												"type": "Expression"
+											},
+											"queryTimeout": "02:00:00",
+											"partitionOption": "None"
+										},
+										"dataset": {
+											"referenceName": "ds_incremental_SF_ADLS_Azuresql_Metadata",
+											"type": "DatasetReference",
+											"parameters": {}
+										},
+										"firstRowOnly": false
+									}
+								},
+								{
+									"name": "cp_incremental_Salesforce_Adls",
+									"type": "Copy",
+									"dependsOn": [
+										{
+											"activity": "Read_Items",
+											"dependencyConditions": [
+												"Succeeded"
+											]
+										}
+									],
+									"policy": {
+										"timeout": "0.12:00:00",
+										"retry": 0,
+										"retryIntervalInSeconds": 30,
+										"secureOutput": false,
+										"secureInput": false
+									},
+									"userProperties": [],
+									"typeProperties": {
+										"source": {
+											"type": "SalesforceServiceCloudV2Source",
+											"query": {
+												"value": "@concat(\n'SELECT Id, Name, SystemModstamp FROM ',\nitem(),\n' WHERE SystemModstamp > ',\nformatDateTime(\n    activity('Read_Items').output.value[0].LastWatermark,\n    'yyyy-MM-ddTHH:mm:ssZ'\n)\n)",
+												"type": "Expression"
+											},
+											"includeDeletedObjects": false,
+											"partitionOption": "AutoDetect"
+										},
+										"sink": {
+											"type": "DelimitedTextSink",
+											"storeSettings": {
+												"type": "AzureBlobFSWriteSettings"
+											},
+											"formatSettings": {
+												"type": "DelimitedTextWriteSettings",
+												"quoteAllText": true,
+												"fileExtension": ".txt"
+											}
+										},
+										"enableStaging": false,
+										"translator": {
+											"type": "TabularTranslator",
+											"typeConversion": true,
+											"typeConversionSettings": {
+												"allowDataTruncation": true,
+												"treatBooleanAsNumber": false
+											}
+										}
+									},
+									"inputs": [
+										{
+											"referenceName": "ds_salesforce_src_incremental",
+											"type": "DatasetReference",
+											"parameters": {}
+										}
+									],
+									"outputs": [
+										{
+											"referenceName": "ds_Adls_tgt_salesforce",
+											"type": "DatasetReference",
+											"parameters": {
+												"Folder": {
+													"value": "@{item()}",
+													"type": "Expression"
+												},
+												"Filename": {
+													"value": "@concat(item(),'_incremental_',formatDateTime(utcNow(),'yyyyMMddHHmmss'),'.csv')",
+													"type": "Expression"
+												}
+											}
+										}
+									]
+								},
+								{
+									"name": "GetNewMAX",
+									"type": "Lookup",
+									"dependsOn": [
+										{
+											"activity": "cp_incremental_Salesforce_Adls",
+											"dependencyConditions": [
+												"Succeeded"
+											]
+										}
+									],
+									"policy": {
+										"timeout": "0.12:00:00",
+										"retry": 0,
+										"retryIntervalInSeconds": 30,
+										"secureOutput": false,
+										"secureInput": false
+									},
+									"userProperties": [],
+									"typeProperties": {
+										"source": {
+											"type": "SalesforceServiceCloudV2Source",
+											"query": {
+												"value": "@concat(\n'SELECT MAX(SystemModstamp) NewWatermark FROM ',\nitem()\n)",
+												"type": "Expression"
+											},
+											"includeDeletedObjects": false,
+											"partitionOption": "AutoDetect"
+										},
+										"dataset": {
+											"referenceName": "ds_salceforce_Maxdate",
+											"type": "DatasetReference",
+											"parameters": {}
+										},
+										"firstRowOnly": true
+									}
+								},
+								{
+									"name": "Update Watermark",
+									"type": "SqlServerStoredProcedure",
+									"dependsOn": [
+										{
+											"activity": "GetNewMAX",
+											"dependencyConditions": [
+												"Succeeded"
+											]
+										}
+									],
+									"policy": {
+										"timeout": "0.12:00:00",
+										"retry": 0,
+										"retryIntervalInSeconds": 30,
+										"secureOutput": false,
+										"secureInput": false
+									},
+									"userProperties": [],
+									"typeProperties": {
+										"storedProcedureName": "[[dbo].[Update_Watermark]",
+										"storedProcedureParameters": {
+											"NewWatermark": {
+												"value": {
+													"value": "@activity('GetNewMAX').output.firstRow.NewWatermark",
+													"type": "Expression"
+												},
+												"type": "DateTime"
+											},
+											"ObjectName": {
+												"value": {
+													"value": "@item()",
+													"type": "Expression"
+												},
+												"type": "String"
+											}
+										}
+									},
+									"linkedServiceName": {
+										"referenceName": "ls_azuresql_petrolake_dev",
+										"type": "LinkedServiceReference"
+									}
+								}
+							]
+						}
+					}
+				],
+				"policy": {
+					"elapsedTimeMetric": {}
+				},
+				"parameters": {
+					"ObjectList": {
+						"type": "array",
+						"defaultValue": [
+							"Account_1__c",
+							"PricingContracts_Detailed_1__c",
+							"Pricing_Contract_1__c",
+							"Production_Record_1__c",
+							"Shipment_Records_1__c",
+							"Tank_Inventory_1__c",
+							"Well_Site_1__c"
+						]
+					}
+				},
+				"annotations": []
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/datasets/ds_incremental_SF_ADLS_Azuresql_Metadata')]",
+				"[concat(variables('factoryId'), '/datasets/ds_salesforce_src_incremental')]",
+				"[concat(variables('factoryId'), '/datasets/ds_Adls_tgt_salesforce')]",
+				"[concat(variables('factoryId'), '/datasets/ds_salceforce_Maxdate')]",
+				"[concat(variables('factoryId'), '/linkedServices/ls_azuresql_petrolake_dev')]"
+			]
+		},
+		{
 			"name": "[concat(parameters('factoryName'), '/PL_SF_ADLS_Initial_Load')]",
 			"type": "Microsoft.DataFactory/factories/pipelines",
 			"apiVersion": "2018-06-01",
@@ -4205,6 +4438,49 @@
 			]
 		},
 		{
+			"name": "[concat(parameters('factoryName'), '/ds_Adls_tgt_salesforce')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "ls_alds_landingzone",
+					"type": "LinkedServiceReference"
+				},
+				"parameters": {
+					"Folder": {
+						"type": "string"
+					},
+					"Filename": {
+						"type": "string"
+					}
+				},
+				"annotations": [],
+				"type": "DelimitedText",
+				"typeProperties": {
+					"location": {
+						"type": "AzureBlobFSLocation",
+						"fileName": {
+							"value": "@dataset().Filename",
+							"type": "Expression"
+						},
+						"folderPath": {
+							"value": "salesforce/Incremental_load/dataset().Folder",
+							"type": "Expression"
+						},
+						"fileSystem": "landingzone"
+					},
+					"columnDelimiter": ",",
+					"escapeChar": "\\",
+					"firstRowAsHeader": true,
+					"quoteChar": "\""
+				},
+				"schema": []
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/linkedServices/ls_alds_landingzone')]"
+			]
+		},
+		{
 			"name": "[concat(parameters('factoryName'), '/ds_Reporting_SQL_dev')]",
 			"type": "Microsoft.DataFactory/factories/datasets",
 			"apiVersion": "2018-06-01",
@@ -5037,6 +5313,27 @@
 			]
 		},
 		{
+			"name": "[concat(parameters('factoryName'), '/ds_incremental_SF_ADLS_Azuresql_Metadata')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "ls_azuresql_petrolake_dev",
+					"type": "LinkedServiceReference"
+				},
+				"annotations": [],
+				"type": "AzureSqlTable",
+				"schema": [],
+				"typeProperties": {
+					"schema": "dbo",
+					"table": "SF_Watermark_Control"
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/linkedServices/ls_azuresql_petrolake_dev')]"
+			]
+		},
+		{
 			"name": "[concat(parameters('factoryName'), '/ds_lookup_salesforce_getobjects')]",
 			"type": "Microsoft.DataFactory/factories/datasets",
 			"apiVersion": "2018-06-01",
@@ -5236,6 +5533,24 @@
 						"type": "Expression"
 					}
 				}
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/linkedServices/ls_salesforce_cloudv2')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/ds_salesforce_src_incremental')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "ls_salesforce_cloudv2",
+					"type": "LinkedServiceReference"
+				},
+				"annotations": [],
+				"type": "SalesforceServiceCloudV2Object",
+				"schema": [],
+				"typeProperties": {}
 			},
 			"dependsOn": [
 				"[concat(variables('factoryId'), '/linkedServices/ls_salesforce_cloudv2')]"
@@ -5780,6 +6095,24 @@
 			},
 			"dependsOn": [
 				"[concat(variables('factoryId'), '/linkedServices/ls_alds_landingzone')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/ds_salceforce_Maxdate')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "ls_salesforce_cloudv2",
+					"type": "LinkedServiceReference"
+				},
+				"annotations": [],
+				"type": "SalesforceServiceCloudV2Object",
+				"schema": [],
+				"typeProperties": {}
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/linkedServices/ls_salesforce_cloudv2')]"
 			]
 		}
 	]
