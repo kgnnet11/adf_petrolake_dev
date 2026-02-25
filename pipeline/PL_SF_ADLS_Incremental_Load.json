@@ -66,7 +66,7 @@
 								"source": {
 									"type": "SalesforceServiceCloudV2Source",
 									"query": {
-										"value": "@concat(\n'SELECT Id, Name, SystemModstamp FROM ',\nitem(),\n' WHERE SystemModstamp > ',\nactivity('Read_Items').output.value[0].LastWatermark\n)\n",
+										"value": "@concat(\n'SELECT Id, Name, SystemModstamp FROM ',\nitem(),\n' WHERE SystemModstamp > ',\nformatDateTime(\n    activity('Read_Items').output.value[0].LastWatermark,\n    'yyyy-MM-ddTHH:mm:ssZ'\n)\n)",
 										"type": "Expression"
 									},
 									"includeDeletedObjects": false,
