@@ -1,0 +1,27 @@
+{
+	"name": "ds_adls_servicenow_metadata_fullload",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "ls_alds_landingzone",
+			"type": "LinkedServiceReference"
+		},
+		"annotations": [],
+		"type": "Json",
+		"typeProperties": {
+			"location": {
+				"type": "AzureBlobFSLocation",
+				"fileName": "servicenow_tables.json",
+				"folderPath": "servicenow/raw/config",
+				"fileSystem": "landingzone"
+			}
+		},
+		"schema": {
+			"type": "object",
+			"properties": {
+				"tableName": {
+					"type": "string"
+				}
+			}
+		}
+	}
+}

@@ -1,0 +1,23 @@
+{
+	"name": "ds_servicenow_incedentManagement_fullload",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "ls_restapi_serviceNow_Adls",
+			"type": "LinkedServiceReference"
+		},
+		"parameters": {
+			"relativeurl": {
+				"type": "string"
+			}
+		},
+		"annotations": [],
+		"type": "RestResource",
+		"typeProperties": {
+			"relativeUrl": {
+				"value": "@dataset().relativeurl",
+				"type": "Expression"
+			}
+		},
+		"schema": []
+	}
+}
