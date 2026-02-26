@@ -1,0 +1,18 @@
+{
+	"name": "ds_delete_old_files",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "ls_alds_landingzone",
+			"type": "LinkedServiceReference"
+		},
+		"annotations": [],
+		"type": "Binary",
+		"typeProperties": {
+			"location": {
+				"type": "AzureBlobFSLocation",
+				"folderPath": "salesforce/PricingContracts_Detailed_1__c",
+				"fileSystem": "landingzone"
+			}
+		}
+	}
+}
