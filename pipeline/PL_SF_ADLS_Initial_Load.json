@@ -139,7 +139,8 @@
 									"linkedServiceName": {
 										"referenceName": "ls_alds_landingzone",
 										"type": "LinkedServiceReference"
-									}
+									},
+									"path": ""
 								},
 								"enableLogging": true,
 								"storeSettings": {
