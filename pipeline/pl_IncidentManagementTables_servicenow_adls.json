@@ -94,7 +94,7 @@
 									"type": "DatasetReference",
 									"parameters": {
 										"relativeurl": {
-											"value": "@concat(item().value,'?sysparm_limit=10000&sysparm_display_value=true')",
+											"value": "@concat(item().tableName,'?sysparm_limit=10000&sysparm_display_value=true')",
 											"type": "Expression"
 										}
 									}
@@ -106,11 +106,11 @@
 									"type": "DatasetReference",
 									"parameters": {
 										"Filename": {
-											"value": "@concat(item().value,'_FullLoad_',formatDateTime(utcNow(),'yyyyMMdd'),'.csv')",
+											"value": "@concat(item().tableName,'_FullLoad_',formatDateTime(utcNow(),'yyyyMMdd'),'.csv')",
 											"type": "Expression"
 										},
 										"Folder": {
-											"value": "servicenow/raw/@{item().value}/",
+											"value": "servicenow/raw/@{item().tableName}/",
 											"type": "Expression"
 										}
 									}
