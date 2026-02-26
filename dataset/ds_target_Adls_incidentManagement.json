@@ -1,0 +1,38 @@
+{
+	"name": "ds_target_Adls_incidentManagement",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "ls_alds_landingzone",
+			"type": "LinkedServiceReference"
+		},
+		"parameters": {
+			"Filename": {
+				"type": "string"
+			},
+			"Folder": {
+				"type": "string"
+			}
+		},
+		"annotations": [],
+		"type": "DelimitedText",
+		"typeProperties": {
+			"location": {
+				"type": "AzureBlobFSLocation",
+				"fileName": {
+					"value": "@dataset().Filename",
+					"type": "Expression"
+				},
+				"folderPath": {
+					"value": "dataset().Folder",
+					"type": "Expression"
+				},
+				"fileSystem": "landingzone"
+			},
+			"columnDelimiter": ",",
+			"escapeChar": "\\",
+			"firstRowAsHeader": false,
+			"quoteChar": "\""
+		},
+		"schema": []
+	}
+}
