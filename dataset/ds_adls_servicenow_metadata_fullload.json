@@ -10,7 +10,7 @@
 		"typeProperties": {
 			"location": {
 				"type": "AzureBlobFSLocation",
-				"fileName": "CMDB_OilGas_Data.json",
+				"fileName": "servicenow_tables.json",
 				"folderPath": "servicenow/raw/config",
 				"fileSystem": "landingzone"
 			}
