@@ -13,6 +13,831 @@
 	},
 	"resources": [
 		{
+			"name": "[concat(parameters('factoryName'), '/pl_filesystem_Global_Midstream_Logistics')]",
+			"type": "Microsoft.DataFactory/factories/pipelines",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"description": "This Load every 10 days ",
+				"activities": [
+					{
+						"name": "Get_Excel_sheets",
+						"type": "ForEach",
+						"dependsOn": [
+							{
+								"activity": "Begin_status",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
+						"userProperties": [],
+						"typeProperties": {
+							"items": {
+								"value": "@pipeline().parameters.SheetNames",
+								"type": "Expression"
+							},
+							"batchCount": 1,
+							"activities": [
+								{
+									"name": "cp_Global_Midstream_Logistics",
+									"type": "Copy",
+									"dependsOn": [],
+									"policy": {
+										"timeout": "0.12:00:00",
+										"retry": 0,
+										"retryIntervalInSeconds": 30,
+										"secureOutput": false,
+										"secureInput": false
+									},
+									"userProperties": [],
+									"typeProperties": {
+										"source": {
+											"type": "ExcelSource",
+											"storeSettings": {
+												"type": "AzureBlobStorageReadSettings",
+												"recursive": true,
+												"enablePartitionDiscovery": false
+											}
+										},
+										"sink": {
+											"type": "DelimitedTextSink",
+											"storeSettings": {
+												"type": "AzureBlobFSWriteSettings"
+											},
+											"formatSettings": {
+												"type": "DelimitedTextWriteSettings",
+												"quoteAllText": true,
+												"fileExtension": ".txt"
+											}
+										},
+										"enableStaging": false,
+										"translator": {
+											"type": "TabularTranslator",
+											"typeConversion": true,
+											"typeConversionSettings": {
+												"allowDataTruncation": true,
+												"treatBooleanAsNumber": false
+											}
+										}
+									},
+									"inputs": [
+										{
+											"referenceName": "ds_filesystem_Global_Midstream_Logistics",
+											"type": "DatasetReference",
+											"parameters": {
+												"sheetname": {
+													"value": "@string(item())",
+													"type": "Expression"
+												}
+											}
+										}
+									],
+									"outputs": [
+										{
+											"referenceName": "ds_adls_landingzone",
+											"type": "DatasetReference",
+											"parameters": {
+												"filename": {
+													"value": "@concat(string(item()), '.csv')",
+													"type": "Expression"
+												},
+												"MainFolder": {
+													"value": "@replace(pipeline().parameters.ExcelFileName,'.xlsx','')",
+													"type": "Expression"
+												},
+												"SubFolder": {
+													"value": "@string(item())",
+													"type": "Expression"
+												}
+											}
+										}
+									]
+								},
+								{
+									"name": "NB_Global_Midstream_Landing_Discovery",
+									"type": "DatabricksNotebook",
+									"dependsOn": [
+										{
+											"activity": "cp_Global_Midstream_Logistics",
+											"dependencyConditions": [
+												"Succeeded"
+											]
+										}
+									],
+									"policy": {
+										"timeout": "0.12:00:00",
+										"retry": 0,
+										"retryIntervalInSeconds": 30,
+										"secureOutput": false,
+										"secureInput": false
+									},
+									"userProperties": [],
+									"typeProperties": {
+										"notebookPath": "/Users/kgnnet11@gmail.com/Landingzone_Discoverzone/Filesystem/Global_Midstream_Logistics_landing_discovery"
+									},
+									"linkedServiceName": {
+										"referenceName": "ls_databricks_petrolake_dev",
+										"type": "LinkedServiceReference"
+									}
+								},
+								{
+									"name": "NB_Global_Midstream_Discovery_Reporting",
+									"type": "DatabricksNotebook",
+									"dependsOn": [
+										{
+											"activity": "NB_Global_Midstream_Landing_Discovery",
+											"dependencyConditions": [
+												"Succeeded"
+											]
+										}
+									],
+									"policy": {
+										"timeout": "0.12:00:00",
+										"retry": 0,
+										"retryIntervalInSeconds": 30,
+										"secureOutput": false,
+										"secureInput": false
+									},
+									"userProperties": [],
+									"typeProperties": {
+										"notebookPath": "/Users/kgnnet11@gmail.com/Discoveryzone_ReportingZone/Filesystem_Reporting_data/Global_Midstream_Logistics_discovery_reporting"
+									},
+									"linkedServiceName": {
+										"referenceName": "ls_databricks_petrolake_dev",
+										"type": "LinkedServiceReference"
+									}
+								},
+								{
+									"name": "LoadAzureTableStorage",
+									"type": "IfCondition",
+									"dependsOn": [
+										{
+											"activity": "NB_Global_Midstream_Discovery_Reporting",
+											"dependencyConditions": [
+												"Succeeded"
+											]
+										}
+									],
+									"userProperties": [],
+									"typeProperties": {
+										"expression": {
+											"value": "@or(\n   equals(pipeline().parameters.TargetSystem, 'AzureTable'),\n   equals(pipeline().parameters.TargetSystem, 'Both')\n)",
+											"type": "Expression"
+										},
+										"ifTrueActivities": [
+											{
+												"name": "cp_reportingzone_AzureTableStorage",
+												"type": "Copy",
+												"dependsOn": [],
+												"policy": {
+													"timeout": "0.12:00:00",
+													"retry": 0,
+													"retryIntervalInSeconds": 30,
+													"secureOutput": false,
+													"secureInput": false
+												},
+												"userProperties": [],
+												"typeProperties": {
+													"source": {
+														"type": "ParquetSource",
+														"storeSettings": {
+															"type": "AzureBlobFSReadSettings",
+															"recursive": true,
+															"wildcardFolderPath": {
+																"value": "Global_Midstreamy/Gold_KPI",
+																"type": "Expression"
+															},
+															"wildcardFileName": "*.parquet",
+															"enablePartitionDiscovery": false
+														},
+														"formatSettings": {
+															"type": "ParquetReadSettings"
+														}
+													},
+													"sink": {
+														"type": "AzureTableSink",
+														"azureTableInsertType": "merge",
+														"azureTableDefaultPartitionKeyValue": "'petrolake'",
+														"writeBatchSize": 10000
+													},
+													"enableStaging": false,
+													"translator": {
+														"type": "TabularTranslator",
+														"typeConversion": true,
+														"typeConversionSettings": {
+															"allowDataTruncation": true,
+															"treatBooleanAsNumber": false
+														}
+													}
+												},
+												"inputs": [
+													{
+														"referenceName": "ds_reporting_midstream",
+														"type": "DatasetReference",
+														"parameters": {}
+													}
+												],
+												"outputs": [
+													{
+														"referenceName": "ds_midstream_azuretable",
+														"type": "DatasetReference",
+														"parameters": {}
+													}
+												]
+											},
+											{
+												"name": "sucess_data",
+												"type": "SqlServerStoredProcedure",
+												"dependsOn": [
+													{
+														"activity": "cp_reportingzone_AzureTableStorage",
+														"dependencyConditions": [
+															"Succeeded"
+														]
+													}
+												],
+												"policy": {
+													"timeout": "0.12:00:00",
+													"retry": 0,
+													"retryIntervalInSeconds": 30,
+													"secureOutput": false,
+													"secureInput": false
+												},
+												"userProperties": [],
+												"typeProperties": {
+													"storedProcedureName": "[[dbo].[usp_sucess_failure_logs]",
+													"storedProcedureParameters": {
+														"ActivityName": {
+															"value": {
+																"value": "cp_reportingzone_AzureTableStorage",
+																"type": "Expression"
+															},
+															"type": "String"
+														},
+														"DataReadBytes": {
+															"value": {
+																"value": "@activity('cp_reportingzone_AzureTableStorage').output.dataRead",
+																"type": "Expression"
+															},
+															"type": "Int64"
+														},
+														"DataWrittenBytes": {
+															"value": {
+																"value": "@activity('cp_reportingzone_AzureTableStorage').output.dataWritten",
+																"type": "Expression"
+															},
+															"type": "Int64"
+														},
+														"EndTime": {
+															"value": {
+																"value": "@utcNow()\n",
+																"type": "Expression"
+															},
+															"type": "DateTime"
+														},
+														"ErrorMessage": {
+															"value": {
+																"value": "@if(\n    equals(activity('cp_reportingzone_AzureTableStorage').Status, 'Failed'),\n    activity('cp_reportingzone_AzureTableStorage').error.message,\n    ''\n)\n",
+																"type": "Expression"
+															},
+															"type": "String"
+														},
+														"ExecutionStatus": {
+															"value": {
+																"value": "@activity('cp_reportingzone_AzureTableStorage').Status",
+																"type": "Expression"
+															},
+															"type": "String"
+														},
+														"PipelineName": {
+															"value": {
+																"value": "@pipeline().Pipeline",
+																"type": "Expression"
+															},
+															"type": "String"
+														},
+														"RowsRead": {
+															"value": {
+																"value": "@activity('cp_reportingzone_AzureTableStorage').output.rowsRead",
+																"type": "Expression"
+															},
+															"type": "Int64"
+														},
+														"RowsWritten": {
+															"value": {
+																"value": "@activity('cp_reportingzone_AzureTableStorage').output.rowsCopied",
+																"type": "Expression"
+															},
+															"type": "Int64"
+														},
+														"SinkType": {
+															"value": {
+																"value": "AzureTable",
+																"type": "Expression"
+															},
+															"type": "String"
+														},
+														"SourceType": {
+															"value": {
+																"value": "AdlsReportingZone",
+																"type": "Expression"
+															},
+															"type": "String"
+														},
+														"StartTime": {
+															"value": {
+																"value": "@utcNow()",
+																"type": "Expression"
+															},
+															"type": "DateTime"
+														}
+													}
+												},
+												"linkedServiceName": {
+													"referenceName": "ls_sql_onprem_petrolake",
+													"type": "LinkedServiceReference"
+												}
+											}
+										]
+									}
+								},
+								{
+									"name": "If Condition1",
+									"type": "IfCondition",
+									"dependsOn": [
+										{
+											"activity": "NB_Global_Midstream_Discovery_Reporting",
+											"dependencyConditions": [
+												"Succeeded"
+											]
+										}
+									],
+									"userProperties": [],
+									"typeProperties": {
+										"expression": {
+											"value": "@or(\n   equals(pipeline().parameters.TargetSystem, 'AZURESQL'),\n   equals(pipeline().parameters.TargetSystem, 'Both')\n)",
+											"type": "Expression"
+										},
+										"ifTrueActivities": [
+											{
+												"name": "cp_reporting_SQLserver",
+												"type": "Copy",
+												"dependsOn": [],
+												"policy": {
+													"timeout": "0.12:00:00",
+													"retry": 0,
+													"retryIntervalInSeconds": 30,
+													"secureOutput": false,
+													"secureInput": false
+												},
+												"userProperties": [],
+												"typeProperties": {
+													"source": {
+														"type": "ParquetSource",
+														"storeSettings": {
+															"type": "AzureBlobFSReadSettings",
+															"recursive": true,
+															"wildcardFolderPath": {
+																"value": "Global_Midstreamy/Gold_KPI",
+																"type": "Expression"
+															},
+															"wildcardFileName": "*.parquet",
+															"enablePartitionDiscovery": false
+														},
+														"formatSettings": {
+															"type": "ParquetReadSettings"
+														}
+													},
+													"sink": {
+														"type": "AzureSqlSink",
+														"writeBehavior": "insert",
+														"sqlWriterUseTableLock": true,
+														"disableMetricsCollection": false
+													},
+													"enableStaging": false,
+													"translator": {
+														"type": "TabularTranslator",
+														"mappings": [
+															{
+																"source": {
+																	"name": "region",
+																	"type": "String",
+																	"physicalType": "UTF8"
+																},
+																"sink": {
+																	"name": "region",
+																	"type": "String",
+																	"physicalType": "nvarchar"
+																}
+															},
+															{
+																"source": {
+																	"name": "country",
+																	"type": "String",
+																	"physicalType": "UTF8"
+																},
+																"sink": {
+																	"name": "country",
+																	"type": "String",
+																	"physicalType": "nvarchar"
+																}
+															},
+															{
+																"source": {
+																	"name": "product_type",
+																	"type": "String",
+																	"physicalType": "UTF8"
+																},
+																"sink": {
+																	"name": "product_type",
+																	"type": "String",
+																	"physicalType": "nvarchar"
+																}
+															},
+															{
+																"source": {
+																	"name": "year",
+																	"type": "Int32",
+																	"physicalType": "INT_32"
+																},
+																"sink": {
+																	"name": "year",
+																	"type": "Int32",
+																	"physicalType": "int"
+																}
+															},
+															{
+																"source": {
+																	"name": "month",
+																	"type": "Int32",
+																	"physicalType": "INT_32"
+																},
+																"sink": {
+																	"name": "month",
+																	"type": "Byte",
+																	"physicalType": "tinyint"
+																}
+															},
+															{
+																"source": {
+																	"name": "total_volume",
+																	"type": "Double",
+																	"physicalType": "DOUBLE"
+																},
+																"sink": {
+																	"name": "total_volume",
+																	"type": "Decimal",
+																	"physicalType": "decimal",
+																	"scale": 2,
+																	"precision": 18
+																}
+															},
+															{
+																"source": {
+																	"name": "total_cost",
+																	"type": "Double",
+																	"physicalType": "DOUBLE"
+																},
+																"sink": {
+																	"name": "total_cost",
+																	"type": "Decimal",
+																	"physicalType": "decimal",
+																	"scale": 2,
+																	"precision": 18
+																}
+															},
+															{
+																"source": {
+																	"name": "total_revenue",
+																	"type": "Double",
+																	"physicalType": "DOUBLE"
+																},
+																"sink": {
+																	"name": "total_revenue",
+																	"type": "Decimal",
+																	"physicalType": "decimal",
+																	"scale": 2,
+																	"precision": 18
+																}
+															},
+															{
+																"source": {
+																	"name": "total_maintenance_cost",
+																	"type": "Double",
+																	"physicalType": "DOUBLE"
+																},
+																"sink": {
+																	"name": "total_maintenance_cost",
+																	"type": "Decimal",
+																	"physicalType": "decimal",
+																	"scale": 2,
+																	"precision": 18
+																}
+															},
+															{
+																"source": {
+																	"name": "gross_profit",
+																	"type": "Double",
+																	"physicalType": "DOUBLE"
+																},
+																"sink": {
+																	"name": "gross_profit",
+																	"type": "Decimal",
+																	"physicalType": "decimal",
+																	"scale": 2,
+																	"precision": 18
+																}
+															},
+															{
+																"source": {
+																	"name": "ytd_volume",
+																	"type": "Double",
+																	"physicalType": "DOUBLE"
+																},
+																"sink": {
+																	"name": "ytd_volume",
+																	"type": "Decimal",
+																	"physicalType": "decimal",
+																	"scale": 2,
+																	"precision": 18
+																}
+															},
+															{
+																"source": {
+																	"name": "ytd_revenue",
+																	"type": "Double",
+																	"physicalType": "DOUBLE"
+																},
+																"sink": {
+																	"name": "ytd_revenue",
+																	"type": "Decimal",
+																	"physicalType": "decimal",
+																	"scale": 2,
+																	"precision": 18
+																}
+															},
+															{
+																"source": {
+																	"name": "ytd_profit",
+																	"type": "Double",
+																	"physicalType": "DOUBLE"
+																},
+																"sink": {
+																	"name": "ytd_profit",
+																	"type": "Decimal",
+																	"physicalType": "decimal",
+																	"scale": 2,
+																	"precision": 18
+																}
+															},
+															{
+																"source": {
+																	"name": "year_partition",
+																	"type": "Int32",
+																	"physicalType": "INT_32"
+																},
+																"sink": {
+																	"name": "year_partition",
+																	"type": "Int32",
+																	"physicalType": "int"
+																}
+															}
+														],
+														"typeConversion": true,
+														"typeConversionSettings": {
+															"allowDataTruncation": true,
+															"treatBooleanAsNumber": false
+														}
+													}
+												},
+												"inputs": [
+													{
+														"referenceName": "ds_reporting_midstream",
+														"type": "DatasetReference",
+														"parameters": {}
+													}
+												],
+												"outputs": [
+													{
+														"referenceName": "ds_azuresql_global_midstream",
+														"type": "DatasetReference",
+														"parameters": {}
+													}
+												]
+											},
+											{
+												"name": "sucess_data_sql",
+												"type": "SqlServerStoredProcedure",
+												"dependsOn": [
+													{
+														"activity": "cp_reporting_SQLserver",
+														"dependencyConditions": [
+															"Succeeded"
+														]
+													}
+												],
+												"policy": {
+													"timeout": "0.12:00:00",
+													"retry": 0,
+													"retryIntervalInSeconds": 30,
+													"secureOutput": false,
+													"secureInput": false
+												},
+												"userProperties": [],
+												"typeProperties": {
+													"storedProcedureName": "[[dbo].[usp_sucess_failure_logs]",
+													"storedProcedureParameters": {
+														"ActivityName": {
+															"value": {
+																"value": "cp_reportingzone_AzureTableStorage",
+																"type": "Expression"
+															},
+															"type": "String"
+														},
+														"DataReadBytes": {
+															"value": {
+																"value": "@activity('cp_reporting_SQLserver').output.dataRead",
+																"type": "Expression"
+															},
+															"type": "Int64"
+														},
+														"DataWrittenBytes": {
+															"value": {
+																"value": "@activity('cp_reporting_SQLserver').output.dataWritten",
+																"type": "Expression"
+															},
+															"type": "Int64"
+														},
+														"EndTime": {
+															"value": {
+																"value": "@utcNow()\n",
+																"type": "Expression"
+															},
+															"type": "DateTime"
+														},
+														"ErrorMessage": {
+															"value": {
+																"value": "@if(\n    equals(activity('cp_reporting_SQLserver').Status, 'Failed'),\n    activity('cp_reporting_SQLserver').error.message,\n    ''\n)\n",
+																"type": "Expression"
+															},
+															"type": "String"
+														},
+														"ExecutionStatus": {
+															"value": {
+																"value": "@activity('cp_reporting_SQLserver').Status",
+																"type": "Expression"
+															},
+															"type": "String"
+														},
+														"PipelineName": {
+															"value": {
+																"value": "@pipeline().Pipeline",
+																"type": "Expression"
+															},
+															"type": "String"
+														},
+														"RowsRead": {
+															"value": {
+																"value": "@activity('cp_reporting_SQLserver').output.rowsRead",
+																"type": "Expression"
+															},
+															"type": "Int64"
+														},
+														"RowsWritten": {
+															"value": {
+																"value": "@activity('cp_reporting_SQLserver').output.rowsCopied",
+																"type": "Expression"
+															},
+															"type": "Int64"
+														},
+														"SinkType": {
+															"value": {
+																"value": "AzureTable",
+																"type": "Expression"
+															},
+															"type": "String"
+														},
+														"SourceType": {
+															"value": {
+																"value": "AdlsReportingZone",
+																"type": "Expression"
+															},
+															"type": "String"
+														},
+														"StartTime": {
+															"value": {
+																"value": "@utcNow()",
+																"type": "Expression"
+															},
+															"type": "DateTime"
+														}
+													}
+												},
+												"linkedServiceName": {
+													"referenceName": "ls_sql_onprem_petrolake",
+													"type": "LinkedServiceReference"
+												}
+											}
+										]
+									}
+								}
+							]
+						}
+					},
+					{
+						"name": "Begin_status",
+						"type": "SqlServerStoredProcedure",
+						"dependsOn": [],
+						"policy": {
+							"timeout": "0.12:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"storedProcedureName": "[[dbo].[usp_InsertPipelineRunLog_details]",
+							"storedProcedureParameters": {
+								"EndTime": {
+									"value": {
+										"value": "@utcNow()\n",
+										"type": "Expression"
+									},
+									"type": "DateTime"
+								},
+								"ErrorMessage": {
+									"value": {
+										"value": "''\n",
+										"type": "Expression"
+									},
+									"type": "String"
+								},
+								"PipelineName": {
+									"value": {
+										"value": "@pipeline().Pipeline\n",
+										"type": "Expression"
+									},
+									"type": "String"
+								},
+								"RunID": {
+									"value": {
+										"value": "@pipeline().RunId\n",
+										"type": "Expression"
+									},
+									"type": "Guid"
+								},
+								"StartTime": {
+									"value": {
+										"value": "@utcNow()\n",
+										"type": "Expression"
+									},
+									"type": "DateTime"
+								},
+								"Status": {
+									"value": {
+										"value": "sucess",
+										"type": "Expression"
+									},
+									"type": "String"
+								}
+							}
+						},
+						"linkedServiceName": {
+							"referenceName": "ls_sql_onprem_petrolake",
+							"type": "LinkedServiceReference"
+						}
+					}
+				],
+				"policy": {
+					"elapsedTimeMetric": {}
+				},
+				"parameters": {
+					"SheetNames": {
+						"type": "array",
+						"defaultValue": [
+							"Pipeline_Flow",
+							"Shipping_Details",
+							"Storage_Terminals"
+						]
+					},
+					"ExcelFileName": {
+						"type": "string",
+						"defaultValue": "Global_Midstream_Logistics.xlsx"
+					},
+					"TargetSystem": {
+						"type": "string",
+						"defaultValue": "Both"
+					}
+				},
+				"folder": {
+					"name": "Filesystem"
+				},
+				"annotations": []
+			},
+			"dependsOn": []
+		},
+		{
 			"name": "[concat(parameters('factoryName'), '/pl_filesystem_Global_Upstream_Operations')]",
 			"type": "Microsoft.DataFactory/factories/pipelines",
 			"apiVersion": "2018-06-01",
@@ -1906,223 +2731,6 @@
 			"dependsOn": []
 		},
 		{
-			"name": "[concat(parameters('factoryName'), '/pl_ChangeAndMaintenanceTables_servicenow_adls')]",
-			"type": "Microsoft.DataFactory/factories/pipelines",
-			"apiVersion": "2018-06-01",
-			"properties": {
-				"activities": [
-					{
-						"name": "Lookup_Table_List",
-						"type": "Lookup",
-						"dependsOn": [],
-						"policy": {
-							"timeout": "0.12:00:00",
-							"retry": 0,
-							"retryIntervalInSeconds": 30,
-							"secureOutput": false,
-							"secureInput": false
-						},
-						"userProperties": [],
-						"typeProperties": {
-							"source": {
-								"type": "JsonSource",
-								"storeSettings": {
-									"type": "AzureBlobFSReadSettings",
-									"recursive": true,
-									"enablePartitionDiscovery": false
-								},
-								"formatSettings": {
-									"type": "JsonReadSettings"
-								}
-							},
-							"dataset": {
-								"referenceName": "ds_adls_servicenow_metadata_fullload",
-								"type": "DatasetReference",
-								"parameters": {}
-							},
-							"firstRowOnly": false
-						}
-					},
-					{
-						"name": "Loop Tables",
-						"type": "ForEach",
-						"dependsOn": [
-							{
-								"activity": "Lookup_Table_List",
-								"dependencyConditions": [
-									"Succeeded"
-								]
-							}
-						],
-						"userProperties": [],
-						"typeProperties": {
-							"items": {
-								"value": "@activity('Lookup_Table_List').output.value",
-								"type": "Expression"
-							},
-							"isSequential": false,
-							"batchCount": 3,
-							"activities": [
-								{
-									"name": "copydata_servicenow_adls_fullload",
-									"type": "Copy",
-									"dependsOn": [],
-									"policy": {
-										"timeout": "0.12:00:00",
-										"retry": 0,
-										"retryIntervalInSeconds": 30,
-										"secureOutput": false,
-										"secureInput": false
-									},
-									"userProperties": [],
-									"typeProperties": {
-										"source": {
-											"type": "RestSource",
-											"httpRequestTimeout": "00:01:40",
-											"requestInterval": "00.00:00:00.010",
-											"requestMethod": "GET"
-										},
-										"sink": {
-											"type": "JsonSink",
-											"storeSettings": {
-												"type": "AzureBlobFSWriteSettings"
-											},
-											"formatSettings": {
-												"type": "JsonWriteSettings"
-											}
-										},
-										"enableStaging": false
-									},
-									"inputs": [
-										{
-											"referenceName": "ds_servicenow_incedentManagement_fullload",
-											"type": "DatasetReference",
-											"parameters": {
-												"relativeurl": {
-													"value": "@concat(item().tableName,'?sysparm_limit=', string(variables('limit')), '&sysparm_offset=', string(variables('offset')))",
-													"type": "Expression"
-												}
-											}
-										}
-									],
-									"outputs": [
-										{
-											"referenceName": "ds_adls_json_incedenetmanagement",
-											"type": "DatasetReference",
-											"parameters": {
-												"Filename": {
-													"value": "@concat(item().tableName,'_FullLoad_',formatDateTime(utcNow(),'yyyyMMdd'),'.json')",
-													"type": "Expression"
-												},
-												"Folder": {
-													"value": "servicenow/@{item().tableName}/",
-													"type": "Expression"
-												}
-											}
-										}
-									]
-								},
-								{
-									"name": "GetMetadata_Validate_File",
-									"type": "GetMetadata",
-									"dependsOn": [
-										{
-											"activity": "copydata_servicenow_adls_fullload",
-											"dependencyConditions": [
-												"Succeeded"
-											]
-										}
-									],
-									"policy": {
-										"timeout": "0.12:00:00",
-										"retry": 0,
-										"retryIntervalInSeconds": 30,
-										"secureOutput": false,
-										"secureInput": false
-									},
-									"userProperties": [],
-									"typeProperties": {
-										"dataset": {
-											"referenceName": "ds_target_Adls_incidentManagement",
-											"type": "DatasetReference",
-											"parameters": {
-												"Filename": {
-													"value": "@concat(item().tableName,'_FullLoad_',formatDateTime(utcNow(),'yyyyMMdd'),'.json')",
-													"type": "Expression"
-												},
-												"Folder": {
-													"value": "servicenow/@{item().tableName}/",
-													"type": "Expression"
-												}
-											}
-										},
-										"fieldList": [
-											"exists",
-											"size"
-										],
-										"storeSettings": {
-											"type": "AzureBlobFSReadSettings",
-											"recursive": true,
-											"enablePartitionDiscovery": false
-										},
-										"formatSettings": {
-											"type": "DelimitedTextReadSettings"
-										}
-									}
-								},
-								{
-									"name": "If_File_Valid",
-									"type": "IfCondition",
-									"dependsOn": [
-										{
-											"activity": "GetMetadata_Validate_File",
-											"dependencyConditions": [
-												"Succeeded"
-											]
-										}
-									],
-									"userProperties": [],
-									"typeProperties": {
-										"expression": {
-											"value": "@and(\n   equals(activity('GetMetadata_Validate_File').output.exists,true),\n   greater(activity('GetMetadata_Validate_File').output.size,0)\n)",
-											"type": "Expression"
-										},
-										"ifTrueActivities": [
-											{
-												"name": "FileValidationFailed",
-												"type": "Fail",
-												"dependsOn": [],
-												"userProperties": [],
-												"typeProperties": {
-													"message": "FileValidationFailed",
-													"errorCode": "File size is 0 or file not created"
-												}
-											}
-										]
-									}
-								}
-							]
-						}
-					}
-				],
-				"policy": {
-					"elapsedTimeMetric": {}
-				},
-				"variables": {
-					"offset": {
-						"type": "Integer",
-						"defaultValue": 0
-					},
-					"limit": {
-						"type": "Integer",
-						"defaultValue": 10000
-					}
-				},
-				"annotations": []
-			},
-			"dependsOn": []
-		},
-		{
 			"name": "[concat(parameters('factoryName'), '/pl_filesystem_Masterdata_combo')]",
 			"type": "Microsoft.DataFactory/factories/pipelines",
 			"apiVersion": "2018-06-01",
@@ -2310,6 +2918,7 @@
 			},
 			"dependsOn": [
 				"[concat(variables('factoryId'), '/pipelines/pl_finance_Global_Downstream')]",
+				"[concat(variables('factoryId'), '/pipelines/pl_filesystem_Global_Midstream_Logistics')]",
 				"[concat(variables('factoryId'), '/pipelines/pl_filesystem_Global_Upstream_Operations')]"
 			]
 		},
