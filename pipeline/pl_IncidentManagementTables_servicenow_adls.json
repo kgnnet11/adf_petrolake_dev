@@ -73,14 +73,12 @@
 									"requestMethod": "GET"
 								},
 								"sink": {
-									"type": "DelimitedTextSink",
+									"type": "JsonSink",
 									"storeSettings": {
 										"type": "AzureBlobFSWriteSettings"
 									},
 									"formatSettings": {
-										"type": "DelimitedTextWriteSettings",
-										"quoteAllText": true,
-										"fileExtension": ".txt"
+										"type": "JsonWriteSettings"
 									}
 								},
 								"enableStaging": false
@@ -99,7 +97,7 @@
 							],
 							"outputs": [
 								{
-									"referenceName": "ds_target_Adls_incidentManagement",
+									"referenceName": "ds_adls_json_incedenetmanagement",
 									"type": "DatasetReference",
 									"parameters": {
 										"Filename": {
@@ -107,7 +105,7 @@
 											"type": "Expression"
 										},
 										"Folder": {
-											"value": "servicenow/raw/@{item().tableName}/",
+											"value": "servicenow/@{item().tableName}/",
 											"type": "Expression"
 										}
 									}
@@ -143,7 +141,7 @@
 											"type": "Expression"
 										},
 										"Folder": {
-											"value": "servicenow/raw/@{item().tableName}/",
+											"value": "servicenow/@{item().tableName}/",
 											"type": "Expression"
 										}
 									}
@@ -154,6 +152,7 @@
 								],
 								"storeSettings": {
 									"type": "AzureBlobFSReadSettings",
+									"recursive": true,
 									"enablePartitionDiscovery": false
 								},
 								"formatSettings": {

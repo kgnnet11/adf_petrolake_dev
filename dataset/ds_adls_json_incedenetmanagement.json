@@ -1,0 +1,34 @@
+{
+	"name": "ds_adls_json_incedenetmanagement",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "ls_alds_landingzone",
+			"type": "LinkedServiceReference"
+		},
+		"parameters": {
+			"Filename": {
+				"type": "string"
+			},
+			"Folder": {
+				"type": "string"
+			}
+		},
+		"annotations": [],
+		"type": "Json",
+		"typeProperties": {
+			"location": {
+				"type": "AzureBlobFSLocation",
+				"fileName": {
+					"value": "@dataset().Filename",
+					"type": "Expression"
+				},
+				"folderPath": {
+					"value": "servicenow/dataset().Folder",
+					"type": "Expression"
+				},
+				"fileSystem": "landingzone"
+			}
+		},
+		"schema": {}
+	}
+}
