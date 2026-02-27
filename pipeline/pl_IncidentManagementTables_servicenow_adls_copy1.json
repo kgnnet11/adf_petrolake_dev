@@ -190,6 +190,41 @@
 									}
 								]
 							}
+						},
+						{
+							"name": "offset",
+							"type": "SetVariable",
+							"dependsOn": [],
+							"policy": {
+								"secureOutput": false,
+								"secureInput": false
+							},
+							"userProperties": [],
+							"typeProperties": {
+								"variableName": "offset",
+								"value": 0
+							}
+						},
+						{
+							"name": "continue",
+							"type": "SetVariable",
+							"dependsOn": [
+								{
+									"activity": "offset",
+									"dependencyConditions": [
+										"Succeeded"
+									]
+								}
+							],
+							"policy": {
+								"secureOutput": false,
+								"secureInput": false
+							},
+							"userProperties": [],
+							"typeProperties": {
+								"variableName": "continue",
+								"value": true
+							}
 						}
 					]
 				}
