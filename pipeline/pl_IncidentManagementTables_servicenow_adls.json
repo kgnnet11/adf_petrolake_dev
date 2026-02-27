@@ -89,7 +89,7 @@
 									"type": "DatasetReference",
 									"parameters": {
 										"relativeurl": {
-											"value": "@concat(\n   item().tableName,\n   '?sysparm_limit=10000&sysparm_offset=',\n   string(variables('offset'))\n)",
+											"value": "@concat(item().tableName,'?sysparm_limit=10000&sysparm_offset=',string(variables('offset')))",
 											"type": "Expression"
 										}
 									}
