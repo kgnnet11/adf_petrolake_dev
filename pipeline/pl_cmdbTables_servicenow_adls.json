@@ -1,5 +1,5 @@
 {
-	"name": "pl_IncidentManagementTables_servicenow_adls_copy1",
+	"name": "pl_cmdbTables_servicenow_adls",
 	"properties": {
 		"activities": [
 			{
