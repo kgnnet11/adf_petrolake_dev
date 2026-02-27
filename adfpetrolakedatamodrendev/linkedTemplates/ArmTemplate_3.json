@@ -6,6 +6,19 @@
 			"type": "string",
 			"metadata": "Data Factory name",
 			"defaultValue": "adfpetrolakedatamodrendev"
+		},
+		"ls_sql_onprem_petrolake_connectionString": {
+			"type": "secureString",
+			"metadata": "Secure string for 'connectionString' of 'ls_sql_onprem_petrolake'",
+			"defaultValue": "integrated security=True;Data Source=TIPPU\\SQLEXPRESS01;Initial Catalog=petrolake_db_dev"
+		},
+		"ls_sql_onprem_petrolake_password": {
+			"type": "secureString",
+			"metadata": "Secure string for 'password' of 'ls_sql_onprem_petrolake'"
+		},
+		"ls_sql_onprem_petrolake_properties_typeProperties_userName": {
+			"type": "string",
+			"defaultValue": "tippu\\adfdb"
 		}
 	},
 	"variables": {
@@ -13,7 +26,7 @@
 	},
 	"resources": [
 		{
-			"name": "[concat(parameters('factoryName'), '/ds_salceforce_Maxdate')]",
+			"name": "[concat(parameters('factoryName'), '/ds_salesforce_v2')]",
 			"type": "Microsoft.DataFactory/factories/datasets",
 			"apiVersion": "2018-06-01",
 			"properties": {
@@ -24,7 +37,360 @@
 				"annotations": [],
 				"type": "SalesforceServiceCloudV2Object",
 				"schema": [],
-				"typeProperties": {}
+				"typeProperties": {
+					"objectApiName": "Account"
+				}
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/ds_servicenow_incedentManagement_fullload')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "ls_restapi_serviceNow_Adls",
+					"type": "LinkedServiceReference"
+				},
+				"parameters": {
+					"relativeurl": {
+						"type": "string"
+					}
+				},
+				"annotations": [],
+				"type": "RestResource",
+				"typeProperties": {
+					"relativeUrl": {
+						"value": "@dataset().relativeurl",
+						"type": "Expression"
+					}
+				},
+				"schema": []
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/ds_src_servicenow_incident')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "ls_servicenow_incedents",
+					"type": "LinkedServiceReference"
+				},
+				"annotations": [],
+				"type": "ServiceNowV2Object",
+				"schema": [
+					{
+						"name": "sys_updated_on",
+						"type": "glide_date_time"
+					},
+					{
+						"name": "entitlement",
+						"type": "reference"
+					},
+					{
+						"name": "sys_created_on",
+						"type": "glide_date_time"
+					},
+					{
+						"name": "sys_id",
+						"type": "GUID"
+					},
+					{
+						"name": "sys_updated_by",
+						"type": "string"
+					},
+					{
+						"name": "instance",
+						"type": "reference"
+					},
+					{
+						"name": "sys_created_by",
+						"type": "string"
+					},
+					{
+						"name": "sys_mod_count",
+						"type": "integer"
+					}
+				],
+				"typeProperties": {
+					"tableName": "ais_child_table",
+					"valueType": "actual"
+				}
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/ds_target_Adls_incidentManagement')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "ls_alds_landingzone",
+					"type": "LinkedServiceReference"
+				},
+				"parameters": {
+					"Filename": {
+						"type": "string"
+					},
+					"Folder": {
+						"type": "string"
+					}
+				},
+				"annotations": [],
+				"type": "DelimitedText",
+				"typeProperties": {
+					"location": {
+						"type": "AzureBlobFSLocation",
+						"fileName": {
+							"value": "@dataset().Filename",
+							"type": "Expression"
+						},
+						"folderPath": {
+							"value": "dataset().Folder",
+							"type": "Expression"
+						},
+						"fileSystem": "landingzone"
+					},
+					"columnDelimiter": ",",
+					"escapeChar": "\\",
+					"firstRowAsHeader": false,
+					"quoteChar": "\""
+				},
+				"schema": []
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/ds_tgt_servicenow_adls')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "ls_alds_landingzone",
+					"type": "LinkedServiceReference"
+				},
+				"annotations": [],
+				"type": "DelimitedText",
+				"typeProperties": {
+					"location": {
+						"type": "AzureBlobFSLocation",
+						"folderPath": "servicenow",
+						"fileSystem": "landingzone"
+					},
+					"columnDelimiter": ",",
+					"escapeChar": "\\",
+					"firstRowAsHeader": true,
+					"quoteChar": "\""
+				},
+				"schema": []
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/ds_worldbank_adls_target')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "ls_alds_landingzone",
+					"type": "LinkedServiceReference"
+				},
+				"parameters": {
+					"Year": {
+						"type": "string"
+					},
+					"PageNumber": {
+						"type": "int"
+					},
+					"FileName": {
+						"type": "string"
+					}
+				},
+				"annotations": [],
+				"type": "Json",
+				"typeProperties": {
+					"location": {
+						"type": "AzureBlobFSLocation",
+						"fileName": {
+							"value": "@dataset().FileName",
+							"type": "Expression"
+						},
+						"folderPath": {
+							"value": "worldbankenergy/raw_json/year=@{dataset().Year}/",
+							"type": "Expression"
+						},
+						"fileSystem": "landingzone"
+					}
+				},
+				"schema": {}
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/ds_worldbank_controldata_energy_new')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "ls_azuresql_petrolake_dev",
+					"type": "LinkedServiceReference"
+				},
+				"annotations": [],
+				"type": "AzureSqlTable",
+				"schema": [],
+				"typeProperties": {
+					"schema": "dbo",
+					"table": "WorldBankIncrementalLoadControl"
+				}
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/ds_worldbank_src_restapi')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "ls_worldbank_src_restapi",
+					"type": "LinkedServiceReference"
+				},
+				"parameters": {
+					"PageNumber": {
+						"type": "int"
+					}
+				},
+				"annotations": [],
+				"type": "RestResource",
+				"typeProperties": {
+					"relativeUrl": {
+						"value": "?format=json&page=@{dataset().PageNumber}",
+						"type": "Expression"
+					}
+				},
+				"schema": []
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/ls_sql_onprem_petrolake')]",
+			"type": "Microsoft.DataFactory/factories/linkedServices",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"annotations": [],
+				"type": "SqlServer",
+				"typeProperties": {
+					"connectionString": "[parameters('ls_sql_onprem_petrolake_connectionString')]",
+					"userName": "[parameters('ls_sql_onprem_petrolake_properties_typeProperties_userName')]",
+					"password": {
+						"type": "SecureString",
+						"value": "[parameters('ls_sql_onprem_petrolake_password')]"
+					}
+				},
+				"connectVia": {
+					"referenceName": "selfhosterIRLoacal",
+					"type": "IntegrationRuntimeReference"
+				}
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/dataflows_clean_process_csv')]",
+			"type": "Microsoft.DataFactory/factories/dataflows",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"type": "MappingDataFlow",
+				"typeProperties": {
+					"sources": [
+						{
+							"linkedService": {
+								"referenceName": "ls_alds_landingzone",
+								"type": "LinkedServiceReference"
+							},
+							"name": "Customer"
+						},
+						{
+							"linkedService": {
+								"referenceName": "ls_alds_landingzone",
+								"type": "LinkedServiceReference"
+							},
+							"name": "orders"
+						}
+					],
+					"sinks": [
+						{
+							"linkedService": {
+								"referenceName": "ls_alds_landingzone",
+								"type": "LinkedServiceReference"
+							},
+							"name": "loadoutput"
+						}
+					],
+					"transformations": [
+						{
+							"name": "AddNewcolumns"
+						},
+						{
+							"name": "RemoveBadRequest"
+						},
+						{
+							"name": "selectNeedColumns"
+						}
+					],
+					"scriptLines": [
+						"source(useSchema: false,",
+						"     allowSchemaDrift: true,",
+						"     validateSchema: false,",
+						"     ignoreNoFilesFound: false,",
+						"     format: 'delimited',",
+						"     fileSystem: 'dataflows',",
+						"     folderPath: 'input',",
+						"     fileName: 'customers-1000.csv',",
+						"     columnDelimiter: ',',",
+						"     escapeChar: '\\\\',",
+						"     quoteChar: '\\\"',",
+						"     columnNamesAsHeader: true) ~> Customer",
+						"source(useSchema: false,",
+						"     allowSchemaDrift: true,",
+						"     validateSchema: false,",
+						"     ignoreNoFilesFound: false,",
+						"     format: 'delimited',",
+						"     fileSystem: 'dataflows',",
+						"     folderPath: 'input',",
+						"     fileName: 'orders_sample.csv',",
+						"     columnDelimiter: ',',",
+						"     escapeChar: '\\\\',",
+						"     quoteChar: '\\\"',",
+						"     columnNamesAsHeader: true,",
+						"     multiLineRow: true) ~> orders",
+						"Customer derive(fullname = concat(byName('First Name'), ' ',byName('Last Name')),",
+						"          subscription_year = year(toDate(byName('Subscription Date'),'yyyy-MM-dd')),",
+						"          subscription_month = month(toDate(byName('Subscription Date'), 'yyyy-MM-dd')),",
+						"          country_upper = upper(byName('Country'))) ~> AddNewcolumns",
+						"AddNewcolumns filter(!isNull(byName('Email')) && !isNull(byName('Customer Id'))) ~> RemoveBadRequest",
+						"RemoveBadRequest select(skipDuplicateMapInputs: true,",
+						"     skipDuplicateMapOutputs: true) ~> selectNeedColumns",
+						"selectNeedColumns sink(allowSchemaDrift: true,",
+						"     validateSchema: false,",
+						"     format: 'delta',",
+						"     fileSystem: 'dataflows',",
+						"     folderPath: 'ouput',",
+						"     mergeSchema: false,",
+						"     autoCompact: false,",
+						"     optimizedWrite: true,",
+						"     vacuum: 0,",
+						"     deletable: false,",
+						"     insertable: true,",
+						"     updateable: false,",
+						"     upsertable: false,",
+						"     umask: 0022,",
+						"     preCommands: [],",
+						"     postCommands: [],",
+						"     skipDuplicateMapInputs: true,",
+						"     skipDuplicateMapOutputs: true) ~> loadoutput"
+					]
+				}
 			},
 			"dependsOn": []
 		},
@@ -253,9 +619,7 @@
 				},
 				"annotations": []
 			},
-			"dependsOn": [
-				"[concat(variables('factoryId'), '/datasets/ds_salceforce_Maxdate')]"
-			]
+			"dependsOn": []
 		},
 		{
 			"name": "[concat(parameters('factoryName'), '/PL_SF_ADLS_Initial_Load')]",
@@ -315,7 +679,14 @@
 								{
 									"name": "Copydata_Salesforce_Adls_bulk",
 									"type": "Copy",
-									"dependsOn": [],
+									"dependsOn": [
+										{
+											"activity": "deleteoldfiles",
+											"dependencyConditions": [
+												"Succeeded"
+											]
+										}
+									],
 									"policy": {
 										"timeout": "0.12:00:00",
 										"retry": 0,
@@ -372,6 +743,39 @@
 											}
 										}
 									]
+								},
+								{
+									"name": "deleteoldfiles",
+									"type": "Delete",
+									"dependsOn": [],
+									"policy": {
+										"timeout": "0.12:00:00",
+										"retry": 0,
+										"retryIntervalInSeconds": 30,
+										"secureOutput": false,
+										"secureInput": false
+									},
+									"userProperties": [],
+									"typeProperties": {
+										"dataset": {
+											"referenceName": "ds_delete_old_files",
+											"type": "DatasetReference",
+											"parameters": {}
+										},
+										"logStorageSettings": {
+											"linkedServiceName": {
+												"referenceName": "ls_alds_landingzone",
+												"type": "LinkedServiceReference"
+											},
+											"path": ""
+										},
+										"enableLogging": true,
+										"storeSettings": {
+											"type": "AzureBlobFSReadSettings",
+											"recursive": true,
+											"enablePartitionDiscovery": false
+										}
+									}
 								}
 							]
 						}
@@ -473,7 +877,453 @@
 				},
 				"annotations": []
 			},
-			"dependsOn": []
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/datasets/ds_salesforce_v2')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/pl_IncidentManagementTables_servicenow_adls')]",
+			"type": "Microsoft.DataFactory/factories/pipelines",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"activities": [
+					{
+						"name": "Lookup_Table_List",
+						"type": "Lookup",
+						"dependsOn": [],
+						"policy": {
+							"timeout": "0.12:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"source": {
+								"type": "JsonSource",
+								"storeSettings": {
+									"type": "AzureBlobFSReadSettings",
+									"recursive": true,
+									"enablePartitionDiscovery": false
+								},
+								"formatSettings": {
+									"type": "JsonReadSettings"
+								}
+							},
+							"dataset": {
+								"referenceName": "ds_adls_servicenow_metadata_fullload",
+								"type": "DatasetReference",
+								"parameters": {}
+							},
+							"firstRowOnly": false
+						}
+					},
+					{
+						"name": "Loop Tables",
+						"type": "ForEach",
+						"dependsOn": [
+							{
+								"activity": "Lookup_Table_List",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
+						"userProperties": [],
+						"typeProperties": {
+							"items": {
+								"value": "@activity('Lookup_Table_List').output.value",
+								"type": "Expression"
+							},
+							"isSequential": false,
+							"batchCount": 3,
+							"activities": [
+								{
+									"name": "copydata_servicenow_adls_fullload",
+									"type": "Copy",
+									"dependsOn": [],
+									"policy": {
+										"timeout": "0.12:00:00",
+										"retry": 0,
+										"retryIntervalInSeconds": 30,
+										"secureOutput": false,
+										"secureInput": false
+									},
+									"userProperties": [],
+									"typeProperties": {
+										"source": {
+											"type": "RestSource",
+											"httpRequestTimeout": "00:01:40",
+											"requestInterval": "00.00:00:00.010",
+											"requestMethod": "GET"
+										},
+										"sink": {
+											"type": "JsonSink",
+											"storeSettings": {
+												"type": "AzureBlobFSWriteSettings"
+											},
+											"formatSettings": {
+												"type": "JsonWriteSettings"
+											}
+										},
+										"enableStaging": false
+									},
+									"inputs": [
+										{
+											"referenceName": "ds_servicenow_incedentManagement_fullload",
+											"type": "DatasetReference",
+											"parameters": {
+												"relativeurl": {
+													"value": "@concat(item().tableName,'?sysparm_limit=', string(variables('limit')), '&sysparm_offset=', string(variables('offset')))",
+													"type": "Expression"
+												}
+											}
+										}
+									],
+									"outputs": [
+										{
+											"referenceName": "ds_adls_json_incedenetmanagement",
+											"type": "DatasetReference",
+											"parameters": {
+												"Filename": {
+													"value": "@concat(item().tableName,'_FullLoad_',formatDateTime(utcNow(),'yyyyMMdd'),'.json')",
+													"type": "Expression"
+												},
+												"Folder": {
+													"value": "servicenow/@{item().tableName}/",
+													"type": "Expression"
+												}
+											}
+										}
+									]
+								},
+								{
+									"name": "GetMetadata_Validate_File",
+									"type": "GetMetadata",
+									"dependsOn": [
+										{
+											"activity": "copydata_servicenow_adls_fullload",
+											"dependencyConditions": [
+												"Succeeded"
+											]
+										}
+									],
+									"policy": {
+										"timeout": "0.12:00:00",
+										"retry": 0,
+										"retryIntervalInSeconds": 30,
+										"secureOutput": false,
+										"secureInput": false
+									},
+									"userProperties": [],
+									"typeProperties": {
+										"dataset": {
+											"referenceName": "ds_target_Adls_incidentManagement",
+											"type": "DatasetReference",
+											"parameters": {
+												"Filename": {
+													"value": "@concat(item().tableName,'_FullLoad_',formatDateTime(utcNow(),'yyyyMMdd'),'.json')",
+													"type": "Expression"
+												},
+												"Folder": {
+													"value": "servicenow/@{item().tableName}/",
+													"type": "Expression"
+												}
+											}
+										},
+										"fieldList": [
+											"exists",
+											"size"
+										],
+										"storeSettings": {
+											"type": "AzureBlobFSReadSettings",
+											"recursive": true,
+											"enablePartitionDiscovery": false
+										},
+										"formatSettings": {
+											"type": "DelimitedTextReadSettings"
+										}
+									}
+								},
+								{
+									"name": "If_File_Valid",
+									"type": "IfCondition",
+									"dependsOn": [
+										{
+											"activity": "GetMetadata_Validate_File",
+											"dependencyConditions": [
+												"Succeeded"
+											]
+										}
+									],
+									"userProperties": [],
+									"typeProperties": {
+										"expression": {
+											"value": "@and(\n   equals(activity('GetMetadata_Validate_File').output.exists,true),\n   greater(activity('GetMetadata_Validate_File').output.size,0)\n)",
+											"type": "Expression"
+										},
+										"ifTrueActivities": [
+											{
+												"name": "FileValidationFailed",
+												"type": "Fail",
+												"dependsOn": [],
+												"userProperties": [],
+												"typeProperties": {
+													"message": "FileValidationFailed",
+													"errorCode": "File size is 0 or file not created"
+												}
+											}
+										]
+									}
+								}
+							]
+						}
+					}
+				],
+				"policy": {
+					"elapsedTimeMetric": {}
+				},
+				"variables": {
+					"offset": {
+						"type": "Integer",
+						"defaultValue": 0
+					},
+					"limit": {
+						"type": "Integer",
+						"defaultValue": 10000
+					}
+				},
+				"annotations": []
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/datasets/ds_servicenow_incedentManagement_fullload')]",
+				"[concat(variables('factoryId'), '/datasets/ds_target_Adls_incidentManagement')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/pl_IncidentManagementTables_servicenow_adls_copy1')]",
+			"type": "Microsoft.DataFactory/factories/pipelines",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"activities": [
+					{
+						"name": "Lookup_Table_List",
+						"type": "Lookup",
+						"dependsOn": [],
+						"policy": {
+							"timeout": "0.12:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"source": {
+								"type": "JsonSource",
+								"storeSettings": {
+									"type": "AzureBlobFSReadSettings",
+									"recursive": true,
+									"enablePartitionDiscovery": false
+								},
+								"formatSettings": {
+									"type": "JsonReadSettings"
+								}
+							},
+							"dataset": {
+								"referenceName": "ds_adls_servicenow_metadata_fullload",
+								"type": "DatasetReference",
+								"parameters": {}
+							},
+							"firstRowOnly": false
+						}
+					},
+					{
+						"name": "Loop Tables",
+						"type": "ForEach",
+						"dependsOn": [
+							{
+								"activity": "Lookup_Table_List",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
+						"userProperties": [],
+						"typeProperties": {
+							"items": {
+								"value": "@activity('Lookup_Table_List').output.value",
+								"type": "Expression"
+							},
+							"isSequential": false,
+							"batchCount": 3,
+							"activities": [
+								{
+									"name": "copydata_servicenow_adls_fullload",
+									"type": "Copy",
+									"dependsOn": [],
+									"policy": {
+										"timeout": "0.12:00:00",
+										"retry": 0,
+										"retryIntervalInSeconds": 30,
+										"secureOutput": false,
+										"secureInput": false
+									},
+									"userProperties": [],
+									"typeProperties": {
+										"source": {
+											"type": "RestSource",
+											"httpRequestTimeout": "00:01:40",
+											"requestInterval": "00.00:00:00.010",
+											"requestMethod": "GET"
+										},
+										"sink": {
+											"type": "JsonSink",
+											"storeSettings": {
+												"type": "AzureBlobFSWriteSettings"
+											},
+											"formatSettings": {
+												"type": "JsonWriteSettings"
+											}
+										},
+										"enableStaging": false
+									},
+									"inputs": [
+										{
+											"referenceName": "ds_servicenow_incedentManagement_fullload",
+											"type": "DatasetReference",
+											"parameters": {
+												"relativeurl": {
+													"value": "@concat(item().tableName,'?sysparm_limit=', string(variables('limit')), '&sysparm_offset=', string(variables('offset')))",
+													"type": "Expression"
+												}
+											}
+										}
+									],
+									"outputs": [
+										{
+											"referenceName": "ds_adls_json_incedenetmanagement",
+											"type": "DatasetReference",
+											"parameters": {
+												"Filename": {
+													"value": "@concat(item().tableName,'_FullLoad_',formatDateTime(utcNow(),'yyyyMMdd'),'.json')",
+													"type": "Expression"
+												},
+												"Folder": {
+													"value": "servicenow/@{item().tableName}/",
+													"type": "Expression"
+												}
+											}
+										}
+									]
+								},
+								{
+									"name": "GetMetadata_Validate_File",
+									"type": "GetMetadata",
+									"dependsOn": [
+										{
+											"activity": "copydata_servicenow_adls_fullload",
+											"dependencyConditions": [
+												"Succeeded"
+											]
+										}
+									],
+									"policy": {
+										"timeout": "0.12:00:00",
+										"retry": 0,
+										"retryIntervalInSeconds": 30,
+										"secureOutput": false,
+										"secureInput": false
+									},
+									"userProperties": [],
+									"typeProperties": {
+										"dataset": {
+											"referenceName": "ds_target_Adls_incidentManagement",
+											"type": "DatasetReference",
+											"parameters": {
+												"Filename": {
+													"value": "@concat(item().tableName,'_FullLoad_',formatDateTime(utcNow(),'yyyyMMdd'),'.json')",
+													"type": "Expression"
+												},
+												"Folder": {
+													"value": "servicenow/@{item().tableName}/",
+													"type": "Expression"
+												}
+											}
+										},
+										"fieldList": [
+											"exists",
+											"size"
+										],
+										"storeSettings": {
+											"type": "AzureBlobFSReadSettings",
+											"recursive": true,
+											"enablePartitionDiscovery": false
+										},
+										"formatSettings": {
+											"type": "DelimitedTextReadSettings"
+										}
+									}
+								},
+								{
+									"name": "If_File_Valid",
+									"type": "IfCondition",
+									"dependsOn": [
+										{
+											"activity": "GetMetadata_Validate_File",
+											"dependencyConditions": [
+												"Succeeded"
+											]
+										}
+									],
+									"userProperties": [],
+									"typeProperties": {
+										"expression": {
+											"value": "@and(\n   equals(activity('GetMetadata_Validate_File').output.exists,true),\n   greater(activity('GetMetadata_Validate_File').output.size,0)\n)",
+											"type": "Expression"
+										},
+										"ifTrueActivities": [
+											{
+												"name": "FileValidationFailed",
+												"type": "Fail",
+												"dependsOn": [],
+												"userProperties": [],
+												"typeProperties": {
+													"message": "FileValidationFailed",
+													"errorCode": "File size is 0 or file not created"
+												}
+											}
+										]
+									}
+								}
+							]
+						}
+					}
+				],
+				"policy": {
+					"elapsedTimeMetric": {}
+				},
+				"variables": {
+					"offset": {
+						"type": "Integer",
+						"defaultValue": 0
+					},
+					"limit": {
+						"type": "Integer",
+						"defaultValue": 10000
+					},
+					"continue": {
+						"type": "Boolean",
+						"defaultValue": true
+					}
+				},
+				"annotations": []
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/datasets/ds_servicenow_incedentManagement_fullload')]",
+				"[concat(variables('factoryId'), '/datasets/ds_target_Adls_incidentManagement')]"
+			]
 		},
 		{
 			"name": "[concat(parameters('factoryName'), '/pl_WorldBankIncrementalLoad_Energy')]",
@@ -753,7 +1603,9 @@
 				},
 				"annotations": []
 			},
-			"dependsOn": []
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/datasets/ds_worldbank_controldata_energy_new')]"
+			]
 		},
 		{
 			"name": "[concat(parameters('factoryName'), '/pl_WorldBankIncrementalLoad_Energy_SG')]",
@@ -1033,7 +1885,9 @@
 				},
 				"annotations": []
 			},
-			"dependsOn": []
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/datasets/ds_worldbank_controldata_energy_new')]"
+			]
 		},
 		{
 			"name": "[concat(parameters('factoryName'), '/pl_filesystem_Global_Midstream_Logistics')]",
@@ -1858,7 +2712,9 @@
 				},
 				"annotations": []
 			},
-			"dependsOn": []
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/linkedServices/ls_sql_onprem_petrolake')]"
+			]
 		},
 		{
 			"name": "[concat(parameters('factoryName'), '/pl_filesystem_Global_Upstream_Operations')]",
@@ -2051,7 +2907,9 @@
 				},
 				"annotations": []
 			},
-			"dependsOn": []
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/linkedServices/ls_sql_onprem_petrolake')]"
+			]
 		},
 		{
 			"name": "[concat(parameters('factoryName'), '/pl_finance_Global_Downstream')]",
@@ -3193,1096 +4051,8 @@
 				},
 				"annotations": []
 			},
-			"dependsOn": []
-		},
-		{
-			"name": "[concat(parameters('factoryName'), '/pl_increment_eia_wti')]",
-			"type": "Microsoft.DataFactory/factories/pipelines",
-			"apiVersion": "2018-06-01",
-			"properties": {
-				"activities": [
-					{
-						"name": "Lookup_Watermark",
-						"type": "Lookup",
-						"dependsOn": [],
-						"policy": {
-							"timeout": "0.12:00:00",
-							"retry": 0,
-							"retryIntervalInSeconds": 30,
-							"secureOutput": false,
-							"secureInput": false
-						},
-						"userProperties": [],
-						"typeProperties": {
-							"source": {
-								"type": "AzureSqlSource",
-								"sqlReaderQuery": "SELECT last_loaded_date\nFROM dbo.api_eia_watermark\nWHERE api_name = 'EIA_WTI'",
-								"queryTimeout": "02:00:00",
-								"partitionOption": "None"
-							},
-							"dataset": {
-								"referenceName": "ds_api_eia_sql_metadata",
-								"type": "DatasetReference",
-								"parameters": {}
-							},
-							"firstRowOnly": true
-						}
-					},
-					{
-						"name": "Set_StartDate",
-						"type": "SetVariable",
-						"dependsOn": [
-							{
-								"activity": "Lookup_Watermark",
-								"dependencyConditions": [
-									"Succeeded"
-								]
-							}
-						],
-						"policy": {
-							"secureOutput": false,
-							"secureInput": false
-						},
-						"userProperties": [],
-						"typeProperties": {
-							"variableName": "StartDate",
-							"value": {
-								"value": "@formatDateTime(activity('Lookup_Watermark').output.firstRow.last_loaded_date,'yyyy-MM-dd')",
-								"type": "Expression"
-							}
-						}
-					},
-					{
-						"name": "Set_EndDate",
-						"type": "SetVariable",
-						"dependsOn": [
-							{
-								"activity": "Set_StartDate",
-								"dependencyConditions": [
-									"Succeeded"
-								]
-							}
-						],
-						"policy": {
-							"secureOutput": false,
-							"secureInput": false
-						},
-						"userProperties": [],
-						"typeProperties": {
-							"variableName": "EndDate",
-							"value": {
-								"value": "@formatDateTime(addDays(variables('StartDate'),1),'yyyy-MM-dd')\n",
-								"type": "Expression"
-							}
-						}
-					},
-					{
-						"name": "Copy_eia_wti_adls",
-						"type": "Copy",
-						"dependsOn": [
-							{
-								"activity": "Set_EndDate",
-								"dependencyConditions": [
-									"Succeeded"
-								]
-							}
-						],
-						"policy": {
-							"timeout": "0.12:00:00",
-							"retry": 0,
-							"retryIntervalInSeconds": 30,
-							"secureOutput": false,
-							"secureInput": false
-						},
-						"userProperties": [],
-						"typeProperties": {
-							"source": {
-								"type": "RestSource",
-								"httpRequestTimeout": "00:01:40",
-								"requestInterval": "00.00:00:00.010",
-								"requestMethod": "GET",
-								"paginationRules": {
-									"supportRFC5988": "true"
-								}
-							},
-							"sink": {
-								"type": "JsonSink",
-								"storeSettings": {
-									"type": "AzureBlobFSWriteSettings",
-									"copyBehavior": "FlattenHierarchy"
-								},
-								"formatSettings": {
-									"type": "JsonWriteSettings"
-								}
-							},
-							"enableStaging": false
-						},
-						"inputs": [
-							{
-								"referenceName": "ds_eia_wti_api",
-								"type": "DatasetReference",
-								"parameters": {
-									"StartDate": {
-										"value": "@variables('StartDate')",
-										"type": "Expression"
-									},
-									"EndDate": {
-										"value": "@variables('EndDate')",
-										"type": "Expression"
-									},
-									"api_key": {
-										"value": "L1KBoxGRJWG8BQ7nChDKT2kFwHCfVcgnBhzDPos6",
-										"type": "Expression"
-									}
-								}
-							}
-						],
-						"outputs": [
-							{
-								"referenceName": "ds_eia_wti_adls",
-								"type": "DatasetReference",
-								"parameters": {
-									"path": {
-										"value": "landingzone/eia_wti/year=@{formatDateTime(variables('StartDate'),'yyyy')}/month=@{formatDateTime(variables('StartDate'),'MM')}/day=@{formatDateTime(variables('StartDate'),'dd')}",
-										"type": "Expression"
-									},
-									"filename": {
-										"value": "wti_@{variables('StartDate')}.json",
-										"type": "Expression"
-									}
-								}
-							}
-						]
-					},
-					{
-						"name": "Update_Watermark_SQL",
-						"type": "SqlServerStoredProcedure",
-						"dependsOn": [
-							{
-								"activity": "Copy_eia_wti_adls",
-								"dependencyConditions": [
-									"Succeeded"
-								]
-							}
-						],
-						"policy": {
-							"timeout": "0.12:00:00",
-							"retry": 0,
-							"retryIntervalInSeconds": 30,
-							"secureOutput": false,
-							"secureInput": false
-						},
-						"userProperties": [],
-						"typeProperties": {
-							"storedProcedureName": "[[dbo].[sp_update_watermark_eia]",
-							"storedProcedureParameters": {
-								"EndDate": {
-									"value": {
-										"value": "@variables('EndDate')",
-										"type": "Expression"
-									},
-									"type": "DateTime"
-								}
-							}
-						},
-						"linkedServiceName": {
-							"referenceName": "ls_azuresql_petrolake_dev",
-							"type": "LinkedServiceReference"
-						}
-					}
-				],
-				"policy": {
-					"elapsedTimeMetric": {}
-				},
-				"variables": {
-					"StartDate": {
-						"type": "String"
-					},
-					"EndDate": {
-						"type": "String"
-					},
-					"WatermarkJson": {
-						"type": "String"
-					}
-				},
-				"folder": {
-					"name": "ApISource"
-				},
-				"annotations": []
-			},
-			"dependsOn": []
-		},
-		{
-			"name": "[concat(parameters('factoryName'), '/pl_increment_eia_wti_monthly')]",
-			"type": "Microsoft.DataFactory/factories/pipelines",
-			"apiVersion": "2018-06-01",
-			"properties": {
-				"activities": [
-					{
-						"name": "Lookup_Watermark",
-						"type": "Lookup",
-						"dependsOn": [],
-						"policy": {
-							"timeout": "0.12:00:00",
-							"retry": 0,
-							"retryIntervalInSeconds": 30,
-							"secureOutput": false,
-							"secureInput": false
-						},
-						"userProperties": [],
-						"typeProperties": {
-							"source": {
-								"type": "AzureSqlSource",
-								"sqlReaderQuery": "SELECT last_loaded_date\nFROM dbo.api_eia_watermark\nWHERE api_name = 'EIA_WTI'",
-								"queryTimeout": "02:00:00",
-								"partitionOption": "None"
-							},
-							"dataset": {
-								"referenceName": "ds_api_eia_sql_metadata",
-								"type": "DatasetReference",
-								"parameters": {}
-							},
-							"firstRowOnly": true
-						}
-					},
-					{
-						"name": "Set_StartDate",
-						"type": "SetVariable",
-						"dependsOn": [
-							{
-								"activity": "Lookup_Watermark",
-								"dependencyConditions": [
-									"Succeeded"
-								]
-							}
-						],
-						"policy": {
-							"secureOutput": false,
-							"secureInput": false
-						},
-						"userProperties": [],
-						"typeProperties": {
-							"variableName": "StartDate",
-							"value": {
-								"value": "@formatDateTime(activity('Lookup_Watermark').output.firstRow.last_loaded_date,'yyyy-MM-dd')",
-								"type": "Expression"
-							}
-						}
-					},
-					{
-						"name": "Set_EndDate",
-						"type": "SetVariable",
-						"dependsOn": [
-							{
-								"activity": "Set_StartDate",
-								"dependencyConditions": [
-									"Succeeded"
-								]
-							}
-						],
-						"policy": {
-							"secureOutput": false,
-							"secureInput": false
-						},
-						"userProperties": [],
-						"typeProperties": {
-							"variableName": "EndDate",
-							"value": {
-								"value": "@formatDateTime(\n    addDays(\n        startOfMonth(addDays(variables('StartDate'), 32)), \n        -1\n    ), \n    'yyyy-MM-dd'\n)",
-								"type": "Expression"
-							}
-						}
-					},
-					{
-						"name": "Copy_eia_wti_adls",
-						"type": "Copy",
-						"dependsOn": [
-							{
-								"activity": "Set_EndDate",
-								"dependencyConditions": [
-									"Succeeded"
-								]
-							}
-						],
-						"policy": {
-							"timeout": "0.12:00:00",
-							"retry": 0,
-							"retryIntervalInSeconds": 30,
-							"secureOutput": false,
-							"secureInput": false
-						},
-						"userProperties": [],
-						"typeProperties": {
-							"source": {
-								"type": "RestSource",
-								"httpRequestTimeout": "00:01:40",
-								"requestInterval": "00.00:00:00.010",
-								"requestMethod": "GET",
-								"paginationRules": {
-									"supportRFC5988": "true"
-								}
-							},
-							"sink": {
-								"type": "JsonSink",
-								"storeSettings": {
-									"type": "AzureBlobFSWriteSettings",
-									"copyBehavior": "PreserveHierarchy"
-								},
-								"formatSettings": {
-									"type": "JsonWriteSettings"
-								}
-							},
-							"enableStaging": false
-						},
-						"inputs": [
-							{
-								"referenceName": "ds_eia_wti_api",
-								"type": "DatasetReference",
-								"parameters": {
-									"StartDate": {
-										"value": "@variables('StartDate')",
-										"type": "Expression"
-									},
-									"EndDate": {
-										"value": "@variables('EndDate')",
-										"type": "Expression"
-									},
-									"api_key": {
-										"value": "L1KBoxGRJWG8BQ7nChDKT2kFwHCfVcgnBhzDPos6",
-										"type": "Expression"
-									}
-								}
-							}
-						],
-						"outputs": [
-							{
-								"referenceName": "ds_eia_wti_adls",
-								"type": "DatasetReference",
-								"parameters": {
-									"path": {
-										"value": "landingzone/eia_wti_mothlydata/year=@{formatDateTime(variables('StartDate'),'yyyy')}/month=@{formatDateTime(variables('StartDate'),'MM')}",
-										"type": "Expression"
-									},
-									"filename": {
-										"value": "wti_@{variables('StartDate')}.json",
-										"type": "Expression"
-									}
-								}
-							}
-						]
-					},
-					{
-						"name": "Update_Watermark_SQL",
-						"type": "SqlServerStoredProcedure",
-						"dependsOn": [
-							{
-								"activity": "Copy_eia_wti_adls",
-								"dependencyConditions": [
-									"Succeeded"
-								]
-							}
-						],
-						"policy": {
-							"timeout": "0.12:00:00",
-							"retry": 0,
-							"retryIntervalInSeconds": 30,
-							"secureOutput": false,
-							"secureInput": false
-						},
-						"userProperties": [],
-						"typeProperties": {
-							"storedProcedureName": "[[dbo].[sp_update_watermark_eia]",
-							"storedProcedureParameters": {
-								"EndDate": {
-									"value": {
-										"value": "@variables('EndDate')",
-										"type": "Expression"
-									},
-									"type": "DateTime"
-								}
-							}
-						},
-						"linkedServiceName": {
-							"referenceName": "ls_azuresql_petrolake_dev",
-							"type": "LinkedServiceReference"
-						}
-					}
-				],
-				"policy": {
-					"elapsedTimeMetric": {}
-				},
-				"variables": {
-					"StartDate": {
-						"type": "String"
-					},
-					"EndDate": {
-						"type": "String"
-					},
-					"WatermarkJson": {
-						"type": "String"
-					}
-				},
-				"folder": {
-					"name": "ApISource"
-				},
-				"annotations": []
-			},
-			"dependsOn": []
-		},
-		{
-			"name": "[concat(parameters('factoryName'), '/ds_Reporting_SQL_dev')]",
-			"type": "Microsoft.DataFactory/factories/datasets",
-			"apiVersion": "2018-06-01",
-			"properties": {
-				"linkedServiceName": {
-					"referenceName": "ls_sql_onprem_petrolake",
-					"type": "LinkedServiceReference"
-				},
-				"annotations": [],
-				"type": "SqlServerTable",
-				"schema": [],
-				"typeProperties": {
-					"schema": "dbo",
-					"table": "Gold_downstream_KPI"
-				}
-			},
-			"dependsOn": []
-		},
-		{
-			"name": "[concat(parameters('factoryName'), '/ds_sqlserver_midstream')]",
-			"type": "Microsoft.DataFactory/factories/datasets",
-			"apiVersion": "2018-06-01",
-			"properties": {
-				"linkedServiceName": {
-					"referenceName": "ls_sql_onprem_petrolake",
-					"type": "LinkedServiceReference"
-				},
-				"annotations": [],
-				"type": "SqlServerTable",
-				"schema": [],
-				"typeProperties": {
-					"schema": "dbo",
-					"table": "global_midstream"
-				}
-			},
-			"dependsOn": []
-		},
-		{
-			"name": "[concat(parameters('factoryName'), '/ds_sqlserver_pipelinelog')]",
-			"type": "Microsoft.DataFactory/factories/datasets",
-			"apiVersion": "2018-06-01",
-			"properties": {
-				"linkedServiceName": {
-					"referenceName": "ls_sql_onprem_petrolake",
-					"type": "LinkedServiceReference"
-				},
-				"annotations": [],
-				"type": "SqlServerTable",
-				"schema": [],
-				"typeProperties": {
-					"schema": "dbo",
-					"table": "ADF_Pipeline_Run_Log"
-				}
-			},
-			"dependsOn": []
-		},
-		{
-			"name": "[concat(parameters('factoryName'), '/pl_filesystem_Masterdata_combo')]",
-			"type": "Microsoft.DataFactory/factories/pipelines",
-			"apiVersion": "2018-06-01",
-			"properties": {
-				"activities": [
-					{
-						"name": "FileSystem_Global_Downstream",
-						"type": "ExecutePipeline",
-						"dependsOn": [],
-						"policy": {
-							"secureInput": false
-						},
-						"userProperties": [],
-						"typeProperties": {
-							"pipeline": {
-								"referenceName": "pl_finance_Global_Downstream",
-								"type": "PipelineReference"
-							},
-							"waitOnCompletion": true,
-							"parameters": {
-								"SheetNames": {
-									"value": "@pipeline().parameters.pl_global_downstream_s",
-									"type": "Expression"
-								},
-								"ExcelFileName": {
-									"value": "@pipeline().parameters.filename_downstream",
-									"type": "Expression"
-								},
-								"TargetSystem": {
-									"value": "@pipeline().parameters.TargetSystem",
-									"type": "Expression"
-								}
-							}
-						}
-					},
-					{
-						"name": "waitfor60sec",
-						"type": "Wait",
-						"dependsOn": [
-							{
-								"activity": "FileSystem_Global_Downstream",
-								"dependencyConditions": [
-									"Succeeded"
-								]
-							}
-						],
-						"userProperties": [],
-						"typeProperties": {
-							"waitTimeInSeconds": 60
-						}
-					},
-					{
-						"name": "Filesystem_Global_Midstream",
-						"type": "ExecutePipeline",
-						"dependsOn": [
-							{
-								"activity": "waitfor60sec",
-								"dependencyConditions": [
-									"Succeeded"
-								]
-							}
-						],
-						"policy": {
-							"secureInput": false
-						},
-						"userProperties": [],
-						"typeProperties": {
-							"pipeline": {
-								"referenceName": "pl_filesystem_Global_Midstream_Logistics",
-								"type": "PipelineReference"
-							},
-							"waitOnCompletion": true,
-							"parameters": {
-								"SheetNames": {
-									"value": "@pipeline().parameters.pl_global_midstream_s",
-									"type": "Expression"
-								},
-								"ExcelFileName": {
-									"value": "@pipeline().parameters.filename_midstream",
-									"type": "Expression"
-								},
-								"TargetSystem": {
-									"value": "@pipeline().parameters.TargetSystem",
-									"type": "Expression"
-								}
-							}
-						}
-					},
-					{
-						"name": "Waitfor30sec",
-						"type": "Wait",
-						"dependsOn": [
-							{
-								"activity": "Filesystem_Global_Midstream",
-								"dependencyConditions": [
-									"Succeeded"
-								]
-							}
-						],
-						"userProperties": [],
-						"typeProperties": {
-							"waitTimeInSeconds": 30
-						}
-					},
-					{
-						"name": "Filesystem_Global_Upstream",
-						"type": "ExecutePipeline",
-						"dependsOn": [
-							{
-								"activity": "Waitfor30sec",
-								"dependencyConditions": [
-									"Succeeded"
-								]
-							}
-						],
-						"policy": {
-							"secureInput": false
-						},
-						"userProperties": [],
-						"typeProperties": {
-							"pipeline": {
-								"referenceName": "pl_filesystem_Global_Upstream_Operations",
-								"type": "PipelineReference"
-							},
-							"waitOnCompletion": true,
-							"parameters": {
-								"SheetNames": {
-									"value": "@pipeline().parameters.pl_global_upstream_s",
-									"type": "Expression"
-								},
-								"ExcelFileName": {
-									"value": "@pipeline().parameters.file_name_upstream",
-									"type": "Expression"
-								}
-							}
-						}
-					}
-				],
-				"policy": {
-					"elapsedTimeMetric": {}
-				},
-				"parameters": {
-					"pl_global_downstream_s": {
-						"type": "array",
-						"defaultValue": [
-							"Refinery_Production",
-							"Financial_Transactions",
-							"Safety_Incidents"
-						]
-					},
-					"pl_global_midstream_s": {
-						"type": "array",
-						"defaultValue": [
-							"Pipeline_Flow",
-							"Shipping_Details",
-							"Storage_Terminals"
-						]
-					},
-					"pl_global_upstream_s": {
-						"type": "array",
-						"defaultValue": [
-							"Drilling_Operations",
-							"Equipment_Monitoring",
-							"Well_Production"
-						]
-					},
-					"filename_downstream": {
-						"type": "string",
-						"defaultValue": "Global_Downstream_Finance_Safety.xlsx"
-					},
-					"filename_midstream": {
-						"type": "string",
-						"defaultValue": "Global_Midstream_Logistics.xlsx"
-					},
-					"file_name_upstream": {
-						"type": "string",
-						"defaultValue": "Global_Upstream_Operations.xlsx"
-					},
-					"TargetSystem": {
-						"type": "string",
-						"defaultValue": "Both"
-					}
-				},
-				"annotations": []
-			},
 			"dependsOn": [
-				"[concat(variables('factoryId'), '/pipelines/pl_finance_Global_Downstream')]",
-				"[concat(variables('factoryId'), '/pipelines/pl_filesystem_Global_Midstream_Logistics')]",
-				"[concat(variables('factoryId'), '/pipelines/pl_filesystem_Global_Upstream_Operations')]"
-			]
-		},
-		{
-			"name": "[concat(parameters('factoryName'), '/pl_masterdata_API')]",
-			"type": "Microsoft.DataFactory/factories/pipelines",
-			"apiVersion": "2018-06-01",
-			"properties": {
-				"activities": [
-					{
-						"name": "Energy_json_data_incremental",
-						"type": "ExecutePipeline",
-						"dependsOn": [],
-						"policy": {
-							"secureInput": false
-						},
-						"userProperties": [],
-						"typeProperties": {
-							"pipeline": {
-								"referenceName": "pl_WorldBankIncrementalLoad_Energy",
-								"type": "PipelineReference"
-							},
-							"waitOnCompletion": true,
-							"parameters": {
-								"LastLoadedYear": {
-									"value": "@pipeline().parameters.LastLoadedYear",
-									"type": "Expression"
-								},
-								"LoadDate": {
-									"value": "@pipeline().parameters.LoadDate",
-									"type": "Expression"
-								},
-								"CountryCode": {
-									"value": "@pipeline().parameters.CountryCode",
-									"type": "Expression"
-								},
-								"IndicatorCode": {
-									"value": "@pipeline().parameters.IndicatorCode",
-									"type": "Expression"
-								}
-							}
-						}
-					},
-					{
-						"name": "NB_Landing_Discovery",
-						"type": "DatabricksNotebook",
-						"dependsOn": [
-							{
-								"activity": "Energy_json_data_incremental",
-								"dependencyConditions": [
-									"Succeeded"
-								]
-							}
-						],
-						"policy": {
-							"timeout": "0.12:00:00",
-							"retry": 0,
-							"retryIntervalInSeconds": 30,
-							"secureOutput": false,
-							"secureInput": false
-						},
-						"userProperties": [],
-						"typeProperties": {
-							"notebookPath": "/Users/kgnnet11@gmail.com/API_DATA_Transformations/Worldbank_energy_data/landing_discovey"
-						},
-						"linkedServiceName": {
-							"referenceName": "ls_databriicks_Apl_dev",
-							"type": "LinkedServiceReference"
-						}
-					},
-					{
-						"name": "NB_Discovery_Reporting",
-						"type": "DatabricksNotebook",
-						"dependsOn": [
-							{
-								"activity": "NB_Landing_Discovery",
-								"dependencyConditions": [
-									"Succeeded"
-								]
-							}
-						],
-						"policy": {
-							"timeout": "0.12:00:00",
-							"retry": 0,
-							"retryIntervalInSeconds": 30,
-							"secureOutput": false,
-							"secureInput": false
-						},
-						"userProperties": [],
-						"typeProperties": {
-							"notebookPath": "/Users/kgnnet11@gmail.com/API_DATA_Transformations/Worldbank_energy_data/discovery_reporting"
-						},
-						"linkedServiceName": {
-							"referenceName": "ls_databriicks_Apl_dev",
-							"type": "LinkedServiceReference"
-						}
-					},
-					{
-						"name": "cp_reportingzone_Azuretablestorage",
-						"type": "Copy",
-						"dependsOn": [
-							{
-								"activity": "NB_Discovery_Reporting",
-								"dependencyConditions": [
-									"Succeeded"
-								]
-							}
-						],
-						"policy": {
-							"timeout": "0.12:00:00",
-							"retry": 0,
-							"retryIntervalInSeconds": 30,
-							"secureOutput": false,
-							"secureInput": false
-						},
-						"userProperties": [],
-						"typeProperties": {
-							"source": {
-								"type": "ParquetSource",
-								"storeSettings": {
-									"type": "AzureBlobFSReadSettings",
-									"recursive": true,
-									"wildcardFolderPath": {
-										"value": "Worldbank/energy_data_reporting",
-										"type": "Expression"
-									},
-									"wildcardFileName": "*.parquet",
-									"enablePartitionDiscovery": false
-								},
-								"formatSettings": {
-									"type": "ParquetReadSettings"
-								}
-							},
-							"sink": {
-								"type": "AzureTableSink",
-								"azureTableInsertType": "merge",
-								"azureTableDefaultPartitionKeyValue": "petrolake",
-								"writeBatchSize": 10000
-							},
-							"enableStaging": false,
-							"translator": {
-								"type": "TabularTranslator",
-								"typeConversion": true,
-								"typeConversionSettings": {
-									"allowDataTruncation": true,
-									"treatBooleanAsNumber": false
-								}
-							}
-						},
-						"inputs": [
-							{
-								"referenceName": "ds_adls_reporting_worldbank_api",
-								"type": "DatasetReference",
-								"parameters": {}
-							}
-						],
-						"outputs": [
-							{
-								"referenceName": "ds_azuretable_worldbank_api",
-								"type": "DatasetReference",
-								"parameters": {}
-							}
-						]
-					},
-					{
-						"name": "cp_reporting_azuresql",
-						"type": "Copy",
-						"dependsOn": [
-							{
-								"activity": "NB_Discovery_Reporting",
-								"dependencyConditions": [
-									"Succeeded"
-								]
-							}
-						],
-						"policy": {
-							"timeout": "0.12:00:00",
-							"retry": 0,
-							"retryIntervalInSeconds": 30,
-							"secureOutput": false,
-							"secureInput": false
-						},
-						"userProperties": [],
-						"typeProperties": {
-							"source": {
-								"type": "ParquetSource",
-								"storeSettings": {
-									"type": "AzureBlobFSReadSettings",
-									"recursive": true,
-									"wildcardFolderPath": {
-										"value": "Worldbank/energy_data_reporting",
-										"type": "Expression"
-									},
-									"wildcardFileName": "*.parquet",
-									"enablePartitionDiscovery": false
-								},
-								"formatSettings": {
-									"type": "ParquetReadSettings"
-								}
-							},
-							"sink": {
-								"type": "AzureSqlSink",
-								"writeBehavior": "insert",
-								"sqlWriterUseTableLock": false,
-								"tableOption": "autoCreate",
-								"disableMetricsCollection": false
-							},
-							"enableStaging": false,
-							"translator": {
-								"type": "TabularTranslator",
-								"mappings": [
-									{
-										"source": {
-											"name": "year",
-											"type": "Int32",
-											"physicalType": "INT_32"
-										},
-										"sink": {
-											"name": "year",
-											"type": "Int32",
-											"physicalType": "int"
-										}
-									},
-									{
-										"source": {
-											"name": "source_system",
-											"type": "String",
-											"physicalType": "UTF8"
-										},
-										"sink": {
-											"name": "source_system",
-											"type": "String",
-											"physicalType": "nvarchar"
-										}
-									},
-									{
-										"source": {
-											"name": "country_id",
-											"type": "String",
-											"physicalType": "UTF8"
-										},
-										"sink": {
-											"name": "country_id",
-											"type": "String",
-											"physicalType": "nvarchar"
-										}
-									},
-									{
-										"source": {
-											"name": "country_name",
-											"type": "String",
-											"physicalType": "UTF8"
-										},
-										"sink": {
-											"name": "country_name",
-											"type": "String",
-											"physicalType": "nvarchar"
-										}
-									},
-									{
-										"source": {
-											"name": "indicator_id",
-											"type": "String",
-											"physicalType": "UTF8"
-										},
-										"sink": {
-											"name": "indicator_id",
-											"type": "String",
-											"physicalType": "nvarchar"
-										}
-									},
-									{
-										"source": {
-											"name": "indicator_name",
-											"type": "String",
-											"physicalType": "UTF8"
-										},
-										"sink": {
-											"name": "indicator_name",
-											"type": "String",
-											"physicalType": "nvarchar"
-										}
-									},
-									{
-										"source": {
-											"name": "indicator_value_rounded",
-											"type": "Double",
-											"physicalType": "DOUBLE"
-										},
-										"sink": {
-											"name": "indicator_value_rounded",
-											"type": "Double",
-											"physicalType": "float"
-										}
-									},
-									{
-										"source": {
-											"name": "cumulative_value",
-											"type": "Double",
-											"physicalType": "DOUBLE"
-										},
-										"sink": {
-											"name": "cumulative_value",
-											"type": "Double",
-											"physicalType": "float"
-										}
-									},
-									{
-										"source": {
-											"name": "curation_status",
-											"type": "String",
-											"physicalType": "UTF8"
-										},
-										"sink": {
-											"name": "curation_status",
-											"type": "String",
-											"physicalType": "nvarchar"
-										}
-									},
-									{
-										"source": {
-											"name": "ingestion_date",
-											"type": "String",
-											"physicalType": "UTF8"
-										},
-										"sink": {
-											"name": "ingestion_date",
-											"type": "Date",
-											"physicalType": "date"
-										}
-									},
-									{
-										"source": {
-											"name": "yoy_change",
-											"type": "Double",
-											"physicalType": "DOUBLE"
-										},
-										"sink": {
-											"name": "yoy_change",
-											"type": "Double",
-											"physicalType": "float"
-										}
-									},
-									{
-										"source": {
-											"name": "is_latest",
-											"type": "String",
-											"physicalType": "UTF8"
-										},
-										"sink": {
-											"name": "is_latest",
-											"type": "String",
-											"physicalType": "nvarchar"
-										}
-									}
-								],
-								"typeConversion": true,
-								"typeConversionSettings": {
-									"allowDataTruncation": true,
-									"treatBooleanAsNumber": false
-								}
-							}
-						},
-						"inputs": [
-							{
-								"referenceName": "ds_adls_reporting_worldbank_api",
-								"type": "DatasetReference",
-								"parameters": {}
-							}
-						],
-						"outputs": [
-							{
-								"referenceName": "ds_azuresql_worldbank_api",
-								"type": "DatasetReference",
-								"parameters": {}
-							}
-						]
-					}
-				],
-				"policy": {
-					"elapsedTimeMetric": {}
-				},
-				"parameters": {
-					"TargetSystem": {
-						"type": "string",
-						"defaultValue": "Both"
-					},
-					"LastLoadedYear": {
-						"type": "int",
-						"defaultValue": 2022
-					},
-					"LoadDate": {
-						"type": "string",
-						"defaultValue": "2026-02-01"
-					},
-					"CountryCode": {
-						"type": "string",
-						"defaultValue": "IN"
-					},
-					"IndicatorCode": {
-						"type": "string",
-						"defaultValue": "EG.USE.PCAP.KG.OE"
-					}
-				},
-				"annotations": []
-			},
-			"dependsOn": [
-				"[concat(variables('factoryId'), '/pipelines/pl_WorldBankIncrementalLoad_Energy')]"
+				"[concat(variables('factoryId'), '/linkedServices/ls_sql_onprem_petrolake')]"
 			]
 		}
 	]

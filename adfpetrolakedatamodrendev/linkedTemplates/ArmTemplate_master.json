@@ -35,9 +35,17 @@
 			"type": "secureString",
 			"metadata": "Secure string for 'accessToken' of 'ls_databriicks_Apl_dev'"
 		},
+		"ls_restapi_serviceNow_Adls_password": {
+			"type": "secureString",
+			"metadata": "Secure string for 'password' of 'ls_restapi_serviceNow_Adls'"
+		},
 		"ls_salesforce_cloudv2_clientSecret": {
 			"type": "secureString",
 			"metadata": "Secure string for 'clientSecret' of 'ls_salesforce_cloudv2'"
+		},
+		"ls_servicenow_incedents_password": {
+			"type": "secureString",
+			"metadata": "Secure string for 'password' of 'ls_servicenow_incedents'"
 		},
 		"ls_sql_onprem_petrolake_connectionString": {
 			"type": "secureString",
@@ -100,6 +108,14 @@
 			"type": "string",
 			"defaultValue": "https://api.eia.gov"
 		},
+		"ls_restapi_serviceNow_Adls_properties_typeProperties_url": {
+			"type": "string",
+			"defaultValue": "https://dev275273.service-now.com/api/now/table/"
+		},
+		"ls_restapi_serviceNow_Adls_properties_typeProperties_userName": {
+			"type": "string",
+			"defaultValue": "admin"
+		},
 		"ls_salesforce_cloudv2_properties_typeProperties_environmentUrl": {
 			"type": "string",
 			"defaultValue": "https://orgfarm-1c16fbb5f5-dev-ed.develop.my.salesforce.com"
@@ -107,6 +123,14 @@
 		"ls_salesforce_cloudv2_properties_typeProperties_clientId": {
 			"type": "string",
 			"defaultValue": "3MVG9HtWXcDGV.nEZNJYoubEKa7pH4AgNRyTkXsmuizIBn.bUn6Fhx72gTgKBnj9FrDvJk..chZjQHVLRYFSv"
+		},
+		"ls_servicenow_incedents_properties_typeProperties_endpoint": {
+			"type": "string",
+			"defaultValue": "https://dev275273.service-now.com"
+		},
+		"ls_servicenow_incedents_properties_typeProperties_username": {
+			"type": "string",
+			"defaultValue": "admin"
 		},
 		"ls_sql_onprem_petrolake_properties_typeProperties_userName": {
 			"type": "string",
@@ -164,8 +188,14 @@
 					"ls_databriicks_Apl_dev_accessToken": {
 						"value": "[parameters('ls_databriicks_Apl_dev_accessToken')]"
 					},
+					"ls_restapi_serviceNow_Adls_password": {
+						"value": "[parameters('ls_restapi_serviceNow_Adls_password')]"
+					},
 					"ls_salesforce_cloudv2_clientSecret": {
 						"value": "[parameters('ls_salesforce_cloudv2_clientSecret')]"
+					},
+					"ls_servicenow_incedents_password": {
+						"value": "[parameters('ls_servicenow_incedents_password')]"
 					},
 					"LS_HttpServer_properties_typeProperties_url": {
 						"value": "[parameters('LS_HttpServer_properties_typeProperties_url')]"
@@ -206,11 +236,23 @@
 					"ls_rest_eia_wti_properties_typeProperties_url": {
 						"value": "[parameters('ls_rest_eia_wti_properties_typeProperties_url')]"
 					},
+					"ls_restapi_serviceNow_Adls_properties_typeProperties_url": {
+						"value": "[parameters('ls_restapi_serviceNow_Adls_properties_typeProperties_url')]"
+					},
+					"ls_restapi_serviceNow_Adls_properties_typeProperties_userName": {
+						"value": "[parameters('ls_restapi_serviceNow_Adls_properties_typeProperties_userName')]"
+					},
 					"ls_salesforce_cloudv2_properties_typeProperties_environmentUrl": {
 						"value": "[parameters('ls_salesforce_cloudv2_properties_typeProperties_environmentUrl')]"
 					},
 					"ls_salesforce_cloudv2_properties_typeProperties_clientId": {
 						"value": "[parameters('ls_salesforce_cloudv2_properties_typeProperties_clientId')]"
+					},
+					"ls_servicenow_incedents_properties_typeProperties_endpoint": {
+						"value": "[parameters('ls_servicenow_incedents_properties_typeProperties_endpoint')]"
+					},
+					"ls_servicenow_incedents_properties_typeProperties_username": {
+						"value": "[parameters('ls_servicenow_incedents_properties_typeProperties_username')]"
 					},
 					"ls_worldbank_src_restapi_properties_typeProperties_url": {
 						"value": "[parameters('ls_worldbank_src_restapi_properties_typeProperties_url')]"
@@ -252,15 +294,6 @@
 				"parameters": {
 					"factoryName": {
 						"value": "[parameters('factoryName')]"
-					},
-					"ls_sql_onprem_petrolake_connectionString": {
-						"value": "[parameters('ls_sql_onprem_petrolake_connectionString')]"
-					},
-					"ls_sql_onprem_petrolake_password": {
-						"value": "[parameters('ls_sql_onprem_petrolake_password')]"
-					},
-					"ls_sql_onprem_petrolake_properties_typeProperties_userName": {
-						"value": "[parameters('ls_sql_onprem_petrolake_properties_typeProperties_userName')]"
 					}
 				}
 			},
@@ -281,11 +314,40 @@
 				"parameters": {
 					"factoryName": {
 						"value": "[parameters('factoryName')]"
+					},
+					"ls_sql_onprem_petrolake_connectionString": {
+						"value": "[parameters('ls_sql_onprem_petrolake_connectionString')]"
+					},
+					"ls_sql_onprem_petrolake_password": {
+						"value": "[parameters('ls_sql_onprem_petrolake_password')]"
+					},
+					"ls_sql_onprem_petrolake_properties_typeProperties_userName": {
+						"value": "[parameters('ls_sql_onprem_petrolake_properties_typeProperties_userName')]"
 					}
 				}
 			},
 			"dependsOn": [
 				"[resourceId('Microsoft.Resources/deployments', 'adfpetrolakedatamodrendev_ArmTemplate_2')]"
+			]
+		},
+		{
+			"name": "adfpetrolakedatamodrendev_ArmTemplate_4",
+			"type": "Microsoft.Resources/deployments",
+			"apiVersion": "2024-03-01",
+			"properties": {
+				"mode": "incremental",
+				"templateLink": {
+					"uri": "[concat(parameters('containerUri'), '/ArmTemplate_4.json', parameters('containerSasToken'))]",
+					"contentVersion": "1.0.0.0"
+				},
+				"parameters": {
+					"factoryName": {
+						"value": "[parameters('factoryName')]"
+					}
+				}
+			},
+			"dependsOn": [
+				"[resourceId('Microsoft.Resources/deployments', 'adfpetrolakedatamodrendev_ArmTemplate_3')]"
 			]
 		}
 	]

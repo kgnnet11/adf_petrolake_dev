@@ -35,9 +35,17 @@
 			"type": "secureString",
 			"metadata": "Secure string for 'accessToken' of 'ls_databriicks_Apl_dev'"
 		},
+		"ls_restapi_serviceNow_Adls_password": {
+			"type": "secureString",
+			"metadata": "Secure string for 'password' of 'ls_restapi_serviceNow_Adls'"
+		},
 		"ls_salesforce_cloudv2_clientSecret": {
 			"type": "secureString",
 			"metadata": "Secure string for 'clientSecret' of 'ls_salesforce_cloudv2'"
+		},
+		"ls_servicenow_incedents_password": {
+			"type": "secureString",
+			"metadata": "Secure string for 'password' of 'ls_servicenow_incedents'"
 		},
 		"ls_sql_onprem_petrolake_connectionString": {
 			"type": "secureString",
@@ -100,6 +108,14 @@
 			"type": "string",
 			"defaultValue": "https://api.eia.gov"
 		},
+		"ls_restapi_serviceNow_Adls_properties_typeProperties_url": {
+			"type": "string",
+			"defaultValue": "https://dev275273.service-now.com/api/now/table/"
+		},
+		"ls_restapi_serviceNow_Adls_properties_typeProperties_userName": {
+			"type": "string",
+			"defaultValue": "admin"
+		},
 		"ls_salesforce_cloudv2_properties_typeProperties_environmentUrl": {
 			"type": "string",
 			"defaultValue": "https://orgfarm-1c16fbb5f5-dev-ed.develop.my.salesforce.com"
@@ -107,6 +123,14 @@
 		"ls_salesforce_cloudv2_properties_typeProperties_clientId": {
 			"type": "string",
 			"defaultValue": "3MVG9HtWXcDGV.nEZNJYoubEKa7pH4AgNRyTkXsmuizIBn.bUn6Fhx72gTgKBnj9FrDvJk..chZjQHVLRYFSv"
+		},
+		"ls_servicenow_incedents_properties_typeProperties_endpoint": {
+			"type": "string",
+			"defaultValue": "https://dev275273.service-now.com"
+		},
+		"ls_servicenow_incedents_properties_typeProperties_username": {
+			"type": "string",
+			"defaultValue": "admin"
 		},
 		"ls_sql_onprem_petrolake_properties_typeProperties_userName": {
 			"type": "string",
@@ -412,7 +436,14 @@
 								{
 									"name": "Copydata_Salesforce_Adls_bulk",
 									"type": "Copy",
-									"dependsOn": [],
+									"dependsOn": [
+										{
+											"activity": "deleteoldfiles",
+											"dependencyConditions": [
+												"Succeeded"
+											]
+										}
+									],
 									"policy": {
 										"timeout": "0.12:00:00",
 										"retry": 0,
@@ -469,6 +500,39 @@
 											}
 										}
 									]
+								},
+								{
+									"name": "deleteoldfiles",
+									"type": "Delete",
+									"dependsOn": [],
+									"policy": {
+										"timeout": "0.12:00:00",
+										"retry": 0,
+										"retryIntervalInSeconds": 30,
+										"secureOutput": false,
+										"secureInput": false
+									},
+									"userProperties": [],
+									"typeProperties": {
+										"dataset": {
+											"referenceName": "ds_delete_old_files",
+											"type": "DatasetReference",
+											"parameters": {}
+										},
+										"logStorageSettings": {
+											"linkedServiceName": {
+												"referenceName": "ls_alds_landingzone",
+												"type": "LinkedServiceReference"
+											},
+											"path": ""
+										},
+										"enableLogging": true,
+										"storeSettings": {
+											"type": "AzureBlobFSReadSettings",
+											"recursive": true,
+											"enablePartitionDiscovery": false
+										}
+									}
 								}
 							]
 						}
@@ -505,7 +569,9 @@
 			"dependsOn": [
 				"[concat(variables('factoryId'), '/datasets/ds_lookup_salesforce_getobjects')]",
 				"[concat(variables('factoryId'), '/datasets/ds_salesforce_src_bulkload')]",
-				"[concat(variables('factoryId'), '/datasets/ds_adls_tgt_bulkload')]"
+				"[concat(variables('factoryId'), '/datasets/ds_adls_tgt_bulkload')]",
+				"[concat(variables('factoryId'), '/datasets/ds_delete_old_files')]",
+				"[concat(variables('factoryId'), '/linkedServices/ls_alds_landingzone')]"
 			]
 		},
 		{
@@ -577,6 +643,454 @@
 			"dependsOn": [
 				"[concat(variables('factoryId'), '/datasets/ds_salesforce_v2')]",
 				"[concat(variables('factoryId'), '/datasets/ds_salesforce_adls')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/pl_IncidentManagementTables_servicenow_adls')]",
+			"type": "Microsoft.DataFactory/factories/pipelines",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"activities": [
+					{
+						"name": "Lookup_Table_List",
+						"type": "Lookup",
+						"dependsOn": [],
+						"policy": {
+							"timeout": "0.12:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"source": {
+								"type": "JsonSource",
+								"storeSettings": {
+									"type": "AzureBlobFSReadSettings",
+									"recursive": true,
+									"enablePartitionDiscovery": false
+								},
+								"formatSettings": {
+									"type": "JsonReadSettings"
+								}
+							},
+							"dataset": {
+								"referenceName": "ds_adls_servicenow_metadata_fullload",
+								"type": "DatasetReference",
+								"parameters": {}
+							},
+							"firstRowOnly": false
+						}
+					},
+					{
+						"name": "Loop Tables",
+						"type": "ForEach",
+						"dependsOn": [
+							{
+								"activity": "Lookup_Table_List",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
+						"userProperties": [],
+						"typeProperties": {
+							"items": {
+								"value": "@activity('Lookup_Table_List').output.value",
+								"type": "Expression"
+							},
+							"isSequential": false,
+							"batchCount": 3,
+							"activities": [
+								{
+									"name": "copydata_servicenow_adls_fullload",
+									"type": "Copy",
+									"dependsOn": [],
+									"policy": {
+										"timeout": "0.12:00:00",
+										"retry": 0,
+										"retryIntervalInSeconds": 30,
+										"secureOutput": false,
+										"secureInput": false
+									},
+									"userProperties": [],
+									"typeProperties": {
+										"source": {
+											"type": "RestSource",
+											"httpRequestTimeout": "00:01:40",
+											"requestInterval": "00.00:00:00.010",
+											"requestMethod": "GET"
+										},
+										"sink": {
+											"type": "JsonSink",
+											"storeSettings": {
+												"type": "AzureBlobFSWriteSettings"
+											},
+											"formatSettings": {
+												"type": "JsonWriteSettings"
+											}
+										},
+										"enableStaging": false
+									},
+									"inputs": [
+										{
+											"referenceName": "ds_servicenow_incedentManagement_fullload",
+											"type": "DatasetReference",
+											"parameters": {
+												"relativeurl": {
+													"value": "@concat(item().tableName,'?sysparm_limit=', string(variables('limit')), '&sysparm_offset=', string(variables('offset')))",
+													"type": "Expression"
+												}
+											}
+										}
+									],
+									"outputs": [
+										{
+											"referenceName": "ds_adls_json_incedenetmanagement",
+											"type": "DatasetReference",
+											"parameters": {
+												"Filename": {
+													"value": "@concat(item().tableName,'_FullLoad_',formatDateTime(utcNow(),'yyyyMMdd'),'.json')",
+													"type": "Expression"
+												},
+												"Folder": {
+													"value": "servicenow/@{item().tableName}/",
+													"type": "Expression"
+												}
+											}
+										}
+									]
+								},
+								{
+									"name": "GetMetadata_Validate_File",
+									"type": "GetMetadata",
+									"dependsOn": [
+										{
+											"activity": "copydata_servicenow_adls_fullload",
+											"dependencyConditions": [
+												"Succeeded"
+											]
+										}
+									],
+									"policy": {
+										"timeout": "0.12:00:00",
+										"retry": 0,
+										"retryIntervalInSeconds": 30,
+										"secureOutput": false,
+										"secureInput": false
+									},
+									"userProperties": [],
+									"typeProperties": {
+										"dataset": {
+											"referenceName": "ds_target_Adls_incidentManagement",
+											"type": "DatasetReference",
+											"parameters": {
+												"Filename": {
+													"value": "@concat(item().tableName,'_FullLoad_',formatDateTime(utcNow(),'yyyyMMdd'),'.json')",
+													"type": "Expression"
+												},
+												"Folder": {
+													"value": "servicenow/@{item().tableName}/",
+													"type": "Expression"
+												}
+											}
+										},
+										"fieldList": [
+											"exists",
+											"size"
+										],
+										"storeSettings": {
+											"type": "AzureBlobFSReadSettings",
+											"recursive": true,
+											"enablePartitionDiscovery": false
+										},
+										"formatSettings": {
+											"type": "DelimitedTextReadSettings"
+										}
+									}
+								},
+								{
+									"name": "If_File_Valid",
+									"type": "IfCondition",
+									"dependsOn": [
+										{
+											"activity": "GetMetadata_Validate_File",
+											"dependencyConditions": [
+												"Succeeded"
+											]
+										}
+									],
+									"userProperties": [],
+									"typeProperties": {
+										"expression": {
+											"value": "@and(\n   equals(activity('GetMetadata_Validate_File').output.exists,true),\n   greater(activity('GetMetadata_Validate_File').output.size,0)\n)",
+											"type": "Expression"
+										},
+										"ifTrueActivities": [
+											{
+												"name": "FileValidationFailed",
+												"type": "Fail",
+												"dependsOn": [],
+												"userProperties": [],
+												"typeProperties": {
+													"message": "FileValidationFailed",
+													"errorCode": "File size is 0 or file not created"
+												}
+											}
+										]
+									}
+								}
+							]
+						}
+					}
+				],
+				"policy": {
+					"elapsedTimeMetric": {}
+				},
+				"variables": {
+					"offset": {
+						"type": "Integer",
+						"defaultValue": 0
+					},
+					"limit": {
+						"type": "Integer",
+						"defaultValue": 10000
+					}
+				},
+				"annotations": []
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/datasets/ds_adls_servicenow_metadata_fullload')]",
+				"[concat(variables('factoryId'), '/datasets/ds_servicenow_incedentManagement_fullload')]",
+				"[concat(variables('factoryId'), '/datasets/ds_adls_json_incedenetmanagement')]",
+				"[concat(variables('factoryId'), '/datasets/ds_target_Adls_incidentManagement')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/pl_IncidentManagementTables_servicenow_adls_copy1')]",
+			"type": "Microsoft.DataFactory/factories/pipelines",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"activities": [
+					{
+						"name": "Lookup_Table_List",
+						"type": "Lookup",
+						"dependsOn": [],
+						"policy": {
+							"timeout": "0.12:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"source": {
+								"type": "JsonSource",
+								"storeSettings": {
+									"type": "AzureBlobFSReadSettings",
+									"recursive": true,
+									"enablePartitionDiscovery": false
+								},
+								"formatSettings": {
+									"type": "JsonReadSettings"
+								}
+							},
+							"dataset": {
+								"referenceName": "ds_adls_servicenow_metadata_fullload",
+								"type": "DatasetReference",
+								"parameters": {}
+							},
+							"firstRowOnly": false
+						}
+					},
+					{
+						"name": "Loop Tables",
+						"type": "ForEach",
+						"dependsOn": [
+							{
+								"activity": "Lookup_Table_List",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
+						"userProperties": [],
+						"typeProperties": {
+							"items": {
+								"value": "@activity('Lookup_Table_List').output.value",
+								"type": "Expression"
+							},
+							"isSequential": false,
+							"batchCount": 3,
+							"activities": [
+								{
+									"name": "copydata_servicenow_adls_fullload",
+									"type": "Copy",
+									"dependsOn": [],
+									"policy": {
+										"timeout": "0.12:00:00",
+										"retry": 0,
+										"retryIntervalInSeconds": 30,
+										"secureOutput": false,
+										"secureInput": false
+									},
+									"userProperties": [],
+									"typeProperties": {
+										"source": {
+											"type": "RestSource",
+											"httpRequestTimeout": "00:01:40",
+											"requestInterval": "00.00:00:00.010",
+											"requestMethod": "GET"
+										},
+										"sink": {
+											"type": "JsonSink",
+											"storeSettings": {
+												"type": "AzureBlobFSWriteSettings"
+											},
+											"formatSettings": {
+												"type": "JsonWriteSettings"
+											}
+										},
+										"enableStaging": false
+									},
+									"inputs": [
+										{
+											"referenceName": "ds_servicenow_incedentManagement_fullload",
+											"type": "DatasetReference",
+											"parameters": {
+												"relativeurl": {
+													"value": "@concat(item().tableName,'?sysparm_limit=', string(variables('limit')), '&sysparm_offset=', string(variables('offset')))",
+													"type": "Expression"
+												}
+											}
+										}
+									],
+									"outputs": [
+										{
+											"referenceName": "ds_adls_json_incedenetmanagement",
+											"type": "DatasetReference",
+											"parameters": {
+												"Filename": {
+													"value": "@concat(item().tableName,'_FullLoad_',formatDateTime(utcNow(),'yyyyMMdd'),'.json')",
+													"type": "Expression"
+												},
+												"Folder": {
+													"value": "servicenow/@{item().tableName}/",
+													"type": "Expression"
+												}
+											}
+										}
+									]
+								},
+								{
+									"name": "GetMetadata_Validate_File",
+									"type": "GetMetadata",
+									"dependsOn": [
+										{
+											"activity": "copydata_servicenow_adls_fullload",
+											"dependencyConditions": [
+												"Succeeded"
+											]
+										}
+									],
+									"policy": {
+										"timeout": "0.12:00:00",
+										"retry": 0,
+										"retryIntervalInSeconds": 30,
+										"secureOutput": false,
+										"secureInput": false
+									},
+									"userProperties": [],
+									"typeProperties": {
+										"dataset": {
+											"referenceName": "ds_target_Adls_incidentManagement",
+											"type": "DatasetReference",
+											"parameters": {
+												"Filename": {
+													"value": "@concat(item().tableName,'_FullLoad_',formatDateTime(utcNow(),'yyyyMMdd'),'.json')",
+													"type": "Expression"
+												},
+												"Folder": {
+													"value": "servicenow/@{item().tableName}/",
+													"type": "Expression"
+												}
+											}
+										},
+										"fieldList": [
+											"exists",
+											"size"
+										],
+										"storeSettings": {
+											"type": "AzureBlobFSReadSettings",
+											"recursive": true,
+											"enablePartitionDiscovery": false
+										},
+										"formatSettings": {
+											"type": "DelimitedTextReadSettings"
+										}
+									}
+								},
+								{
+									"name": "If_File_Valid",
+									"type": "IfCondition",
+									"dependsOn": [
+										{
+											"activity": "GetMetadata_Validate_File",
+											"dependencyConditions": [
+												"Succeeded"
+											]
+										}
+									],
+									"userProperties": [],
+									"typeProperties": {
+										"expression": {
+											"value": "@and(\n   equals(activity('GetMetadata_Validate_File').output.exists,true),\n   greater(activity('GetMetadata_Validate_File').output.size,0)\n)",
+											"type": "Expression"
+										},
+										"ifTrueActivities": [
+											{
+												"name": "FileValidationFailed",
+												"type": "Fail",
+												"dependsOn": [],
+												"userProperties": [],
+												"typeProperties": {
+													"message": "FileValidationFailed",
+													"errorCode": "File size is 0 or file not created"
+												}
+											}
+										]
+									}
+								}
+							]
+						}
+					}
+				],
+				"policy": {
+					"elapsedTimeMetric": {}
+				},
+				"variables": {
+					"offset": {
+						"type": "Integer",
+						"defaultValue": 0
+					},
+					"limit": {
+						"type": "Integer",
+						"defaultValue": 10000
+					},
+					"continue": {
+						"type": "Boolean",
+						"defaultValue": true
+					}
+				},
+				"annotations": []
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/datasets/ds_adls_servicenow_metadata_fullload')]",
+				"[concat(variables('factoryId'), '/datasets/ds_servicenow_incedentManagement_fullload')]",
+				"[concat(variables('factoryId'), '/datasets/ds_adls_json_incedenetmanagement')]",
+				"[concat(variables('factoryId'), '/datasets/ds_target_Adls_incidentManagement')]"
 			]
 		},
 		{
@@ -4377,6 +4891,76 @@
 			]
 		},
 		{
+			"name": "[concat(parameters('factoryName'), '/pl_servicenow_incedent')]",
+			"type": "Microsoft.DataFactory/factories/pipelines",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"activities": [
+					{
+						"name": "cp_servicenow_adlsgen2",
+						"type": "Copy",
+						"dependsOn": [],
+						"policy": {
+							"timeout": "0.12:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"source": {
+								"type": "ServiceNowV2Source",
+								"pageSize": 300
+							},
+							"sink": {
+								"type": "DelimitedTextSink",
+								"storeSettings": {
+									"type": "AzureBlobFSWriteSettings"
+								},
+								"formatSettings": {
+									"type": "DelimitedTextWriteSettings",
+									"quoteAllText": true,
+									"fileExtension": ".txt"
+								}
+							},
+							"enableStaging": false,
+							"translator": {
+								"type": "TabularTranslator",
+								"typeConversion": true,
+								"typeConversionSettings": {
+									"allowDataTruncation": true,
+									"treatBooleanAsNumber": false
+								}
+							}
+						},
+						"inputs": [
+							{
+								"referenceName": "ds_src_servicenow_incident",
+								"type": "DatasetReference",
+								"parameters": {}
+							}
+						],
+						"outputs": [
+							{
+								"referenceName": "ds_tgt_servicenow_adls",
+								"type": "DatasetReference",
+								"parameters": {}
+							}
+						]
+					}
+				],
+				"policy": {
+					"elapsedTimeMetric": {}
+				},
+				"annotations": []
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/datasets/ds_src_servicenow_incident')]",
+				"[concat(variables('factoryId'), '/datasets/ds_tgt_servicenow_adls')]"
+			]
+		},
+		{
 			"name": "[concat(parameters('factoryName'), '/DS_ADLS_WB')]",
 			"type": "Microsoft.DataFactory/factories/datasets",
 			"apiVersion": "2018-06-01",
@@ -4551,6 +5135,45 @@
 			]
 		},
 		{
+			"name": "[concat(parameters('factoryName'), '/ds_adls_json_incedenetmanagement')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "ls_alds_landingzone",
+					"type": "LinkedServiceReference"
+				},
+				"parameters": {
+					"Filename": {
+						"type": "string"
+					},
+					"Folder": {
+						"type": "string"
+					}
+				},
+				"annotations": [],
+				"type": "Json",
+				"typeProperties": {
+					"location": {
+						"type": "AzureBlobFSLocation",
+						"fileName": {
+							"value": "@dataset().Filename",
+							"type": "Expression"
+						},
+						"folderPath": {
+							"value": "servicenow/dataset().Folder",
+							"type": "Expression"
+						},
+						"fileSystem": "landingzone"
+					}
+				},
+				"schema": {}
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/linkedServices/ls_alds_landingzone')]"
+			]
+		},
+		{
 			"name": "[concat(parameters('factoryName'), '/ds_adls_landingzone')]",
 			"type": "Microsoft.DataFactory/factories/datasets",
 			"apiVersion": "2018-06-01",
@@ -4616,6 +5239,38 @@
 					"compressionCodec": "snappy"
 				},
 				"schema": []
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/linkedServices/ls_alds_landingzone')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/ds_adls_servicenow_metadata_fullload')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "ls_alds_landingzone",
+					"type": "LinkedServiceReference"
+				},
+				"annotations": [],
+				"type": "Json",
+				"typeProperties": {
+					"location": {
+						"type": "AzureBlobFSLocation",
+						"fileName": "servicenow_tables.json",
+						"folderPath": "servicenow/raw/config",
+						"fileSystem": "landingzone"
+					}
+				},
+				"schema": {
+					"type": "object",
+					"properties": {
+						"tableName": {
+							"type": "string"
+						}
+					}
+				}
 			},
 			"dependsOn": [
 				"[concat(variables('factoryId'), '/linkedServices/ls_alds_landingzone')]"
@@ -5024,6 +5679,29 @@
 			},
 			"dependsOn": [
 				"[concat(variables('factoryId'), '/linkedServices/ls_azuretable_storage')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/ds_delete_old_files')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "ls_alds_landingzone",
+					"type": "LinkedServiceReference"
+				},
+				"annotations": [],
+				"type": "Binary",
+				"typeProperties": {
+					"location": {
+						"type": "AzureBlobFSLocation",
+						"folderPath": "salesforce/PricingContracts_Detailed_1__c",
+						"fileSystem": "landingzone"
+					}
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/linkedServices/ls_alds_landingzone')]"
 			]
 		},
 		{
@@ -5484,6 +6162,24 @@
 			]
 		},
 		{
+			"name": "[concat(parameters('factoryName'), '/ds_salceforce_Maxdate')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "ls_salesforce_cloudv2",
+					"type": "LinkedServiceReference"
+				},
+				"annotations": [],
+				"type": "SalesforceServiceCloudV2Object",
+				"schema": [],
+				"typeProperties": {}
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/linkedServices/ls_salesforce_cloudv2')]"
+			]
+		},
+		{
 			"name": "[concat(parameters('factoryName'), '/ds_salesforce_adls')]",
 			"type": "Microsoft.DataFactory/factories/datasets",
 			"apiVersion": "2018-06-01",
@@ -5577,6 +6273,34 @@
 			]
 		},
 		{
+			"name": "[concat(parameters('factoryName'), '/ds_servicenow_incedentManagement_fullload')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "ls_restapi_serviceNow_Adls",
+					"type": "LinkedServiceReference"
+				},
+				"parameters": {
+					"relativeurl": {
+						"type": "string"
+					}
+				},
+				"annotations": [],
+				"type": "RestResource",
+				"typeProperties": {
+					"relativeUrl": {
+						"value": "@dataset().relativeurl",
+						"type": "Expression"
+					}
+				},
+				"schema": []
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/linkedServices/ls_restapi_serviceNow_Adls')]"
+			]
+		},
+		{
 			"name": "[concat(parameters('factoryName'), '/ds_sqlserver_midstream')]",
 			"type": "Microsoft.DataFactory/factories/datasets",
 			"apiVersion": "2018-06-01",
@@ -5616,6 +6340,131 @@
 			},
 			"dependsOn": [
 				"[concat(variables('factoryId'), '/linkedServices/ls_sql_onprem_petrolake')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/ds_src_servicenow_incident')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "ls_servicenow_incedents",
+					"type": "LinkedServiceReference"
+				},
+				"annotations": [],
+				"type": "ServiceNowV2Object",
+				"schema": [
+					{
+						"name": "sys_updated_on",
+						"type": "glide_date_time"
+					},
+					{
+						"name": "entitlement",
+						"type": "reference"
+					},
+					{
+						"name": "sys_created_on",
+						"type": "glide_date_time"
+					},
+					{
+						"name": "sys_id",
+						"type": "GUID"
+					},
+					{
+						"name": "sys_updated_by",
+						"type": "string"
+					},
+					{
+						"name": "instance",
+						"type": "reference"
+					},
+					{
+						"name": "sys_created_by",
+						"type": "string"
+					},
+					{
+						"name": "sys_mod_count",
+						"type": "integer"
+					}
+				],
+				"typeProperties": {
+					"tableName": "ais_child_table",
+					"valueType": "actual"
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/linkedServices/ls_servicenow_incedents')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/ds_target_Adls_incidentManagement')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "ls_alds_landingzone",
+					"type": "LinkedServiceReference"
+				},
+				"parameters": {
+					"Filename": {
+						"type": "string"
+					},
+					"Folder": {
+						"type": "string"
+					}
+				},
+				"annotations": [],
+				"type": "DelimitedText",
+				"typeProperties": {
+					"location": {
+						"type": "AzureBlobFSLocation",
+						"fileName": {
+							"value": "@dataset().Filename",
+							"type": "Expression"
+						},
+						"folderPath": {
+							"value": "dataset().Folder",
+							"type": "Expression"
+						},
+						"fileSystem": "landingzone"
+					},
+					"columnDelimiter": ",",
+					"escapeChar": "\\",
+					"firstRowAsHeader": false,
+					"quoteChar": "\""
+				},
+				"schema": []
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/linkedServices/ls_alds_landingzone')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/ds_tgt_servicenow_adls')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "ls_alds_landingzone",
+					"type": "LinkedServiceReference"
+				},
+				"annotations": [],
+				"type": "DelimitedText",
+				"typeProperties": {
+					"location": {
+						"type": "AzureBlobFSLocation",
+						"folderPath": "servicenow",
+						"fileSystem": "landingzone"
+					},
+					"columnDelimiter": ",",
+					"escapeChar": "\\",
+					"firstRowAsHeader": true,
+					"quoteChar": "\""
+				},
+				"schema": []
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/linkedServices/ls_alds_landingzone')]"
 			]
 		},
 		{
@@ -5907,6 +6756,26 @@
 			"dependsOn": []
 		},
 		{
+			"name": "[concat(parameters('factoryName'), '/ls_restapi_serviceNow_Adls')]",
+			"type": "Microsoft.DataFactory/factories/linkedServices",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"annotations": [],
+				"type": "RestService",
+				"typeProperties": {
+					"url": "[parameters('ls_restapi_serviceNow_Adls_properties_typeProperties_url')]",
+					"enableServerCertificateValidation": true,
+					"authenticationType": "Basic",
+					"userName": "[parameters('ls_restapi_serviceNow_Adls_properties_typeProperties_userName')]",
+					"password": {
+						"type": "SecureString",
+						"value": "[parameters('ls_restapi_serviceNow_Adls_password')]"
+					}
+				}
+			},
+			"dependsOn": []
+		},
+		{
 			"name": "[concat(parameters('factoryName'), '/ls_salesforce_cloudv2')]",
 			"type": "Microsoft.DataFactory/factories/linkedServices",
 			"apiVersion": "2018-06-01",
@@ -5923,6 +6792,25 @@
 					"apiVersion": "66.0",
 					"authenticationType": "OAuth2ClientCredential",
 					"encryptedCredential": "ew0KICAiVmVyc2lvbiI6ICIyMDE3LTExLTMwIiwNCiAgIlByb3RlY3Rpb25Nb2RlIjogIktleSIsDQogICJTZWNyZXRDb250ZW50VHlwZSI6ICJQbGFpbnRleHQiLA0KICAiQ3JlZGVudGlhbElkIjogIkRBVEFGQUNUT1JZQDYzQUYxRUQyLUEyRjAtNDIwOS05RDZDLTNGRkZBNEE2MUJEN19iNDQxZWJmZC1kY2RlLTRjMzktYmQ3OC0xODM4NTllYjEzZTMiDQp9"
+				}
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/ls_servicenow_incedents')]",
+			"type": "Microsoft.DataFactory/factories/linkedServices",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"annotations": [],
+				"type": "ServiceNowV2",
+				"typeProperties": {
+					"endpoint": "[parameters('ls_servicenow_incedents_properties_typeProperties_endpoint')]",
+					"authenticationType": "Basic",
+					"username": "[parameters('ls_servicenow_incedents_properties_typeProperties_username')]",
+					"password": {
+						"type": "SecureString",
+						"value": "[parameters('ls_servicenow_incedents_password')]"
+					}
 				}
 			},
 			"dependsOn": []
@@ -6095,24 +6983,6 @@
 			},
 			"dependsOn": [
 				"[concat(variables('factoryId'), '/linkedServices/ls_alds_landingzone')]"
-			]
-		},
-		{
-			"name": "[concat(parameters('factoryName'), '/ds_salceforce_Maxdate')]",
-			"type": "Microsoft.DataFactory/factories/datasets",
-			"apiVersion": "2018-06-01",
-			"properties": {
-				"linkedServiceName": {
-					"referenceName": "ls_salesforce_cloudv2",
-					"type": "LinkedServiceReference"
-				},
-				"annotations": [],
-				"type": "SalesforceServiceCloudV2Object",
-				"schema": [],
-				"typeProperties": {}
-			},
-			"dependsOn": [
-				"[concat(variables('factoryId'), '/linkedServices/ls_salesforce_cloudv2')]"
 			]
 		}
 	]

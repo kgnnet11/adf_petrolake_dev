@@ -26,7 +26,13 @@
 		"ls_databriicks_Apl_dev_accessToken": {
 			"value": ""
 		},
+		"ls_restapi_serviceNow_Adls_password": {
+			"value": ""
+		},
 		"ls_salesforce_cloudv2_clientSecret": {
+			"value": ""
+		},
+		"ls_servicenow_incedents_password": {
 			"value": ""
 		},
 		"ls_sql_onprem_petrolake_connectionString": {
@@ -74,11 +80,23 @@
 		"ls_rest_eia_wti_properties_typeProperties_url": {
 			"value": "https://api.eia.gov"
 		},
+		"ls_restapi_serviceNow_Adls_properties_typeProperties_url": {
+			"value": "https://dev275273.service-now.com/api/now/table/"
+		},
+		"ls_restapi_serviceNow_Adls_properties_typeProperties_userName": {
+			"value": "admin"
+		},
 		"ls_salesforce_cloudv2_properties_typeProperties_environmentUrl": {
 			"value": "https://orgfarm-1c16fbb5f5-dev-ed.develop.my.salesforce.com"
 		},
 		"ls_salesforce_cloudv2_properties_typeProperties_clientId": {
 			"value": "3MVG9HtWXcDGV.nEZNJYoubEKa7pH4AgNRyTkXsmuizIBn.bUn6Fhx72gTgKBnj9FrDvJk..chZjQHVLRYFSv"
+		},
+		"ls_servicenow_incedents_properties_typeProperties_endpoint": {
+			"value": "https://dev275273.service-now.com"
+		},
+		"ls_servicenow_incedents_properties_typeProperties_username": {
+			"value": "admin"
 		},
 		"ls_sql_onprem_petrolake_properties_typeProperties_userName": {
 			"value": "tippu\\adfdb"
