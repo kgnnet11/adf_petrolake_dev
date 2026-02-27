@@ -10,7 +10,7 @@
 		"typeProperties": {
 			"location": {
 				"type": "AzureBlobFSLocation",
-				"fileName": "Asset_Management_Data.json",
+				"fileName": "UserAndOrganization.json",
 				"folderPath": "servicenow/raw/config",
 				"fileSystem": "landingzone"
 			}
