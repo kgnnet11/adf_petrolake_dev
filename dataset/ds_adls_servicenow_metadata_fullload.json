@@ -10,7 +10,7 @@
 		"typeProperties": {
 			"location": {
 				"type": "AzureBlobFSLocation",
-				"fileName": "Change & Maintenance.json",
+				"fileName": "servicenow_tables.json",
 				"folderPath": "servicenow/raw/config",
 				"fileSystem": "landingzone"
 			}
