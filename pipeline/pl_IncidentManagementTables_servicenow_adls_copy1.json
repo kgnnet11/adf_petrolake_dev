@@ -1,0 +1,214 @@
+{
+	"name": "pl_IncidentManagementTables_servicenow_adls_copy1",
+	"properties": {
+		"activities": [
+			{
+				"name": "Lookup_Table_List",
+				"type": "Lookup",
+				"dependsOn": [],
+				"policy": {
+					"timeout": "0.12:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"source": {
+						"type": "JsonSource",
+						"storeSettings": {
+							"type": "AzureBlobFSReadSettings",
+							"recursive": true,
+							"enablePartitionDiscovery": false
+						},
+						"formatSettings": {
+							"type": "JsonReadSettings"
+						}
+					},
+					"dataset": {
+						"referenceName": "ds_adls_servicenow_metadata_fullload",
+						"type": "DatasetReference"
+					},
+					"firstRowOnly": false
+				}
+			},
+			{
+				"name": "Loop Tables",
+				"type": "ForEach",
+				"dependsOn": [
+					{
+						"activity": "Lookup_Table_List",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"userProperties": [],
+				"typeProperties": {
+					"items": {
+						"value": "@activity('Lookup_Table_List').output.value",
+						"type": "Expression"
+					},
+					"isSequential": false,
+					"batchCount": 3,
+					"activities": [
+						{
+							"name": "copydata_servicenow_adls_fullload",
+							"type": "Copy",
+							"dependsOn": [],
+							"policy": {
+								"timeout": "0.12:00:00",
+								"retry": 0,
+								"retryIntervalInSeconds": 30,
+								"secureOutput": false,
+								"secureInput": false
+							},
+							"userProperties": [],
+							"typeProperties": {
+								"source": {
+									"type": "RestSource",
+									"httpRequestTimeout": "00:01:40",
+									"requestInterval": "00.00:00:00.010",
+									"requestMethod": "GET"
+								},
+								"sink": {
+									"type": "JsonSink",
+									"storeSettings": {
+										"type": "AzureBlobFSWriteSettings"
+									},
+									"formatSettings": {
+										"type": "JsonWriteSettings"
+									}
+								},
+								"enableStaging": false
+							},
+							"inputs": [
+								{
+									"referenceName": "ds_servicenow_incedentManagement_fullload",
+									"type": "DatasetReference",
+									"parameters": {
+										"relativeurl": {
+											"value": "@concat(item().tableName,'?sysparm_limit=', string(variables('limit')), '&sysparm_offset=', string(variables('offset')))",
+											"type": "Expression"
+										}
+									}
+								}
+							],
+							"outputs": [
+								{
+									"referenceName": "ds_adls_json_incedenetmanagement",
+									"type": "DatasetReference",
+									"parameters": {
+										"Filename": {
+											"value": "@concat(item().tableName,'_FullLoad_',formatDateTime(utcNow(),'yyyyMMdd'),'.json')",
+											"type": "Expression"
+										},
+										"Folder": {
+											"value": "servicenow/@{item().tableName}/",
+											"type": "Expression"
+										}
+									}
+								}
+							]
+						},
+						{
+							"name": "GetMetadata_Validate_File",
+							"type": "GetMetadata",
+							"dependsOn": [
+								{
+									"activity": "copydata_servicenow_adls_fullload",
+									"dependencyConditions": [
+										"Succeeded"
+									]
+								}
+							],
+							"policy": {
+								"timeout": "0.12:00:00",
+								"retry": 0,
+								"retryIntervalInSeconds": 30,
+								"secureOutput": false,
+								"secureInput": false
+							},
+							"userProperties": [],
+							"typeProperties": {
+								"dataset": {
+									"referenceName": "ds_target_Adls_incidentManagement",
+									"type": "DatasetReference",
+									"parameters": {
+										"Filename": {
+											"value": "@concat(item().tableName,'_FullLoad_',formatDateTime(utcNow(),'yyyyMMdd'),'.json')",
+											"type": "Expression"
+										},
+										"Folder": {
+											"value": "servicenow/@{item().tableName}/",
+											"type": "Expression"
+										}
+									}
+								},
+								"fieldList": [
+									"exists",
+									"size"
+								],
+								"storeSettings": {
+									"type": "AzureBlobFSReadSettings",
+									"recursive": true,
+									"enablePartitionDiscovery": false
+								},
+								"formatSettings": {
+									"type": "DelimitedTextReadSettings"
+								}
+							}
+						},
+						{
+							"name": "If_File_Valid",
+							"type": "IfCondition",
+							"dependsOn": [
+								{
+									"activity": "GetMetadata_Validate_File",
+									"dependencyConditions": [
+										"Succeeded"
+									]
+								}
+							],
+							"userProperties": [],
+							"typeProperties": {
+								"expression": {
+									"value": "@and(\n   equals(activity('GetMetadata_Validate_File').output.exists,true),\n   greater(activity('GetMetadata_Validate_File').output.size,0)\n)",
+									"type": "Expression"
+								},
+								"ifTrueActivities": [
+									{
+										"name": "FileValidationFailed",
+										"type": "Fail",
+										"dependsOn": [],
+										"userProperties": [],
+										"typeProperties": {
+											"message": "FileValidationFailed",
+											"errorCode": "File size is 0 or file not created"
+										}
+									}
+								]
+							}
+						}
+					]
+				}
+			}
+		],
+		"variables": {
+			"offset": {
+				"type": "Integer",
+				"defaultValue": 0
+			},
+			"limit": {
+				"type": "Integer",
+				"defaultValue": 10000
+			},
+			"continue": {
+				"type": "Boolean",
+				"defaultValue": true
+			}
+		},
+		"annotations": []
+	}
+}
