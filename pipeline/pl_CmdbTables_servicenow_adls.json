@@ -1,5 +1,5 @@
 {
-	"name": "pl_cmdbTables_servicenow_adls",
+	"name": "pl_CmdbTables_servicenow_adls",
 	"properties": {
 		"activities": [
 			{
