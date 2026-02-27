@@ -89,7 +89,7 @@
 									"type": "DatasetReference",
 									"parameters": {
 										"relativeurl": {
-											"value": "@concat(item().tableName,'?sysparm_limit=10000&sysparm_offset=',string(variables('offset')))",
+											"value": "@concat(item().tableName,'?sysparm_limit=', string(variables('limit')), '&sysparm_offset=', string(variables('offset')))",
 											"type": "Expression"
 										}
 									}
@@ -199,6 +199,10 @@
 			"offset": {
 				"type": "Integer",
 				"defaultValue": 0
+			},
+			"limit": {
+				"type": "Integer",
+				"defaultValue": 100
 			}
 		},
 		"annotations": []
