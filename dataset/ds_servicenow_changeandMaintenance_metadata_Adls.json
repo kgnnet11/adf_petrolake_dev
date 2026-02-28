@@ -1,0 +1,20 @@
+{
+	"name": "ds_servicenow_changeandMaintenance_metadata_Adls",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "ls_alds_landingzone",
+			"type": "LinkedServiceReference"
+		},
+		"annotations": [],
+		"type": "Json",
+		"typeProperties": {
+			"location": {
+				"type": "AzureBlobFSLocation",
+				"fileName": "Change & Maintenance.json",
+				"folderPath": "servicenow/raw/config",
+				"fileSystem": "landingzone"
+			}
+		},
+		"schema": {}
+	}
+}

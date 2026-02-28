@@ -27,7 +27,7 @@
 						}
 					},
 					"dataset": {
-						"referenceName": "ds_adls_servicenow_metadata_fullload",
+						"referenceName": "ds_servicenow_changeandMaintenance_metadata_Adls",
 						"type": "DatasetReference"
 					},
 					"firstRowOnly": false
@@ -204,6 +204,9 @@
 				"type": "Integer",
 				"defaultValue": 10000
 			}
+		},
+		"folder": {
+			"name": "ServiceNow"
 		},
 		"annotations": []
 	}
