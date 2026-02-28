@@ -19,7 +19,7 @@
 					"value": "@dataset().Filename",
 					"type": "Expression"
 				},
-				"folderPath": "servicenow/cmdb_ci/",
+				"folderPath": "servicenow/Change&Maintenance",
 				"fileSystem": "landingzone"
 			}
 		},
