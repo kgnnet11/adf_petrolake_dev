@@ -1,0 +1,27 @@
+{
+	"name": "ds_servicenow_cmdb_metadata_adls",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "ls_alds_landingzone",
+			"type": "LinkedServiceReference"
+		},
+		"annotations": [],
+		"type": "Json",
+		"typeProperties": {
+			"location": {
+				"type": "AzureBlobFSLocation",
+				"fileName": "CMDB_OilGas_Data.json",
+				"folderPath": "servicenow/raw/config",
+				"fileSystem": "landingzone"
+			}
+		},
+		"schema": {
+			"type": "object",
+			"properties": {
+				"tableName": {
+					"type": "string"
+				}
+			}
+		}
+	}
+}

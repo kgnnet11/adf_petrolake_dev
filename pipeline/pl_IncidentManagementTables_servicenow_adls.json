@@ -27,7 +27,7 @@
 						}
 					},
 					"dataset": {
-						"referenceName": "ds_adls_servicenow_metadata_fullload",
+						"referenceName": "ds_servicenow_cmdb_metadata_adls",
 						"type": "DatasetReference"
 					},
 					"firstRowOnly": false
@@ -105,7 +105,7 @@
 											"type": "Expression"
 										},
 										"Folder": {
-											"value": "servicenow/@{item().tableName}/",
+											"value": "servicenow/cmdb_api/@{item().tableName}/",
 											"type": "Expression"
 										}
 									}
@@ -174,7 +174,7 @@
 							"userProperties": [],
 							"typeProperties": {
 								"expression": {
-									"value": "@and(\n   equals(activity('GetMetadata_Validate_File').output.exists,true),\n   greater(activity('GetMetadata_Validate_File').output.size,0)\n)",
+									"value": "@and(\n   equals(activity('GetMetadata_Validate_File').output.exists,true),\n   greater(activity('GetMetadata_Validate_File').output.size,0)\n)\n",
 									"type": "Expression"
 								},
 								"ifTrueActivities": [
@@ -204,6 +204,9 @@
 				"type": "Integer",
 				"defaultValue": 10000
 			}
+		},
+		"folder": {
+			"name": "ServiceNow"
 		},
 		"annotations": []
 	}
