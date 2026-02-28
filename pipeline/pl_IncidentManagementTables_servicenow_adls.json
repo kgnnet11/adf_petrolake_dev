@@ -103,10 +103,6 @@
 										"Filename": {
 											"value": "@concat(item().tableName,'_FullLoad_',formatDateTime(utcNow(),'yyyyMMdd'),'.json')",
 											"type": "Expression"
-										},
-										"Folder": {
-											"value": "servicenow/cmdb_api/@{item().tableName}/",
-											"type": "Expression"
 										}
 									}
 								}
