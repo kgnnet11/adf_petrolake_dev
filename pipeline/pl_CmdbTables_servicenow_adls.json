@@ -103,10 +103,6 @@
 										"Filename": {
 											"value": "@concat(item().tableName,'_FullLoad_',formatDateTime(utcNow(),'yyyyMMdd'),'.json')",
 											"type": "Expression"
-										},
-										"Folder": {
-											"value": "servicenow/@{item().tableName}/",
-											"type": "Expression"
 										}
 									}
 								}
@@ -208,6 +204,9 @@
 				"type": "Boolean",
 				"defaultValue": true
 			}
+		},
+		"folder": {
+			"name": "ServiceNow"
 		},
 		"annotations": []
 	}
