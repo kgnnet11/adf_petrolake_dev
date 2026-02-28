@@ -27,7 +27,7 @@
 						}
 					},
 					"dataset": {
-						"referenceName": "ds_adls_servicenow_metadata_fullload",
+						"referenceName": "ds_servicenow_adls_assetManagement",
 						"type": "DatasetReference"
 					},
 					"firstRowOnly": false
@@ -102,10 +102,6 @@
 									"parameters": {
 										"Filename": {
 											"value": "@concat(item().tableName,'_FullLoad_',formatDateTime(utcNow(),'yyyyMMdd'),'.json')",
-											"type": "Expression"
-										},
-										"Folder": {
-											"value": "servicenow/@{item().tableName}/",
 											"type": "Expression"
 										}
 									}
